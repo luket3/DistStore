@@ -1,0 +1,38 @@
+test network partitions
+
+test change of leader
+
+test raft under a bunch of different node failures
+
+Raft:
+make message parsing more robust
+add more error handling
+try to optimise raft log maybe
+make it change state based and then call any role based functions in raft_node
+should not call follower append_entries if not a follower
+
+future:
+make client retry based on failed connections with different nodes
+get consistent hash map from server
+be able to add and remove nodes as pleased
+
+install json parser
+make client get hashmap from nodes
+make all message parsing be json
+
+make feature to add and remove nodes to the network
+
+test throughly
+
+create menu to interact with
+
+refactor where nessisary
+
+
+running:
+
+server:
+mvn exec:java -Dexec.mainClass=runnable.StartNodes
+
+client:
+mvn exec:java -Dexec.mainClass=runnable.Client
