@@ -13,6 +13,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.gson.Gson;
+
 import java.util.HashSet;
 
 import cluster.ConsistentHashMap;
@@ -38,6 +41,8 @@ public class ClientImp {
 
     private HashSet<String> killed;
 
+    private Gson gson;
+
     /**
      * Create a new {@code Client} instance and initialize communication and
      * the consistent-hash map.
@@ -49,6 +54,7 @@ public class ClientImp {
         map = new ConsistentHashMap();
         nodes = new HashMap<>();
         killed = new HashSet<>();
+        gson = new Gson();
     }
 
     /**

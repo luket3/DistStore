@@ -1,4 +1,6 @@
-package communication;
+package message;
+
+import communication.Comm;
 
 public class MessageInfo {
     public String message;

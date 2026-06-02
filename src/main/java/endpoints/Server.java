@@ -17,8 +17,8 @@ import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Comm;
 import communication.Listener;
-import communication.MessageInfo;
 import communication.Pipe;
+import message.MessageInfo;
 import raft.Raft;
 
 /**

@@ -12,8 +12,8 @@ package endpoints;
 import java.util.HashMap;
 
 import communication.Comm;
-import communication.MessageInfo;
 import communication.Pipe;
+import message.MessageInfo;
 
 /**
  * Per-connection server worker that executes simple key-value queries.

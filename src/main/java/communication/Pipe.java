@@ -11,6 +11,8 @@ package communication;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import message.MessageInfo;
+
 /**
  * Thread-safe pipe for passing {@link MessageInfo} messages between threads.
  * Implements an unbounded buffer with blocking take operations and
