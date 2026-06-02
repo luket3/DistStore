@@ -85,13 +85,10 @@ public class RaftLog {
     }
 
     public void clearTo(int max) {
-        if (max == -1) {
+        if (max == -1 || max < committedLog.size()) {
             clearUncommitted();
             return;
         }
-
-        if (max < committedLog.size())
-            clearUncommitted();
 
         uncommittedLog.subList(max - committedLog.size() + 1,
                                 uncommittedLog.size()).clear();

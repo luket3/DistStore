@@ -88,7 +88,7 @@ public class Raft implements Runnable {
 
                 String rawMessage = inPipe.take(Math.max(1, timeoutMs));
                 
-                if (checkKillMsg(rawMessage) || !alive) {
+                if ((checkKillMsg(rawMessage) || !alive) && rawMessage != null) {
                     System.out.println("message failed to be delivered to node: " + this.nodeId);
                     continue;
                 }
