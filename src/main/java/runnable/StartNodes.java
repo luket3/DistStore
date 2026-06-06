@@ -38,7 +38,8 @@ public class StartNodes {
                 String nodeId = parts[0].trim();
                 String port   = parts[2].trim();
 
-                String command = "java -cp target/classes endpoints.Server " + nodeId + " " + port;
+                String command = "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
+                                  nodeId + " " + port;
                 commands.add(command);
             }
         }

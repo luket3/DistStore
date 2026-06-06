@@ -1,5 +1,7 @@
 package raft;
 
+import message.DictMsg;
+
 /*
  * File: log_entry.java
  * Project: Distributed KV Store
@@ -16,7 +18,7 @@ package raft;
  */
 public class LogEntry {
     /** The command associated with this log entry. */
-    final String command;
+    final DictMsg command;
 
     /** Raft term when this entry was created. */
     final int term;
@@ -31,7 +33,7 @@ public class LogEntry {
      * @param term the term number
      * @param index the index in the log
      */
-    LogEntry(String command, int term, int index) {
+    LogEntry(DictMsg command, int term, int index) {
         this.command =  command;
         this.term = term;
         this.index = index;

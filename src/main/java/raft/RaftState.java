@@ -6,6 +6,8 @@ import java.util.Map;
 import cluster.Node;
 import communication.Pipe;
 
+import com.google.gson.Gson;
+
 public class RaftState {
 
     public int term;
@@ -18,6 +20,7 @@ public class RaftState {
     public String type;
     public HashMap<String, Integer> matchIndex;
     public HashMap<String, Integer> nextIndex;
+    public Gson gson;
 
     public RaftState(
             Map<String, Node> clusterNodes,
@@ -32,6 +35,7 @@ public class RaftState {
         this.leader = null;
         this.numberOfNodes = clusterNodes.size();
         this.type = "follower";
+        this.gson = new Gson();
     }
 
     /**

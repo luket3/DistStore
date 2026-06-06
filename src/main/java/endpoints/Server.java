@@ -13,13 +13,19 @@ import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Comm;
 import communication.Listener;
 import communication.Pipe;
-import message.MessageInfo;
 import raft.Raft;
+import message.Message;
+import message.MessageDeserializer;
+import message.DictMsg;
+import message.Reply;
 
 /**
  * Server runner program that initializes listening sockets and spawns a
@@ -34,6 +40,7 @@ public class Server {
     public static Pipe stateMachineIn;
     public static int returnCode;
     public static Thread raft;
+    public static Gson gson;
 
 
     /**
@@ -42,6 +49,11 @@ public class Server {
      * @param args expected to contain {@code nodeId} and {@code port}
      */
     public static void init(String args[]) throws Exception {
+        
+        gson = new GsonBuilder()
+                .registerTypeAdapter(Message.class, new MessageDeserializer())
+                .create();
+
         listener = new Listener();
         nodeId = args[0];
         port = Integer.parseInt(args[1]);
@@ -81,25 +93,21 @@ public class Server {
 
         Comm comm = new Comm(listener.listenForConnection());
         String request = comm.readString();
-        String messageType = request.split(" ")[0];
+        Message msg = gson.fromJson(request, Message.class);
 
-        if (!messageType.equals("AppendEntries")
-                && !messageType.equals("RequestVote")
-                && !messageType.equals("ClientCommand")
-                && !messageType.equals("AppendEntriesReply")
-                && !messageType.equals("RequestVoteReply")
-                && !messageType.equals("Kill")
-                && !messageType.equals("Revive")) {
-            request = "ClientCommand " + Integer.toString(returnCode) + " " + request;
+        if (msg.type.equals("DictMsg")) {
+            DictMsg dictMsg = (DictMsg) msg;
+            if (dictMsg.reply_num == -1) {
+                dictMsg.reply_num = returnCode;
+                msg = dictMsg;
 
-            MessageInfo reply = new MessageInfo(
-                    Integer.toString(returnCode) + " Reply", comm);
-            stateMachineIn.put(reply);
-            returnCode += 1;
-
+                Reply reply = new Reply(comm, returnCode);
+                stateMachineIn.put(reply);
+                returnCode += 1;
+            }
         }
 
-        raftIn.put(request);
+        raftIn.put(msg);
     }
 
     /**

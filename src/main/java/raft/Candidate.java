@@ -5,6 +5,9 @@ import java.util.Set;
 
 import cluster.Node;
 import communication.Comm;
+import message.Message;
+import message.RequestVoteReply;
+import message.RequestVote;
 
 /**
  * Candidate role for Raft consensus.
@@ -20,37 +23,33 @@ public class Candidate extends Role {
         this.votedNodes = new HashSet<>();
     }
 
-    public boolean requestVote(String[] messageParts) {
+    public boolean requestVote(Message message) {
         // Handle a RequestVote response while this node is a candidate.
-        // Format: RequestVote <term> <senderID> <voteGranted>
-        if (messageParts.length < 3) {
-            // Invalid message format
-            return false; // Treat as no vote granted
-        }
-        int voterTerm = Integer.parseInt(messageParts[1]);
-        String senderId = messageParts[2];
-        boolean voteGranted = Boolean.parseBoolean(messageParts[3]);
+        // Format: RequestVoteReply <term> <senderID> <voteGranted>
+        
+        RequestVoteReply RVReply = (RequestVoteReply) message;
+        System.out.println("Candidate " + raftState.id + " received: " + raftState.gson.toJson(RVReply));
 
         // Update term and revert to follower if we see a higher term
-        if (voterTerm > raftState.term) {
-            raftState.term = voterTerm;
+        if (RVReply.term > raftState.term) {
+            raftState.term = RVReply.term;
             raftState.type = "follower";
             raftState.votedFor = null;
             return false;
         }
 
         // Ignore votes from previous terms
-        if (voterTerm < raftState.term) {
+        if (RVReply.term < raftState.term) {
             return false;
         }
 
         // Only count each node's vote once
-        if (votedNodes.contains(senderId)) {
+        if (votedNodes.contains(RVReply.senderId)) {
             return false;
         }
 
-        if (voteGranted) {
-            votedNodes.add(senderId);
+        if (RVReply.voteGranted) {
+            votedNodes.add(RVReply.senderId);
             this.votesReceived++;
             // Check if we have won the election
             if (this.votesReceived > raftState.numberOfNodes / 2) {
@@ -75,11 +74,13 @@ public class Candidate extends Role {
         this.votedNodes.add(raftState.id); // Record self vote
 
         // Broadcast RequestVote RPCs to the other cluster nodes.
-        broadcast("RequestVote " +
-               raftState.term + " " +
-               raftState.id + " " +
-               raftState.log.getLastIdx() + " " +
-               raftState.log.getLastTerm());
+        RequestVote RVmsg = new RequestVote(
+            raftState.term,
+            raftState.id,
+            raftState.log.getLastIdx(),
+            raftState.log.getLastTerm()
+        );
+        broadcast(raftState.gson.toJson(RVmsg));
     }
 
     /**

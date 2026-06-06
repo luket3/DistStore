@@ -5,6 +5,11 @@ import java.util.Collections;
 
 import cluster.Node;
 
+import message.Message;
+import message.AppendEntriesReply;
+import message.AppendEntries;
+import message.DictMsg;
+
 /**
  * Leader role for Raft consensus.
  */
@@ -14,48 +19,42 @@ public class Leader extends Role {
         super(raftState);
     }
 
-    public void processClientCommand(String command) {
+    public void processClientCommand(Message command) {
         // Handle a client command when this node is the leader.
         // Format: ClientCommand <command>
+        DictMsg cmdMsg = (DictMsg) command;
+        System.out.println("Leader " + raftState.id + " processing client command: " + raftState.gson.toJson(cmdMsg));
 
         // Append the command to the log as an uncommitted entry
         System.out.println("Leader processing client command: " + command);
-        raftState.log.appendEntry(command, raftState.term);
+        raftState.log.appendEntry(cmdMsg, raftState.term);
         // Update own matchIndex to reflect the new entry
         raftState.matchIndex.put(raftState.id, raftState.log.getLastIdx());
 
         broadcastAppendEntries();
     }
 
-    public void appendEntries(String[] messageParts) {
+    public void appendEntries(Message messageParts) {
         // Process a follower's AppendEntries response when this node is
         // acting as leader.
         // Format: AppendEntries <term> <senderID> <success> <matchIndex>
-
-        if (messageParts.length < 4) {
-            // Invalid message format
-            return;
-        }
-
-        int followerTerm = Integer.parseInt(messageParts[1]);
-        String senderId = messageParts[2];
-        boolean success = Boolean.parseBoolean(messageParts[3]);
-        int senderMatchIdx = Integer.parseInt(messageParts[4]);
+        AppendEntriesReply AEReply = (AppendEntriesReply) messageParts;
+        System.out.println("Leader " + raftState.id + " received: " + raftState.gson.toJson(AEReply));
 
         // Update term and revert to follower if we see a higher term
-        if (followerTerm > raftState.term) {
-            raftState.term = followerTerm;
+        if (AEReply.term > raftState.term) {
+            raftState.term = AEReply.term;
             raftState.type = "follower";
             raftState.votedFor = null;
             return;
         }
 
         // If AppendEntries was successful, update match index for that follower
-        if (success) {
+        if (AEReply.success) {
 
             // register follower as having entries up to senderMatchIdx
-            raftState.matchIndex.put(senderId, Math.max(raftState.matchIndex.get(senderId), senderMatchIdx));
-            raftState.nextIndex.put(senderId, raftState.matchIndex.get(senderId) + 1);
+            raftState.matchIndex.put(AEReply.senderId, Math.max(raftState.matchIndex.get(AEReply.senderId), AEReply.matchIndex));
+            raftState.nextIndex.put(AEReply.senderId, raftState.matchIndex.get(AEReply.senderId) + 1);
 
             // commit such that majority nodes have log entry
             for (int i = raftState.log.getLastIdx(); i > raftState.log.getCommitIdx(); i--) {
@@ -75,9 +74,9 @@ public class Leader extends Role {
             }
         }
         else {
-            raftState.nextIndex.put(senderId, raftState.nextIndex.get(senderId) - 1);
-            if (raftState.nextIndex.get(senderId) < 0)
-                raftState.nextIndex.put(senderId, 0);
+            raftState.nextIndex.put(AEReply.senderId, raftState.nextIndex.get(AEReply.senderId) - 1);
+            if (raftState.nextIndex.get(AEReply.senderId) < 0)
+                raftState.nextIndex.put(AEReply.senderId, 0);
 
             // check if raft log needs to be truncated
             // Compute a truncate point based on majority of followers' nextIndex.
@@ -111,7 +110,7 @@ public class Leader extends Role {
                 }
             }
 
-            sendAppendEntries(raftState.nodes.get(senderId));
+            sendAppendEntries(raftState.nodes.get(AEReply.senderId));
         }
     }
 
@@ -134,15 +133,18 @@ public class Leader extends Role {
         int prevLogTerm = (prevLogIndex >= 0) ?
                                 raftState.log.get(prevLogIndex).term : 0;
 
-        sendToNode(node,
-            "AppendEntries "
-            + raftState.term + " "
-            + raftState.id + " "
-            + prevLogIndex + " "
-            + prevLogTerm + " "
-            + raftState.log.getCommitIdx() + " "
-            + raftState.log.getAsString(raftState.nextIndex.get(node.id),
+        AppendEntries AEmsg = new AppendEntries(
+            raftState.term,
+            raftState.id,
+            prevLogIndex,
+            prevLogTerm,
+            raftState.log.getCommitIdx(),
+            raftState.log.get(raftState.nextIndex.get(node.id),
                                             raftState.log.getLastIdx())
+        );
+
+        sendToNode(node,
+            raftState.gson.toJson(AEmsg)
         );
     }
 }

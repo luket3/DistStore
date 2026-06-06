@@ -12,6 +12,8 @@ import java.util.Map;
 
 import cluster.Node;
 import communication.Pipe;
+import message.Message;
+import message.NodeMsg;
 
 /**
  * Partial Raft role implementation for handling incoming RPCs.
@@ -44,16 +46,20 @@ public class Raft implements Runnable {
         this.alive = true;
     }
 
-    public boolean checkKillMsg(String msg) {
-        if (msg == null)
+    public boolean checkKillMsg(Message msg) {
+        if (msg == null || !msg.type.equals("NodeMsg")) {
             return false;
+        }
 
-        String messageType = msg.split(" ")[0];
-        if (messageType.equals("Kill")) {
+        NodeMsg nodeMsg = (NodeMsg) msg;
+        System.out.println("Node " + nodeId + " received NodeMsg: " + nodeMsg.action);
+        if (nodeMsg.action.equals("Kill")) {
+            System.out.println("Node " + nodeId + " received kill message.");
             alive = false;
             return true;
         }
-        else if (messageType.equals("Revive")) {
+        else if (nodeMsg.action.equals("Revive")) {
+            System.out.println("Node " + nodeId + " received revive message.");
             alive = true;
             return true;
         }
@@ -91,19 +97,17 @@ public class Raft implements Runnable {
                                             - ELECTION_TIMEOUT_MIN_MS));
                 }
 
-                String rawMessage = inPipe.take(Math.max(1, timeoutMs));
+                Message message = inPipe.take(Math.max(1, timeoutMs));
                 
-                if ((checkKillMsg(rawMessage) || !alive) && rawMessage != null) {
-                    System.out.println("message failed to be delivered to node: " + this.nodeId);
+                if ((checkKillMsg(message)) || !alive) {
+                    System.out.println(message.type + ": message failed to be delivered to node: " + this.nodeId);
                     continue;
                 }
 
                 // If we get a message (not null), process it
-                if (rawMessage != null) {
-                    System.out.println("Node " + nodeId
-                            + " received a message: " + rawMessage);
+                if (message != null) {
                     // Process the message through the Raft node
-                    node.handleMessage(rawMessage);
+                    node.handleMessage(message);
                 } else {
                     // Timeout occurred: no message received within the
                     // election timeout

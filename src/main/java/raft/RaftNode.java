@@ -4,6 +4,7 @@ import java.util.Map;
 
 import cluster.Node;
 import communication.Pipe;
+import message.Message;
 
 /**
  * Base class for Raft implementations holding common state.
@@ -32,61 +33,33 @@ public class RaftNode {
         this.leaderRole = new Leader(raftState);
     }
 
-    private String[] splitMsg(String message) {
-
-        String[] split = new String[7];
-        int splitIdx = 0;
-        int startIdx = 0;
-        String word = "";
-
-        for (int i = 0; i <= message.length(); i++) {
-            if (i == message.length() || message.charAt(i) == ' ') {
-                word = message.substring(startIdx, i);
-                split[splitIdx] = word;
-                splitIdx++;
-                startIdx = i + 1;
-            }
-            else if (message.charAt(i) == '[') {
-                word = message.substring(i);
-                split[splitIdx] = word;
-                break;
-            }
-        }
-
-        return split;
-    }
-
     /**
      * Start processing an incoming connection representing an RPC.
      *
      * @param message the RPC message to process
      */
-    public void handleMessage(String message) {
-
-        // make command seperate
-        String[] parts = splitMsg(message);
-        String rpcType = parts[0];
+    public void handleMessage(Message message) {
 
         // handle request vote, append entries and client command
         // this this.term is higher functions return
-        if (rpcType.equals("AppendEntries"))
-            followerRole.appendEntries(parts);
-        else if (rpcType.equals("RequestVote"))
-            followerRole.requestVote(parts);
-        else if (rpcType.equals("ClientCommand") 
+        if (message.type.equals("AppendEntries"))
+            followerRole.appendEntries(message);
+        else if (message.type.equals("RequestVote"))
+            followerRole.requestVote(message);
+        else if (message.type.equals("DictMsg") 
                     && !raftState.type.equals("leader"))
             followerRole.handToLeader(message);
 
         if (raftState.type.equals("leader")) {
-            if (rpcType.equals("AppendEntriesReply")) {
-                leaderRole.appendEntries(parts);
-            } else if (rpcType.equals("ClientCommand")){
+            if (message.type.equals("AppendEntriesReply")) {
+                leaderRole.appendEntries(message);
+            } else if (message.type.equals("DictMsg")){
                 // Handle client command
                 leaderRole.processClientCommand(message);
             }
         } else if (raftState.type.equals("candidate")) {
-            if (rpcType.equals("RequestVoteReply")) {
-                candidateRole.requestVote(parts);
+            if (message.type.equals("RequestVoteReply")) {
+                candidateRole.requestVote(message);
             }
         }
     }

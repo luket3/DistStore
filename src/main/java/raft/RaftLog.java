@@ -4,21 +4,12 @@ import java.util.ArrayList;
 
 import communication.Pipe;
 
+import message.DictMsg;
+
 public class RaftLog {
     private ArrayList<LogEntry> committedLog;
     private ArrayList<LogEntry> uncommittedLog;
     private Pipe stateMachineIn;
-
-    private String removeFirstIf(String command, String term) {
-        int space = command.indexOf(' ');
-        if (space != -1) {
-            String first = command.substring(0, space);
-            if (first.equals(term)) {
-                command = command.substring(space + 1);
-            }
-        }
-        return command;
-    }
 
     public RaftLog(Pipe stateMachineIn) {
         this.committedLog = new ArrayList<>();
@@ -26,10 +17,9 @@ public class RaftLog {
         this.stateMachineIn = stateMachineIn;
     }
 
-    public void appendEntry(String command, int term) {
-        String commandStr = removeFirstIf(command, "ClientCommand");
+    public void appendEntry(DictMsg command, int term) {
         LogEntry newEntry = new LogEntry(
-                commandStr,
+                command,
                 term,
                 committedLog.size() + uncommittedLog.size()
         );
@@ -45,7 +35,7 @@ public class RaftLog {
         }
     }
 
-    public String getLastCommittedCommand() {
+    public DictMsg getLastCommittedCommand() {
         if (!committedLog.isEmpty()) {
             return committedLog.get(committedLog.size() - 1).command;
         }
@@ -96,23 +86,6 @@ public class RaftLog {
 
         uncommittedLog.subList(max - committedLog.size() + 1,
                                 uncommittedLog.size()).clear();
-    }
-
-    public String getAsString(int start, int end) {
-        ArrayList<LogEntry> entries = get(start, end);
-
-        if (entries == null)
-            return "";
-
-        String asString = "[";
-        for (int i = 0; i < entries.size(); i++) {
-            asString += entries.get(i).command;
-            if (i < entries.size() - 1)
-                asString += ",";
-        }
-        asString += "]";
-
-        return asString;
     }
 
     public ArrayList<LogEntry> get(int start, int end) {

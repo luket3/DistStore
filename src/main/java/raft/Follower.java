@@ -1,5 +1,11 @@
 package raft;
 
+import message.Message;
+import message.RequestVote;
+import message.AppendEntries;
+import message.RequestVoteReply;
+import message.AppendEntriesReply;
+import message.DictMsg;
 
 /**
  * Follower role for Raft consensus.
@@ -16,28 +22,21 @@ public class Follower extends Role {
      * @param messageParts the parsed RPC message parts
      * @return true if vote was granted, false otherwise
      */
-    public boolean requestVote(String[] messageParts) {
+    public boolean requestVote(Message message) {
         // Parse RequestVote RPC parameters from messageParts
         // Format: RequestVote <term> <candidateId> <lastLogIndex> <lastLogTerm>
-        if (messageParts.length < 5) {
-            // Invalid message format
-            return false;
-        }
-
-        int candidateTerm = Integer.parseInt(messageParts[1]);
-        String candidateId = messageParts[2];
-        int lastLogIndex = Integer.parseInt(messageParts[3]);
-        int lastLogTerm = Integer.parseInt(messageParts[4]);
+        RequestVote RVmsg = (RequestVote) message;
+        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg));
 
         // Check current term and update if necessary
-        if (candidateTerm > raftState.term) {
-            raftState.term = candidateTerm;
+        if (RVmsg.term > raftState.term) {
+            raftState.term = RVmsg.term;
             raftState.type = "follower";
             raftState.votedFor = null;
         }
 
         // Reject if candidate's term is less than current term
-        if (candidateTerm < raftState.term) {
+        if (RVmsg.term < raftState.term) {
             return false;
         }
         
@@ -45,23 +44,24 @@ public class Follower extends Role {
         int receiverLastLogIndex = raftState.log.getLastIdx();
         int receiverLastLogTerm = raftState.log.getLastTerm();
 
-        boolean logUpToDate = (lastLogTerm > receiverLastLogTerm)
-            || ((lastLogTerm == receiverLastLogTerm) 
-            && lastLogIndex >= receiverLastLogIndex);
+        boolean logUpToDate = (RVmsg.lastLogTerm > receiverLastLogTerm)
+            || ((RVmsg.lastLogTerm == receiverLastLogTerm) 
+            && RVmsg.lastLogIndex >= receiverLastLogIndex);
 
         // Vote for candidate if we haven't voted or already voted for this
         // candidate, and the candidate's log is up-to-date
         boolean voteGranted = logUpToDate && (
-            raftState.votedFor == null || raftState.votedFor.equals(candidateId)
+            raftState.votedFor == null || raftState.votedFor.equals(RVmsg.candidateId)
         );
         if (voteGranted) {
-            raftState.votedFor = candidateId;
+            raftState.votedFor = RVmsg.candidateId;
         }
 
         // Send vote grant status back to the candidate
+        RequestVoteReply RVReply = new RequestVoteReply(raftState.term, raftState.id, voteGranted);
         sendToNode(
-            raftState.nodes.get(candidateId),
-            "RequestVoteReply " + raftState.term + " " + raftState.id + " " + voteGranted
+            raftState.nodes.get(RVmsg.candidateId),
+            raftState.gson.toJson(RVReply)
         );
 
         return voteGranted;
@@ -73,43 +73,35 @@ public class Follower extends Role {
      * @param messageParts the parsed RPC message parts
      * @return true if the RPC was successful, false otherwise
      */
-    public boolean appendEntries(String[] messageParts) {
+    public boolean appendEntries(Message message) {
         // Parse AppendEntries RPC parameters from messageParts
         // Format: AppendEntries <term> <leaderId> <prevLogIndex>
         // <prevLogTerm> <leaderCommit> [entries...]
-        if (messageParts.length < 6) {
-            // Invalid message format
-            return false;
-        }
-
-        int leaderTerm = Integer.parseInt(messageParts[1]);
-        String leaderId = messageParts[2];
-        int prevLogIndex = Integer.parseInt(messageParts[3]);
-        int prevLogTerm = Integer.parseInt(messageParts[4]);
-        int leaderCommit = Integer.parseInt(messageParts[5]);
+        AppendEntries AEmsg = (AppendEntries) message;
+        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(AEmsg));
 
         // Update term and revert to follower if we see a higher term
-        if (leaderTerm > raftState.term) {
-            raftState.term = leaderTerm;
+        if (AEmsg.term > raftState.term) {
+            raftState.term = AEmsg.term;
             raftState.type = "follower";
             raftState.votedFor = null;
-        } else if (leaderTerm < raftState.term) {
+        } else if (AEmsg.term < raftState.term) {
             // Reject if leader's term is less than current term
             return false;
         }
 
-        if (raftState.leader == null || !raftState.leader.id.equals(leaderId)) {
+        if (raftState.leader == null || !raftState.leader.id.equals(AEmsg.leaderId)) {
             // Update leader information if this is a new leader
-            raftState.leader = raftState.nodes.get(leaderId);
+            raftState.leader = raftState.nodes.get(AEmsg.leaderId);
             raftState.log.clearUncommitted();
         }
 
         // Check prevLogIndex and prevLogTerm match
         boolean logMatch = true;
-        if (prevLogIndex >= 0) {
-            if (prevLogIndex >= raftState.log.getSize()) {
+        if (AEmsg.prevLogIndex >= 0) {
+            if (AEmsg.prevLogIndex >= raftState.log.getSize()) {
                 logMatch = false;
-            } else if (raftState.log.get(prevLogIndex).term != prevLogTerm) {
+            } else if (raftState.log.get(AEmsg.prevLogIndex).term != AEmsg.prevLogTerm) {
                 logMatch = false;
             }
         }
@@ -117,33 +109,32 @@ public class Follower extends Role {
         if (logMatch) {
             // commands are in format:
             // [ClientCommand <insert command>,ClientCommand <insert command>,...]
-            if (messageParts.length >= 7 && !messageParts[6].equals("")) {
-                String commands = messageParts[6];
-                String[] split = commands.substring(1,commands.length() - 1)
-                                         .split(",");
+            if (AEmsg.entries != null && AEmsg.entries.size() > 0) {
 
-                raftState.log.clearTo(prevLogIndex);
-                for (String cmd : split)
-                    raftState.log.appendEntry(cmd, leaderTerm);
+                raftState.log.clearTo(AEmsg.prevLogIndex);
+                for (LogEntry entry : AEmsg.entries) {
+                    raftState.log.appendEntry(entry.command, entry.term);
+                }
             }
 
             // commit upto leadercommit
-            raftState.log.commitEntries(leaderCommit);
+            raftState.log.commitEntries(AEmsg.leaderCommit);
         }
 
+        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.term, raftState.id, logMatch, raftState.log.getLastIdx());
         sendToNode(
             raftState.leader,
-            "AppendEntriesReply " + raftState.term  + " "
-                                  + raftState.id + " " 
-                                  + logMatch + " " 
-                                  + raftState.log.getLastIdx()
+            raftState.gson.toJson(AEReply)
         );
         return true;
     }
 
-    public void handToLeader(String message) {
+    public void handToLeader(Message message) {
+        DictMsg cmdMsg = (DictMsg) message;
+        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(cmdMsg));
+
         if (raftState.leader != null) {
-            sendToNode(raftState.leader, message);
+            sendToNode(raftState.leader, raftState.gson.toJson(cmdMsg));
         } else {
             // No known leader, could buffer the message or ignore
         }

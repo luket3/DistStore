@@ -21,6 +21,8 @@ import java.util.HashSet;
 import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Comm;
+import message.DictMsg;
+import message.NodeMsg;
 
 /**
  * Client for the distributed key-value store.
@@ -96,31 +98,30 @@ public class ClientImp {
      * </p>
      *
      * @param query the query string to send
-     * @return {@code true} if the query format is valid (and the send would be
-     * attempted), {@code false} for invalid formats
+     * @return a message indicating the result of the operation
      * @throws Exception on communication errors while attempting to send
      */
-    public boolean sendQuery(String query) throws Exception {
+    public String sendQuery(String query) throws Exception {
         String[] split = query.split(" ");
 
         // Handle Kill/Revive targeting a specific node id
         if (split.length == 2 && (split[0].equals("Kill") || split[0].equals("Revive"))) {
 
-            String targetId = split[1];
-            if (split[0].equals("Kill"))
-                killed.add(targetId);
-            else if (split[0].equals("Revive"))
-                killed.remove(targetId);
+            NodeMsg msg = new NodeMsg(split[0], split[1]);
+            if (msg.action.equals("Kill"))
+                killed.add(msg.nodeId);
+            else if (msg.action.equals("Revive"))
+                killed.remove(msg.nodeId);
 
-            Node target = nodes.get(targetId);
+            Node target = nodes.get(msg.nodeId);
             if (target == null)
-                return false;
+                return "Error: No node with id " + msg.nodeId;
 
             comm.createSocket(target.ip, target.port);
-            comm.sendString(query);
+            comm.sendString(gson.toJson(msg));
             comm.closeSocket();
 
-            return false;
+            return msg.action + " query sent successfully to node " + msg.nodeId;
             
         }
         // Existing KV operations: Get/Delete key or Put key value
@@ -130,14 +131,16 @@ public class ClientImp {
             || (split.length == 3 && split[0].equals("Put"))
         ) {
             Node n = map.getShard(split[1]).get(killed);
+            DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null);
 
             comm.createSocket(n.ip, n.port);
-            comm.sendString(query);
+            comm.sendString(gson.toJson(msg));
+
+            return msg.type + " query sent successfully to node " + n.id;
         }
         else {
-            return false;
+            return "Error: Invalid query format";
         }
-        return true;
     }
 
     /**

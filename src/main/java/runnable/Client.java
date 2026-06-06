@@ -34,12 +34,13 @@ public class Client {
       while(true) {
          String query = br.readLine();
 
-         if (!client.sendQuery(query)) {
-            System.out.println("Kill msg or invalid");
-            continue;
+         System.out.println(client.sendQuery(query));
+         try {
+            String response = client.getResponse();
+            System.out.println(response);
+         } catch (Exception e) {
+            System.out.println("Error getting response");
          }
-         String response = client.getResponse();
-         System.out.println(response);
       }
    }
 }

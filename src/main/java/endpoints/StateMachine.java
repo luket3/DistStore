@@ -13,7 +13,10 @@ import java.util.HashMap;
 
 import communication.Comm;
 import communication.Pipe;
-import message.MessageInfo;
+
+import message.Message;
+import message.DictMsg;
+import message.Reply;
 
 /**
  * Per-connection server worker that executes simple key-value queries.
@@ -28,12 +31,12 @@ public class StateMachine implements Runnable {
     Pipe inPipe;
     String nodeId;
 
-    HashMap<String, Comm> clientInfo = new HashMap<>();
-    String returnCode;
+    HashMap<Integer, Comm> clientInfo = new HashMap<>();
+    int returnCode;
 
 
     StateMachine(Pipe pipe, String nodeId) throws Exception {
-        this.returnCode = "0";
+        this.returnCode = 0;
         this.inPipe = pipe;
         this.nodeId = nodeId;
         this.comm = new Comm();
@@ -57,26 +60,32 @@ public class StateMachine implements Runnable {
      * @param query textual query to execute
      * @return result string or "null" when no value exists / invalid query
      */
-    public String parseQuery(MessageInfo query) {
-        String[] split = query.message.split(" ");
+    public String parseQuery(Message query) {
         String res;
-        
-        returnCode = split[0];
-        String messageType = split[1];
 
-        if (messageType.equals("Reply")) {
-            clientInfo.put(returnCode, query.comm);
+        // Handle Reply messages by storing the client Comm for later response sending
+        if (query.type.equals("Reply")) {
+            Reply reply = (Reply) query;
+            clientInfo.put(reply.reply_num, reply.comm);
             return "no response";
         }
 
-        if (messageType.equals("Get"))
-            res = store.get(split[2]);
-        else if (messageType.equals("Put"))
-            res = store.put(split[2], split[3]);
-        else if (messageType.equals("Delete"))
-            res = store.remove(split[2]);
+        // Only process DictMsg queries in store
+        if (!query.type.equals("DictMsg")) {
+            return "store operation failed: unsupported message type " + query.type;
+        }
+
+        // Process DictMsg queries and execute the corresponding store operation
+        DictMsg dictMsg = (DictMsg) query;
+        returnCode = dictMsg.reply_num;
+        if (dictMsg.action.equals("Get"))
+            res = store.get(dictMsg.key);
+        else if (dictMsg.action.equals("Put"))
+            res = store.put(dictMsg.key, dictMsg.value);
+        else if (dictMsg.action.equals("Delete"))
+            res = store.remove(dictMsg.key);
         else
-            res = "null";
+            res = "store operation failed: unsupported action " + dictMsg.action;
 
         if (res == null)
             res = "null";
@@ -88,9 +97,8 @@ public class StateMachine implements Runnable {
 
         while (true) {
             try {
-                MessageInfo query = inPipe.takeAll();
-                String logMessage = "Node:" + nodeId + " recieved command:"
-                        + query.message;
+                Message query = inPipe.take();
+                String logMessage = "Node:" + nodeId + " recieved command:";
                 System.out.println(logMessage);
 
                 String response = parseQuery(query);

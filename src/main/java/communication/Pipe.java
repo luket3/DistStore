@@ -11,15 +11,15 @@ package communication;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import message.MessageInfo;
+import message.Message;
 
 /**
- * Thread-safe pipe for passing {@link MessageInfo} messages between threads.
+ * Thread-safe pipe for passing {@link Message} messages between threads.
  * Implements an unbounded buffer with blocking take operations and
  * timeout support.
  */
 public class Pipe {
-    private final Queue<MessageInfo> queue;
+    private final Queue<Message> queue;
 
     /**
      * Creates an unbounded pipe.
@@ -34,12 +34,7 @@ public class Pipe {
      *
      * @param message the message to put into the pipe
      */
-    public synchronized void put(String message) {
-        queue.add(new MessageInfo(message));
-        notifyAll(); // Notify threads waiting to take
-    }
-
-    public synchronized void put(MessageInfo message) {
+    public synchronized void put(Message message) {
         queue.add(message);
         notifyAll(); // Notify threads waiting to take
     }
@@ -54,7 +49,7 @@ public class Pipe {
     * @throws InterruptedException if the current thread is interrupted while
     *                              waiting
      */
-    public synchronized MessageInfo takeAll(
+    public synchronized Message take(
         long timeoutMillis
     ) throws InterruptedException {
         long startTime = System.currentTimeMillis();
@@ -74,36 +69,13 @@ public class Pipe {
             }
         }
 
-        MessageInfo msg = queue.poll();
+        Message msg = queue.poll();
         // Notify threads waiting to put (though not needed for unbounded)
         notifyAll();
         return msg;
     }
 
-    public synchronized MessageInfo takeAll() throws InterruptedException {
-        return takeAll(0); // 0 means wait indefinitely
-    }
-
-    public synchronized String take(
-        long timeoutMillis
-    ) throws InterruptedException {
-        MessageInfo msg = takeAll(timeoutMillis);
-        if (msg == null) {
-            return null;
-        }
-        return msg.message;
-    }
-
-    /**
-    * Takes a message from the pipe, blocking indefinitely until a message
-    * is available.
-     * This method is provided for backward compatibility.
-     *
-     * @return the message taken from the pipe
-    * @throws InterruptedException if the current thread is interrupted while
-    *                              waiting
-     */
-    public synchronized String take() throws InterruptedException {
+    public synchronized Message take() throws InterruptedException {
         return take(0); // 0 means wait indefinitely
     }
 
