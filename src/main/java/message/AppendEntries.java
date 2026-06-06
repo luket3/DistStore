@@ -12,7 +12,7 @@ public class AppendEntries extends Message {
     public ArrayList<LogEntry> entries;
 
     public AppendEntries(int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries) {
-        this.type = "AppendEntries";
+        super("AppendEntries");
         this.term = term;
         this.leaderId = leaderId;
         this.prevLogIndex = prevLogIndex;

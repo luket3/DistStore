@@ -15,6 +15,8 @@ import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Simple consistent-hash implementation that maps keys to {@link Shard}
@@ -136,6 +138,21 @@ public class ConsistentHashMap {
         return null;
     }
 
+    public Map<String, Node> getAllNodes() {
+        Map<String, Node> nodes = new HashMap<>();
+        HashSet<Shard> visitedShards = new HashSet<>();
+    
+        for (Shard shard : ring.values()) {
+            if (!visitedShards.contains(shard)) {
+                visitedShards.add(shard);
+                for (Node n : shard.getAllNodes().values()) {
+                nodes.put(n.id, n);
+                }
+            }
+        }
+        return nodes;
+    }
+
     /**
      * Compute a 64-bit value from the MD5 digest of the provided string.
      *
@@ -175,6 +192,5 @@ public class ConsistentHashMap {
 
             System.out.println();
         }
-        System.out.println();
     }
 }

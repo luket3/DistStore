@@ -24,6 +24,7 @@ public class MessageDeserializer implements JsonDeserializer<Message> {
             case "Reply" -> ctx.deserialize(json, Reply.class);
             case "RequestVote" -> ctx.deserialize(json, RequestVote.class);
             case "RequestVoteReply" -> ctx.deserialize(json, RequestVoteReply.class);
+            case "Config" -> ctx.deserialize(json, Config.class);
             default -> throw new JsonParseException("Unknown message type: " + type);
         };
     }

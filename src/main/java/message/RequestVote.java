@@ -7,7 +7,7 @@ public class RequestVote extends Message {
     public int lastLogTerm;
 
     public RequestVote(int term, String candidateId, int lastLogIndex, int lastLogTerm) {
-        this.type = "RequestVote";
+        super("RequestVote");
         this.term = term;
         this.candidateId = candidateId;
         this.lastLogIndex = lastLogIndex;

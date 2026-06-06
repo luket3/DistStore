@@ -5,7 +5,7 @@ public class NodeMsg extends Message {
     public String nodeId;
 
     public NodeMsg(String action, String nodeId) {
-        this.type = "NodeMsg";
+        super("NodeMsg");
         this.action = action;
         this.nodeId = nodeId;
     }

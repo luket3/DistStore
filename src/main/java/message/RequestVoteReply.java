@@ -6,7 +6,7 @@ public class RequestVoteReply extends Message {
     public boolean voteGranted;
 
     public RequestVoteReply(int term, String senderId, boolean voteGranted) {
-        this.type = "RequestVoteReply";
+        super("RequestVoteReply");
         this.term = term;
         this.senderId = senderId;
         this.voteGranted = voteGranted;

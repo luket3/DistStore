@@ -7,7 +7,7 @@ public class DictMsg extends Message {
     public int reply_num;
 
     public DictMsg(String action, String key, String value) {
-        this.type = "DictMsg";
+        super("DictMsg");
         this.action = action;
         this.key = key;
         this.value = value;

@@ -1,6 +1,7 @@
 message/RequestVoteReply.class
 raft/LogEntry.class
 runnable/StartNodes.class
+message/Config.class
 message/DictMsg.class
 endpoints/StateMachine.class
 communication/Listener.class

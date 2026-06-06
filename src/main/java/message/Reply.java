@@ -7,7 +7,7 @@ public class Reply extends Message {
     public int reply_num;
 
     public Reply(Comm comm, int reply_num) {
-        this.type = "Reply";
+        super("Reply");
         this.comm = comm;
         this.reply_num = reply_num;
     }

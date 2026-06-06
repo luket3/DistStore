@@ -28,7 +28,8 @@ public class Client {
      */
    public static void main(String[] args) throws Exception {
       ClientImp client = new ClientImp();
-      client.addNodes();
+      client.addSeeds();
+      client.initCluster();
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
       while(true) {

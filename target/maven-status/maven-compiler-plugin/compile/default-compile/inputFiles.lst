@@ -10,6 +10,7 @@
 /home/croissant/projects/DistStore/src/main/java/luket3/App.java
 /home/croissant/projects/DistStore/src/main/java/message/AppendEntries.java
 /home/croissant/projects/DistStore/src/main/java/message/AppendEntriesReply.java
+/home/croissant/projects/DistStore/src/main/java/message/Config.java
 /home/croissant/projects/DistStore/src/main/java/message/DictMsg.java
 /home/croissant/projects/DistStore/src/main/java/message/Message.java
 /home/croissant/projects/DistStore/src/main/java/message/MessageDeserializer.java

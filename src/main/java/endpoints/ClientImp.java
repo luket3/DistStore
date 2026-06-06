@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.gson.Gson;
 
@@ -23,6 +24,7 @@ import cluster.Node;
 import communication.Comm;
 import message.DictMsg;
 import message.NodeMsg;
+import message.Config;
 
 /**
  * Client for the distributed key-value store.
@@ -53,7 +55,6 @@ public class ClientImp {
      */
     public ClientImp() throws Exception {
         comm = new Comm();
-        map = new ConsistentHashMap();
         nodes = new HashMap<>();
         killed = new HashSet<>();
         gson = new Gson();
@@ -69,7 +70,7 @@ public class ClientImp {
      *
      * @throws Exception if the configuration file cannot be read or parsed
      */
-    public void addNodes() throws Exception {
+    public void addSeeds() throws Exception {
         List<String> fileData =
             Files.readAllLines(Paths.get("network.config"));
 
@@ -80,8 +81,39 @@ public class ClientImp {
                     split[1],
                     Integer.parseInt(split[2])
             );
-            map.addNode(n);
             nodes.put(n.id, n);
+        }
+    }
+
+    public void initCluster() {
+        // get a random node from the cluster to use as the initial point for the consistent hash map
+        Node n = nodes.values()
+                   .stream()
+                   .skip(ThreadLocalRandom.current().nextInt(nodes.size()))
+                   .findFirst()
+                   .orElse(null);
+
+        Config configMsg = new Config();
+
+        String response = null;
+        try {
+            comm.createSocket(n.ip, n.port);
+            String json = gson.toJson(configMsg);
+            comm.sendString(json);
+            response = comm.readString();
+        } catch (Exception e) {
+            System.out.println("Error initializing client map: " + e);
+        }
+
+        Config responseMsg = gson.fromJson(response, Config.class);
+        map = responseMsg.config;
+        nodes = map.getAllNodes();
+
+        System.out.println("Client initialized with cluster configuration:");
+        map.print();
+        System.out.println("Node lookup map:");
+        for (Map.Entry<String, Node> entry : nodes.entrySet()) {
+            System.out.println("  " + entry.getKey() + " -> " + entry.getValue().ip + ":" + entry.getValue().port);
         }
     }
 

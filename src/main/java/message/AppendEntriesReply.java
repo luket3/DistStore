@@ -7,7 +7,7 @@ public class AppendEntriesReply extends Message {
     public int matchIndex;
 
     public AppendEntriesReply(int term, String senderId, boolean success, int matchIndex) {
-        this.type = "AppendEntriesReply";
+        super("AppendEntriesReply");
         this.term = term;
         this.senderId = senderId;
         this.success = success;

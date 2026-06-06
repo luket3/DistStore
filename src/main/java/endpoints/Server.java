@@ -26,6 +26,7 @@ import message.Message;
 import message.MessageDeserializer;
 import message.DictMsg;
 import message.Reply;
+import message.Config;
 
 /**
  * Server runner program that initializes listening sockets and spawns a
@@ -83,19 +84,31 @@ public class Server {
         stateMachineIn = new Pipe();
     }
 
+    public static void replyConfig(Comm comm) {
+        Config configMsg = new Config(nodes);
+
+        try {
+            String json = gson.toJson(configMsg);
+            comm.sendString(json);
+        } catch (Exception e) {
+            System.out.println("Error sending config reply: " + e);
+        }
+    }
+
     /**
      * Accept a connection, determine if it's a Raft or client request,
      * and route it appropriately via the pipes.
      *
      * @throws Exception on socket accept or thread creation errors
      */
-    public static void handOff() throws Exception {
+    public static void handleConnection() throws Exception {
 
         Comm comm = new Comm(listener.listenForConnection());
         String request = comm.readString();
         Message msg = gson.fromJson(request, Message.class);
 
         if (msg.type.equals("DictMsg")) {
+            // if it's a client request, assign a return code and trigger state machine response
             DictMsg dictMsg = (DictMsg) msg;
             if (dictMsg.reply_num == -1) {
                 dictMsg.reply_num = returnCode;
@@ -105,6 +118,9 @@ public class Server {
                 stateMachineIn.put(reply);
                 returnCode += 1;
             }
+        } else if (msg.type.equals("Config")) {
+            // return the current cluster configuration for client queries
+            replyConfig(comm);
         }
 
         raftIn.put(msg);
@@ -140,7 +156,7 @@ public class Server {
          */
         listener.createSocket(port);
         while (true) {
-            handOff();
+            handleConnection();
         }
     }
 }
