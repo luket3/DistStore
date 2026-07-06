@@ -168,4 +168,8 @@ public class Shard {
         }
         return allNodes;
     }
+
+    public int size() {
+        return length;
+    }
 }

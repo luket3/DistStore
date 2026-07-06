@@ -41,6 +41,8 @@ public class ConsistentHashMap {
     /** Monotonically-increasing identifier used when creating new shards. */
     private int currShardId = 0;
 
+    public int numShards = 0;
+
     /**
      * Add a new shard to the ring. If {@code shard} is {@code null} a new
      * empty {@link Shard} is allocated and placed on the ring.
@@ -53,6 +55,7 @@ public class ConsistentHashMap {
         for (int i = 0; i < virtualShards; i++)
             ring.put(Hash("shard"+currShardId+i),shard);
         currShardId++;
+        numShards++;
     }
 
     /**
@@ -66,6 +69,7 @@ public class ConsistentHashMap {
         for (Node n : leftOver) {
             addNode(n);
         }
+        numShards--;
     }
 
     /**

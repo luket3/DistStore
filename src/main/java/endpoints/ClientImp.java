@@ -141,19 +141,19 @@ public class ClientImp {
 
             NodeMsg msg = new NodeMsg(split[0], split[1]);
             if (msg.action.equals("Kill"))
-                killed.add(msg.nodeId);
+                killed.add(msg.node.id);
             else if (msg.action.equals("Revive"))
-                killed.remove(msg.nodeId);
+                killed.remove(msg.node.id);
 
-            Node target = nodes.get(msg.nodeId);
+            Node target = nodes.get(msg.node.id);
             if (target == null)
-                return "Error: No node with id " + msg.nodeId;
+                return "Error: No node with id " + msg.node.id;
 
             comm.createSocket(target.ip, target.port);
             comm.sendString(gson.toJson(msg));
             comm.closeSocket();
 
-            return msg.action + " query sent successfully to node " + msg.nodeId;
+            return msg.action + " query sent successfully to node " + msg.node.id;
             
         }
         // Existing KV operations: Get/Delete key or Put key value

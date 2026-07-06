@@ -38,3 +38,11 @@ mvn exec:java -Dexec.mainClass=runnable.StartNodes
 
 client:
 mvn exec:java -Dexec.mainClass=runnable.Client
+
+okay so currently clusterState sends a distribute data message followed by a updateNodes message
+
+the distribute data message should be sent straight to the state machine where it's data should be distributed accordingly, or deleted depending on weather it was the leader that sent the message, maybe add an action field where it's either distribute or send depending on if it's a leader or not
+
+every single dict message should be sent with a version number, if message with a later cluster version is recieved the node should hold off on executing until it's version has caught up with the version of the message. 
+
+if a node recieves a version lower than it's current version, it should respond with a config reply so that client can update it's cluster version
