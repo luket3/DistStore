@@ -75,6 +75,7 @@ public class Candidate extends Role {
 
         // Broadcast RequestVote RPCs to the other cluster nodes.
         RequestVote RVmsg = new RequestVote(
+            raftState.level,
             raftState.term,
             raftState.id,
             raftState.log.getLastIdx(),

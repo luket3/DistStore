@@ -21,21 +21,25 @@ public class RaftState {
     public HashMap<String, Integer> matchIndex;
     public HashMap<String, Integer> nextIndex;
     public Gson gson;
+    public int version;
+    public String level;
 
     public RaftState(
-            Map<String, Node> clusterNodes,
             String nodeId,
-            Pipe stateMachineIn
+            Pipe stateMachineIn,
+            String level
     ) {
-        this.nodes = clusterNodes;
+        this.nodes = null;
         this.id = nodeId;
         this.log = new RaftLog(stateMachineIn);
         this.term = 0;
         this.votedFor = null;
         this.leader = null;
-        this.numberOfNodes = clusterNodes.size();
+        this.numberOfNodes = -1;
         this.type = "follower";
         this.gson = new Gson();
+        this.version = -1;
+        this.level = level;
     }
 
     /**

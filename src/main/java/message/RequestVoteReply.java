@@ -1,12 +1,12 @@
 package message;
 
-public class RequestVoteReply extends Message {
+public class RequestVoteReply extends RaftMsg {
     public int term;
     public String senderId;
     public boolean voteGranted;
 
-    public RequestVoteReply(int term, String senderId, boolean voteGranted) {
-        super("RequestVoteReply");
+    public RequestVoteReply(String level, int term, String senderId, boolean voteGranted) {
+        super("RequestVoteReply", level);
         this.term = term;
         this.senderId = senderId;
         this.voteGranted = voteGranted;

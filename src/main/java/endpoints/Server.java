@@ -16,8 +16,6 @@ import java.nio.file.Paths;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import cluster.ConsistentHashMap;
-import cluster.Node;
 import communication.Comm;
 import communication.Listener;
 import communication.Pipe;
@@ -26,7 +24,8 @@ import message.Message;
 import message.MessageDeserializer;
 import message.DictMsg;
 import message.Reply;
-import message.Config;
+import message.RaftMsg;
+import cluster.ClusterState;
 
 /**
  * Server runner program that initializes listening sockets and spawns a
@@ -34,14 +33,15 @@ import message.Config;
  */
 public class Server {
     public static Listener listener;
-    public static ConsistentHashMap nodes;
     public static String nodeId;
     public static int port;
-    public static Pipe raftIn;
+    public static Pipe ShardRaftIn;
     public static Pipe stateMachineIn;
     public static int returnCode;
-    public static Thread raft;
     public static Gson gson;
+    public static Pipe ClusterStateIn;
+    public static Pipe ClusterRaftIn;
+    public static List<String> configData;
 
 
     /**
@@ -59,40 +59,20 @@ public class Server {
         nodeId = args[0];
         port = Integer.parseInt(args[1]);
         returnCode = 0;
-        nodes = new ConsistentHashMap();
 
         try {
-            List<String> fileData =
+            configData =
                 Files.readAllLines(Paths.get("network.config"));
-
-            for (String line : fileData) {
-                String[] split = line.split(",");
-                nodes.addNode(new Node(
-                        split[0],
-                        split[1],
-                        Integer.parseInt(split[2])
-                ));
-
-                //nodes.print();
-            }
         } catch (Exception e) {
             System.out.println("Error reading network configuration: " + e);
             System.exit(1);
         }
 
-        raftIn = new Pipe();
+        ShardRaftIn = new Pipe();
         stateMachineIn = new Pipe();
-    }
 
-    public static void replyConfig(Comm comm) {
-        Config configMsg = new Config(nodes);
-
-        try {
-            String json = gson.toJson(configMsg);
-            comm.sendString(json);
-        } catch (Exception e) {
-            System.out.println("Error sending config reply: " + e);
-        }
+        ClusterRaftIn = new Pipe();
+        ClusterStateIn = new Pipe();
     }
 
     /**
@@ -118,12 +98,26 @@ public class Server {
                 stateMachineIn.put(reply);
                 returnCode += 1;
             }
+            ShardRaftIn.put(msg);
         } else if (msg.type.equals("Config")) {
             // return the current cluster configuration for client queries
-            replyConfig(comm);
-        }
+            ClusterStateIn.put(new message.Reply(comm));
+            return;
+        } else if (msg.type.equals("NodeMsg")) {
+            // if it's a cluster membership update, forward to ClusterState
+            ClusterRaftIn.put(msg);
+            return;
+        } else if (msg.type.equals("AppendEntries") || msg.type.equals("RequestVote") || msg.type.equals("AppendEntriesReply") || msg.type.equals("RequestVoteReply")) {
+            // if it's a Raft message, forward to the appropriate Raft instance
+            RaftMsg raftMsg = (RaftMsg) msg;
 
-        raftIn.put(msg);
+            if (raftMsg.level.equals("Shard")) {
+                ShardRaftIn.put(msg);
+            } else if (raftMsg.level.equals("Cluster")) {
+                ClusterRaftIn.put(msg);
+            }
+            return;
+        }
     }
 
     /**
@@ -137,19 +131,38 @@ public class Server {
 
         // start Raft instance in separate thread to handle
         // cluster communication
-        raft = new Thread(new Raft(
-                raftIn,
+        Thread ShardRaft = new Thread(new Raft(
+                ShardRaftIn,
                 stateMachineIn,
-                nodes.getShardWithNode(nodeId).getAllNodes(),
-                nodeId
+                nodeId,
+                "Shard"
         ));
-        raft.start();
+        ShardRaft.start();
+
+        Thread ClusterRaft = new Thread(new Raft(
+                ClusterRaftIn,
+                ClusterStateIn,
+                nodeId,
+                "Cluster"
+        ));
+        ClusterRaft.start();
 
         // start state machine instance in separate thread to handle
         // client queries
         Thread stateMachine = new Thread(
                 new StateMachine(stateMachineIn, nodeId));
         stateMachine.start();
+
+        Thread clusterState = new Thread(
+                new ClusterState(
+                        ClusterStateIn,
+                        configData,
+                        nodeId,
+                        ShardRaftIn,
+                        ClusterRaftIn
+                )
+        );
+        clusterState.start();
 
         /*
          * Main server loop: listen for incoming connections and pass to Raft

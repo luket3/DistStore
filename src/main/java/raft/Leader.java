@@ -134,6 +134,7 @@ public class Leader extends Role {
                                 raftState.log.get(prevLogIndex).term : 0;
 
         AppendEntries AEmsg = new AppendEntries(
+            raftState.level,
             raftState.term,
             raftState.id,
             prevLogIndex,

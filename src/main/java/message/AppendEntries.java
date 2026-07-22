@@ -3,7 +3,7 @@ package message;
 import java.util.ArrayList;
 import raft.LogEntry;
 
-public class AppendEntries extends Message {
+public class AppendEntries extends RaftMsg {
     public int term;
     public String leaderId;
     public int prevLogIndex;
@@ -11,8 +11,8 @@ public class AppendEntries extends Message {
     public int leaderCommit;
     public ArrayList<LogEntry> entries;
 
-    public AppendEntries(int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries) {
-        super("AppendEntries");
+    public AppendEntries(String level, int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries) {
+        super("AppendEntries", level);
         this.term = term;
         this.leaderId = leaderId;
         this.prevLogIndex = prevLogIndex;

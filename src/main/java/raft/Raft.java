@@ -8,9 +8,6 @@ package raft;
  * Description: Partial Raft role implementation for handling incoming RPCs.
  */
 
-import java.util.Map;
-
-import cluster.Node;
 import communication.Pipe;
 import message.Message;
 import message.NodeMsg;
@@ -32,17 +29,19 @@ public class Raft implements Runnable {
     private static final int ELECTION_TIMEOUT_MAX_MS = 5000; // 5 seconds
     String nodeId;
     boolean alive;
+    String level;
 
     public Raft(
         Pipe inPipe,
         Pipe outPipe,
-        Map<String, Node> clusterNodes,
-        String nodeId
+        String nodeId,
+        String level
     ) {
-        node = new RaftNode(clusterNodes, nodeId, outPipe);
+        node = new RaftNode(nodeId, outPipe, level);
         this.inPipe = inPipe;
         this.outPipe = outPipe;
         this.nodeId = nodeId;
+        this.level = level;
         this.alive = true;
     }
 

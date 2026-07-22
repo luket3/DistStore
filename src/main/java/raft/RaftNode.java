@@ -1,8 +1,4 @@
 package raft;
-
-import java.util.Map;
-
-import cluster.Node;
 import communication.Pipe;
 import message.Message;
 
@@ -20,12 +16,12 @@ public class RaftNode {
      * Constructor initializes common Raft state.
      */
     public RaftNode(
-            Map<String, Node> clusterNodes,
             String id,
-            Pipe stateMachineIn
+            Pipe stateMachineIn,
+            String level
     ) {
         // Initialize shared state in Role base class
-        raftState = new RaftState(clusterNodes, id, stateMachineIn);
+        raftState = new RaftState(id, stateMachineIn, level);
 
         // Initialize role instances
         this.candidateRole = new Candidate(raftState);

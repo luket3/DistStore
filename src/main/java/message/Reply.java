@@ -11,5 +11,11 @@ public class Reply extends Message {
         this.comm = comm;
         this.reply_num = reply_num;
     }
+
+    public Reply(Comm comm) {
+        super("Reply");
+        this.comm = comm;
+        this.reply_num = -1;
+    }
     
 }
