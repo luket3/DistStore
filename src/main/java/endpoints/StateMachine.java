@@ -18,6 +18,8 @@ import message.Message;
 import message.DictMsg;
 import message.Reply;
 
+import com.google.gson.Gson;
+
 /**
  * Per-connection server worker that executes simple key-value queries.
  *
@@ -30,16 +32,18 @@ public class StateMachine implements Runnable {
     Comm comm;
     Pipe inPipe;
     String nodeId;
+    Gson gson;
 
     HashMap<Integer, Comm> clientInfo = new HashMap<>();
     int returnCode;
 
 
-    StateMachine(Pipe pipe, String nodeId) throws Exception {
+    StateMachine(Pipe inPipe, String nodeId) throws Exception {
         this.returnCode = 0;
-        this.inPipe = pipe;
+        this.inPipe = inPipe;
         this.nodeId = nodeId;
         this.comm = new Comm();
+        this.gson = new Gson();
     }
 
     private void sendResponse(String response) throws Exception {
@@ -48,11 +52,22 @@ public class StateMachine implements Runnable {
             return;
         }
 
-        System.out.println("Node:" + nodeId + " sending response:" + response);
+        System.out.println("Node:" + nodeId + " StateMachine: sending response:" + response);
         client.sendString(response);
         client.closeSocket();
         clientInfo.remove(returnCode);
     }
+
+    // update to fit new logic
+    // send message wait for ack then send next message
+
+    // sort data, start at beginning, then send data at index response.index + 1
+    // when recieved ack for last data send a message to all nodes indicating that data is redistributed and phase can be updated
+    // this message is UpdateNodes message with action = "Finalise"
+    // remember timeout and try next node in shard if no response
+
+    // what happens if node dies between getting data and propogating to raft?????
+    // could send to all nodes in shard, only leader commits them????
 
     /**
      * Execute a simple key-value query against the shared store.
@@ -98,8 +113,7 @@ public class StateMachine implements Runnable {
         while (true) {
             try {
                 Message query = inPipe.take();
-                String logMessage = "Node:" + nodeId + " recieved command:";
-                System.out.println(logMessage);
+                System.out.println("Node:" + nodeId + " StateMachine: recieved command:");
 
                 String response = parseQuery(query);
 

@@ -6,9 +6,9 @@ import java.util.Collections;
 import cluster.Node;
 
 import message.Message;
+import message.RaftConfig;
 import message.AppendEntriesReply;
 import message.AppendEntries;
-import message.DictMsg;
 
 /**
  * Leader role for Raft consensus.
@@ -19,15 +19,13 @@ public class Leader extends Role {
         super(raftState);
     }
 
-    public void processClientCommand(Message command) {
+    public void appendLogEntry(Message msg) {
         // Handle a client command when this node is the leader.
         // Format: ClientCommand <command>
-        DictMsg cmdMsg = (DictMsg) command;
-        System.out.println("Leader " + raftState.id + " processing client command: " + raftState.gson.toJson(cmdMsg));
+        System.out.println(raftState.level + ": Leader " + raftState.id + " appending log entry");
 
         // Append the command to the log as an uncommitted entry
-        System.out.println("Leader processing client command: " + command);
-        raftState.log.appendEntry(cmdMsg, raftState.term);
+        raftState.log.appendEntry(msg, raftState.term);
         // Update own matchIndex to reflect the new entry
         raftState.matchIndex.put(raftState.id, raftState.log.getLastIdx());
 
@@ -39,7 +37,7 @@ public class Leader extends Role {
         // acting as leader.
         // Format: AppendEntries <term> <senderID> <success> <matchIndex>
         AppendEntriesReply AEReply = (AppendEntriesReply) messageParts;
-        System.out.println("Leader " + raftState.id + " received: " + raftState.gson.toJson(AEReply));
+        System.out.println(raftState.level + ": Leader " + raftState.id + " received: " + raftState.gson.toJson(AEReply));
 
         // Update term and revert to follower if we see a higher term
         if (AEReply.term > raftState.term) {
@@ -94,7 +92,7 @@ public class Leader extends Role {
                 int truncateTo = K - 1;
 
                 if (truncateTo < raftState.log.getLastIdx()) {
-                    System.out.println("Leader: truncating uncommitted entries to index " + truncateTo);
+                    System.out.println(raftState.level + ": Leader: truncating uncommitted entries to index " + truncateTo);
                     raftState.log.clearTo(truncateTo);
 
                     // Ensure matchIndex and nextIndex are consistent with truncated log
@@ -115,7 +113,7 @@ public class Leader extends Role {
     }
 
     public void broadcastAppendEntries() {
-        System.out.println("leader node: " + raftState.id + 
+        System.out.println(raftState.level + ": leader node: " + raftState.id + 
                            " broadcasting append entries message");
 
         for (Node node : raftState.nodes.values()) {
@@ -141,11 +139,17 @@ public class Leader extends Role {
             prevLogTerm,
             raftState.log.getCommitIdx(),
             raftState.log.get(raftState.nextIndex.get(node.id),
-                                            raftState.log.getLastIdx())
+                                            raftState.log.getLastIdx()),
+            raftState.version
         );
 
         sendToNode(node,
             raftState.gson.toJson(AEmsg)
         );
+    }
+
+    public void NewConfig() {
+        System.out.println(raftState.level + ": leader " + raftState.id + " appending new config message");
+        appendLogEntry(new RaftConfig(raftState.nodes,raftState.nodesVersion));
     }
 }

@@ -1,7 +1,7 @@
 package raft;
 
 import cluster.Node;
-import communication.Comm;
+import communication.HandOff;
 
 /**
  * Base class for Raft node roles (Follower, Leader, Candidate).
@@ -21,17 +21,6 @@ public abstract class Role {
      * @param message message to send
      */
     protected void sendToNode(Node node, String message) {
-        System.out.println("Sending message to node " + 
-                            node.id + ": " + 
-                            message);
-        try {
-             Comm comm = new Comm();
-             comm.createSocket(node.ip, node.port);
-             comm.sendString(message);
-             comm.closeSocket();
-        } catch (Exception e) {
-            System.err.println("Failed to send message to node "
-                    + node.id);
-        }
+        HandOff.sendToNode(node,message);
     }
 }

@@ -26,7 +26,7 @@ public class Follower extends Role {
         // Parse RequestVote RPC parameters from messageParts
         // Format: RequestVote <term> <candidateId> <lastLogIndex> <lastLogTerm>
         RequestVote RVmsg = (RequestVote) message;
-        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg));
+        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg));
 
         // Check current term and update if necessary
         if (RVmsg.term > raftState.term) {
@@ -58,7 +58,7 @@ public class Follower extends Role {
         }
 
         // Send vote grant status back to the candidate
-        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted);
+        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted, raftState.version);
         sendToNode(
             raftState.nodes.get(RVmsg.candidateId),
             raftState.gson.toJson(RVReply)
@@ -78,7 +78,7 @@ public class Follower extends Role {
         // Format: AppendEntries <term> <leaderId> <prevLogIndex>
         // <prevLogTerm> <leaderCommit> [entries...]
         AppendEntries AEmsg = (AppendEntries) message;
-        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(AEmsg));
+        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(AEmsg));
 
         // Update term and revert to follower if we see a higher term
         if (AEmsg.term > raftState.term) {
@@ -113,7 +113,7 @@ public class Follower extends Role {
 
                 raftState.log.clearTo(AEmsg.prevLogIndex);
                 for (LogEntry entry : AEmsg.entries) {
-                    raftState.log.appendEntry(entry.command, entry.term);
+                    raftState.log.appendEntry(entry.msg, entry.term);
                 }
             }
 
@@ -121,7 +121,7 @@ public class Follower extends Role {
             raftState.log.commitEntries(AEmsg.leaderCommit);
         }
 
-        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx());
+        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx(), raftState.version);
         sendToNode(
             raftState.leader,
             raftState.gson.toJson(AEReply)
@@ -131,7 +131,7 @@ public class Follower extends Role {
 
     public void handToLeader(Message message) {
         DictMsg cmdMsg = (DictMsg) message;
-        System.out.println("Follower " + raftState.id + " received: " + raftState.gson.toJson(cmdMsg));
+        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(cmdMsg));
 
         if (raftState.leader != null) {
             sendToNode(raftState.leader, raftState.gson.toJson(cmdMsg));

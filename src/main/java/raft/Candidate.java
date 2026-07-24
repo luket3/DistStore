@@ -3,8 +3,6 @@ package raft;
 import java.util.HashSet;
 import java.util.Set;
 
-import cluster.Node;
-import communication.Comm;
 import message.Message;
 import message.RequestVoteReply;
 import message.RequestVote;
@@ -28,7 +26,7 @@ public class Candidate extends Role {
         // Format: RequestVoteReply <term> <senderID> <voteGranted>
         
         RequestVoteReply RVReply = (RequestVoteReply) message;
-        System.out.println("Candidate " + raftState.id + " received: " + raftState.gson.toJson(RVReply));
+        System.out.println(raftState.level + ": Candidate " + raftState.id + " received: " + raftState.gson.toJson(RVReply));
 
         // Update term and revert to follower if we see a higher term
         if (RVReply.term > raftState.term) {
@@ -79,7 +77,8 @@ public class Candidate extends Role {
             raftState.term,
             raftState.id,
             raftState.log.getLastIdx(),
-            raftState.log.getLastTerm()
+            raftState.log.getLastTerm(),
+            raftState.version
         );
         broadcast(raftState.gson.toJson(RVmsg));
     }
@@ -90,21 +89,9 @@ public class Candidate extends Role {
      * @param message the message to broadcast
      */
     public void broadcast(String message) {
-        System.out.println("Broadcasting message to all nodes: " +
+        System.out.println(raftState.level + ": Candidate " + raftState.id + " Broadcasting message to all nodes: " +
                             message);
 
-        Comm comm = new Comm();
-        for (Node node : raftState.nodes.values()) {
-            if (!node.id.equals(raftState.id)) {
-                try {
-                    comm.createSocket(node.ip, node.port);
-                    comm.sendString(message);
-                    comm.closeSocket();
-                } catch (Exception e) {
-                    System.err.println("Failed to send message to node "
-                            + node.id);
-                }
-            }
-        }
+        communication.HandOff.broadcast(message, raftState.config.values(), raftState.id);
     }
 }

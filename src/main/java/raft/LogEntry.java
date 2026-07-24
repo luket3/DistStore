@@ -1,6 +1,6 @@
 package raft;
 
-import message.DictMsg;
+import message.Message;
 
 /*
  * File: log_entry.java
@@ -18,7 +18,7 @@ import message.DictMsg;
  */
 public class LogEntry {
     /** The command associated with this log entry. */
-    final DictMsg command;
+    final Message msg;
 
     /** Raft term when this entry was created. */
     final int term;
@@ -33,8 +33,8 @@ public class LogEntry {
      * @param term the term number
      * @param index the index in the log
      */
-    LogEntry(DictMsg command, int term, int index) {
-        this.command =  command;
+    LogEntry(Message msg, int term, int index) {
+        this.msg =  msg;
         this.term = term;
         this.index = index;
     }

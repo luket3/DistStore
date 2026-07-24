@@ -1,23 +1,24 @@
 package raft;
 
 import java.util.ArrayList;
-
 import communication.Pipe;
-
-import message.DictMsg;
+import message.Message;
+import message.RaftConfig;
 
 public class RaftLog {
     private ArrayList<LogEntry> committedLog;
     private ArrayList<LogEntry> uncommittedLog;
     private Pipe stateMachineIn;
+    private RaftState raftState;
 
-    public RaftLog(Pipe stateMachineIn) {
+    public RaftLog(Pipe stateMachineIn, RaftState raftState) {
         this.committedLog = new ArrayList<>();
         this.uncommittedLog = new ArrayList<>();
         this.stateMachineIn = stateMachineIn;
+        this.raftState = raftState;
     }
 
-    public void appendEntry(DictMsg command, int term) {
+    public void appendEntry(Message command, int term) {
         LogEntry newEntry = new LogEntry(
                 command,
                 term,
@@ -31,13 +32,16 @@ public class RaftLog {
                 && uncommittedLog.get(0).index <= upToIndex) {
             LogEntry entryToCommit = uncommittedLog.remove(0);
             committedLog.add(entryToCommit);
-            stateMachineIn.put(entryToCommit.command);
+            if (entryToCommit.msg.type.equals("DictMsg"))
+                stateMachineIn.put(entryToCommit.msg);
+            else if (entryToCommit.msg.type.equals("RaftConfig"));
+                raftState.initConfig(((RaftConfig)entryToCommit.msg).nodes);
         }
     }
 
-    public DictMsg getLastCommittedCommand() {
+    public Message getLastCommittedCommand() {
         if (!committedLog.isEmpty()) {
-            return committedLog.get(committedLog.size() - 1).command;
+            return committedLog.get(committedLog.size() - 1).msg;
         }
         return null; // No committed entries
     }
@@ -119,6 +123,11 @@ public class RaftLog {
     }
 
     public void clearUncommitted() {
+        uncommittedLog.clear();
+    }
+
+    public void wipe() {
+        committedLog.clear();
         uncommittedLog.clear();
     }
 }

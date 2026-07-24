@@ -1,6 +1,7 @@
 package raft;
 import communication.Pipe;
 import message.Message;
+import message.UpdateShard;
 
 /**
  * Base class for Raft implementations holding common state.
@@ -36,6 +37,23 @@ public class RaftNode {
      */
     public void handleMessage(Message message) {
 
+
+        if (message.type.equals("UpdateNodes") && message.version == raftState.version+1) {
+            UpdateShard castMsg = (UpdateShard) message;
+            if (castMsg.action.equals("Update") || castMsg.action.equals("Distribute")) {
+                // process update
+                raftState.startUpdate(castMsg);
+
+                if (raftState.type.equals("leader")) {
+                    leaderRole.NewConfig();
+                }
+
+            }
+            else if (castMsg.action.equals("Init")) {
+                raftState.initConfig(castMsg.nodes);
+            }
+        }
+
         // handle request vote, append entries and client command
         // this this.term is higher functions return
         if (message.type.equals("AppendEntries"))
@@ -51,7 +69,7 @@ public class RaftNode {
                 leaderRole.appendEntries(message);
             } else if (message.type.equals("DictMsg")){
                 // Handle client command
-                leaderRole.processClientCommand(message);
+                leaderRole.appendLogEntry(message);
             }
         } else if (raftState.type.equals("candidate")) {
             if (message.type.equals("RequestVoteReply")) {
@@ -61,6 +79,9 @@ public class RaftNode {
     }
 
     public void sendHeartbeat() {
+
+        System.out.println(raftState.level + ": Node " + raftState.id
+                                + " - Leader sending heartbeats.");
         this.leaderRole.broadcastAppendEntries();
     }
 
@@ -70,6 +91,9 @@ public class RaftNode {
 
     public void startElection() {
         // Transition to candidate state and start election process
+        System.out.println(raftState.level + ": Node " + raftState.id
+            + " - Election timeout elapsed. starting"
+            + " election.");
         this.candidateRole.startElection();
     }
 }

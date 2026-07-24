@@ -11,6 +11,8 @@ package runnable;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import endpoints.ClientImp;
 
@@ -27,13 +29,19 @@ public class Client {
      * @throws Exception if initialization fails
      */
    public static void main(String[] args) throws Exception {
-      ClientImp client = new ClientImp();
+      List<Thread> threads = new ArrayList<>();
+      ClientImp client = new ClientImp(threads);
+
       client.addSeeds();
       client.initCluster();
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
       while(true) {
          String query = br.readLine();
+
+         if (query.equals("exit") || query.equals("Exit")) {
+            break;
+         }
 
          System.out.println(client.sendQuery(query));
          try {
@@ -42,6 +50,11 @@ public class Client {
          } catch (Exception e) {
             System.out.println("Error getting response");
          }
+      }
+
+      // Wait for all threads to finish
+      for (Thread t : threads) {
+         t.join();
       }
    }
 }

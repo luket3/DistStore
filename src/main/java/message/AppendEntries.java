@@ -11,8 +11,8 @@ public class AppendEntries extends RaftMsg {
     public int leaderCommit;
     public ArrayList<LogEntry> entries;
 
-    public AppendEntries(String level, int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries) {
-        super("AppendEntries", level);
+    public AppendEntries(String level, int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries, int version) {
+        super("AppendEntries", level, version);
         this.term = term;
         this.leaderId = leaderId;
         this.prevLogIndex = prevLogIndex;

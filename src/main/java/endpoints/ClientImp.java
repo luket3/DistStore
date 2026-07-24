@@ -9,6 +9,7 @@ package endpoints;
  */
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.HashMap;
@@ -16,8 +17,6 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.gson.Gson;
-
-import java.util.HashSet;
 
 import cluster.ConsistentHashMap;
 import cluster.Node;
@@ -36,6 +35,7 @@ import message.Config;
 public class ClientImp {
     /** Map used to determine which shard holds a given key. */
     private ConsistentHashMap map;
+    private int version;
 
     /** Communication helper used to send/receive messages to nodes. */
     private Comm comm;
@@ -43,9 +43,8 @@ public class ClientImp {
     /** Raw node lookup by id. */
     private Map<String, Node> nodes;
 
-    private HashSet<String> killed;
-
     private Gson gson;
+    private List<Thread> threads;
 
     /**
      * Create a new {@code Client} instance and initialize communication and
@@ -53,11 +52,12 @@ public class ClientImp {
      *
      * @throws Exception if initialization of underlying components fails
      */
-    public ClientImp() throws Exception {
+    public ClientImp(List<Thread> threads) throws Exception {
         comm = new Comm();
         nodes = new HashMap<>();
-        killed = new HashSet<>();
         gson = new Gson();
+        version = -1;
+        this.threads = threads;
     }
 
     /**
@@ -108,6 +108,7 @@ public class ClientImp {
         Config responseMsg = gson.fromJson(response, Config.class);
         map = responseMsg.config;
         nodes = map.getAllNodes();
+        version = responseMsg.version;
 
         System.out.println("Client initialized with cluster configuration:");
         map.print();
@@ -136,34 +137,33 @@ public class ClientImp {
     public String sendQuery(String query) throws Exception {
         String[] split = query.split(" ");
 
-        // Handle Kill/Revive targeting a specific node id
-        if (split.length == 2 && (split[0].equals("Kill") || split[0].equals("Revive"))) {
-
-            NodeMsg msg = new NodeMsg(split[0], split[1]);
-            if (msg.action.equals("Kill"))
-                killed.add(msg.node.id);
-            else if (msg.action.equals("Revive"))
-                killed.remove(msg.node.id);
-
-            Node target = nodes.get(msg.node.id);
-            if (target == null)
-                return "Error: No node with id " + msg.node.id;
-
-            comm.createSocket(target.ip, target.port);
-            comm.sendString(gson.toJson(msg));
-            comm.closeSocket();
-
-            return msg.action + " query sent successfully to node " + msg.node.id;
-            
-        }
-        // Existing KV operations: Get/Delete key or Put key value
-        else if (
+        if (
             (split.length == 2
              && (split[0].equals("Get") || split[0].equals("Delete")))
             || (split.length == 3 && split[0].equals("Put"))
         ) {
-            Node n = map.getShard(split[1]).get(killed);
-            DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null);
+            Node n = map.getShard(split[1]).get(null);
+            DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null, version);
+
+            comm.createSocket(n.ip, n.port);
+            comm.sendString(gson.toJson(msg));
+
+            return msg.type + " query sent successfully to node " + n.id;
+        }
+        else if (split.length == 2 && (split[0].equals("Add") || split[0].equals("Remove"))) {
+            Node n = map.getShard(split[1]).get(null);
+
+            String nextPort = Files.readString(Path.of("nextPort.config"));
+            int nextPortInt = Integer.parseInt(nextPort);
+            Files.writeString(Path.of("nextPort.config"), String.valueOf(nextPortInt+1));
+
+            String command = "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
+                                n.id + " " + nextPort;
+            Thread t = new Thread(() -> runnable.StartNodes.runCommand(command));
+            threads.add(t);
+            t.start();
+
+            NodeMsg msg = new NodeMsg(split[0], split[1], version);
 
             comm.createSocket(n.ip, n.port);
             comm.sendString(gson.toJson(msg));

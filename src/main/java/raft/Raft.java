@@ -10,7 +10,6 @@ package raft;
 
 import communication.Pipe;
 import message.Message;
-import message.NodeMsg;
 
 /**
  * Partial Raft role implementation for handling incoming RPCs.
@@ -28,7 +27,6 @@ public class Raft implements Runnable {
     private static final int ELECTION_TIMEOUT_MIN_MS = 2000; // 2 seconds
     private static final int ELECTION_TIMEOUT_MAX_MS = 5000; // 5 seconds
     String nodeId;
-    boolean alive;
     String level;
 
     public Raft(
@@ -42,27 +40,6 @@ public class Raft implements Runnable {
         this.outPipe = outPipe;
         this.nodeId = nodeId;
         this.level = level;
-        this.alive = true;
-    }
-
-    public boolean checkKillMsg(Message msg) {
-        if (msg == null || !msg.type.equals("NodeMsg")) {
-            return false;
-        }
-
-        NodeMsg nodeMsg = (NodeMsg) msg;
-        System.out.println("Node " + nodeId + " received NodeMsg: " + nodeMsg.action);
-        if (nodeMsg.action.equals("Kill")) {
-            System.out.println("Node " + nodeId + " received kill message.");
-            alive = false;
-            return true;
-        }
-        else if (nodeMsg.action.equals("Revive")) {
-            System.out.println("Node " + nodeId + " received revive message.");
-            alive = true;
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -77,12 +54,10 @@ public class Raft implements Runnable {
                 long timeoutMs;
                 long now = System.currentTimeMillis();
 
-                if (node.getRole().equals("leader") && alive) {
+                if (node.getRole().equals("leader")) {
                     // Leaders send heartbeats on a fixed interval.
                     if (lastHeartbeatTime == -1
                             || now - lastHeartbeatTime >= HEARTBEAT_INTERVAL_MS) {
-                        System.out.println("Node " + nodeId
-                                + " - Leader sending heartbeats.");
                         lastHeartbeatTime = now;
                         node.sendHeartbeat();
                     }
@@ -97,11 +72,6 @@ public class Raft implements Runnable {
                 }
 
                 Message message = inPipe.take(Math.max(1, timeoutMs));
-                
-                if ((checkKillMsg(message)) || !alive) {
-                    System.out.println(message.type + ": message failed to be delivered to node: " + this.nodeId);
-                    continue;
-                }
 
                 // If we get a message (not null), process it
                 if (message != null) {
@@ -114,9 +84,6 @@ public class Raft implements Runnable {
                     if (node.getRole().equals("follower")
                         || node.getRole().equals("candidate")) {
                         // Follower or candidate timeout: start election
-                        System.out.println("Node " + nodeId
-                                + " - Election timeout elapsed. starting"
-                                + " election.");
                         node.startElection();
                     }
                     // Leaders do not timeout the same way because they

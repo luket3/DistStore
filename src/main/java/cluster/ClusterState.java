@@ -62,11 +62,12 @@ public class ClusterState implements Runnable {
         this.currShardID = currShard.id;
         this.currShardSize = currShard.size();
 
-        ShardRaft.put(new message.UpdateNodes(currShard.getAllNodes(), "Update", version));
+        ShardRaft.put(new message.UpdateShard("Init", currShard.getAllNodes(), version));
+        clusterRaft.put(new message.UpdateShard("Init", cluster.getAllNodes(), version));
     }
 
     public void replyConfig(Comm comm) {
-        Config configMsg = new Config(cluster);
+        Config configMsg = new Config(cluster, version);
 
         try {
             String json = gson.toJson(configMsg);
@@ -101,7 +102,7 @@ public class ClusterState implements Runnable {
             return;
         }
         if (!(message.type.equals("NodeMsg"))) {
-            System.out.println("ClusterState: unsupported message type " + message.type);
+            System.out.println("Node " + this.NodeID + " ClusterState: unsupported message type " + message.type);
             return;
         }
 
@@ -117,18 +118,19 @@ public class ClusterState implements Runnable {
             cluster.addNode(node);
             updatedShard = cluster.getShard(nodeMsg.node.id);
             version++;
-            clusterRaft.put(new message.UpdateNodes(cluster.getAllNodes(), "Update", version));
-            System.out.println("ClusterState: added node " + nodeMsg.node.id);
+            System.out.println("Node " + this.NodeID + " ClusterState: added node " + nodeMsg.node.id);
         } else if (action.equals("Remove")) {
             // Remove a node from the cluster and publish the new stable membership view.
             updatedShard = cluster.getShard(nodeMsg.node.id);
             cluster.removeNode(nodeMsg.node.id);
             version++;
-            clusterRaft.put(new message.UpdateNodes(cluster.getAllNodes(), "Update", version));
-            System.out.println("ClusterState: removed node " + nodeMsg.node.id);
+            System.out.println("Node " + this.NodeID + " ClusterState: removed node " + nodeMsg.node.id);
         } else {
-            System.out.println("ClusterState: unknown NodeMsg action " + nodeMsg.action);
+            System.out.println("Node " + this.NodeID + " ClusterState: unknown NodeMsg action " + nodeMsg.action);
+            return;
         }
+        System.out.println("Node " + this.NodeID + " sending update message to raft cluster");
+        clusterRaft.put(new message.UpdateShard("Update", cluster.getAllNodes(), version));
 
         // Dispatch shard-specific notifications after the cluster update completes.
         updateShard(updatedShard);
@@ -152,14 +154,17 @@ public class ClusterState implements Runnable {
         // unexpectedly too small relative to its tracked size, publish the full distributed
         // data snapshot and the updated node list for the shard.
         if (!shard.id.equals(currShardID) || currShardSize > shard.size() + 1) {
-            ShardRaft.put(new message.DistData(cluster, version));
-            ShardRaft.put(new message.UpdateNodes(shard.getAllNodes(), "Update", version));
+            System.out.println("Node " + this.NodeID + " sending Distribute message to Shard");
+            /*
+            ShardRaft.put(new message.UpdateShard("Distribute", shard.getAllNodes(), cluster, version));
             currShardID = shard.id;
             currShardSize = shard.size();
+            */
         } else if (currShardID.equals(updatedShard.id)) {
             // When the local node remains in the same shard, only the affected shard's
             // node list needs to be propagated.
-            ShardRaft.put(new message.UpdateNodes(updatedShard.getAllNodes(), "Update", version));
+            System.out.println("Node " + this.NodeID + " sending Update message to Shard");
+            ShardRaft.put(new message.UpdateShard("Update", updatedShard.getAllNodes(), version));
         }
     }
 

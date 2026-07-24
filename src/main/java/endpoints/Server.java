@@ -101,13 +101,16 @@ public class Server {
             ShardRaftIn.put(msg);
         } else if (msg.type.equals("Config")) {
             // return the current cluster configuration for client queries
-            ClusterStateIn.put(new message.Reply(comm));
+            ClusterStateIn.put(new message.Reply(comm, msg.version));
             return;
         } else if (msg.type.equals("NodeMsg")) {
             // if it's a cluster membership update, forward to ClusterState
             ClusterRaftIn.put(msg);
             return;
-        } else if (msg.type.equals("AppendEntries") || msg.type.equals("RequestVote") || msg.type.equals("AppendEntriesReply") || msg.type.equals("RequestVoteReply")) {
+        } else if (msg.type.equals("AppendEntries") || 
+                   msg.type.equals("RequestVote") || 
+                   msg.type.equals("AppendEntriesReply") || 
+                   msg.type.equals("RequestVoteReply")) {
             // if it's a Raft message, forward to the appropriate Raft instance
             RaftMsg raftMsg = (RaftMsg) msg;
 

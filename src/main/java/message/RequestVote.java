@@ -6,8 +6,8 @@ public class RequestVote extends RaftMsg {
     public int lastLogIndex;
     public int lastLogTerm;
 
-    public RequestVote(String level, int term, String candidateId, int lastLogIndex, int lastLogTerm) {
-        super("RequestVote", level);
+    public RequestVote(String level, int term, String candidateId, int lastLogIndex, int lastLogTerm, int version) {
+        super("RequestVote", level, version);
         this.term = term;
         this.candidateId = candidateId;
         this.lastLogIndex = lastLogIndex;
