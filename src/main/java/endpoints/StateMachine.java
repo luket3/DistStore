@@ -12,6 +12,7 @@ package endpoints;
 import java.util.HashMap;
 
 import communication.Comm;
+import communication.HandOff;
 import communication.Pipe;
 
 import message.Message;
@@ -33,6 +34,7 @@ public class StateMachine implements Runnable {
     Pipe inPipe;
     String nodeId;
     Gson gson;
+    String logPath;
 
     HashMap<Integer, Comm> clientInfo = new HashMap<>();
     int returnCode;
@@ -44,30 +46,20 @@ public class StateMachine implements Runnable {
         this.nodeId = nodeId;
         this.comm = new Comm();
         this.gson = new Gson();
+        this.logPath = "logs/StateMachine.log";
     }
 
     private void sendResponse(String response) throws Exception {
+        HandOff.writeToFile("Node:" + nodeId + " StateMachine: sending reply: " + response, this.logPath);
         Comm client = clientInfo.get(returnCode);
         if (client == null) {
             return;
         }
 
-        System.out.println("Node:" + nodeId + " StateMachine: sending response:" + response);
         client.sendString(response);
         client.closeSocket();
         clientInfo.remove(returnCode);
     }
-
-    // update to fit new logic
-    // send message wait for ack then send next message
-
-    // sort data, start at beginning, then send data at index response.index + 1
-    // when recieved ack for last data send a message to all nodes indicating that data is redistributed and phase can be updated
-    // this message is UpdateNodes message with action = "Finalise"
-    // remember timeout and try next node in shard if no response
-
-    // what happens if node dies between getting data and propogating to raft?????
-    // could send to all nodes in shard, only leader commits them????
 
     /**
      * Execute a simple key-value query against the shared store.
@@ -113,7 +105,7 @@ public class StateMachine implements Runnable {
         while (true) {
             try {
                 Message query = inPipe.take();
-                System.out.println("Node:" + nodeId + " StateMachine: recieved command:");
+                HandOff.writeToFile("Node:" + nodeId + " StateMachine: recieved command: " + query.type, this.logPath);
 
                 String response = parseQuery(query);
 
@@ -122,7 +114,7 @@ public class StateMachine implements Runnable {
                 }
             }
             catch(Exception e) {
-                System.err.println(e.getMessage());
+                HandOff.writeToFile(e.getMessage(), this.logPath);
             }
         }
     }

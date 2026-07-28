@@ -2,13 +2,14 @@ package raft;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
+import java.util.Map;
 import cluster.Node;
+import communication.HandOff;
 
 import message.Message;
-import message.RaftConfig;
 import message.AppendEntriesReply;
 import message.AppendEntries;
+import message.RaftConfig;
 
 /**
  * Leader role for Raft consensus.
@@ -22,7 +23,10 @@ public class Leader extends Role {
     public void appendLogEntry(Message msg) {
         // Handle a client command when this node is the leader.
         // Format: ClientCommand <command>
-        System.out.println(raftState.level + ": Leader " + raftState.id + " appending log entry");
+        HandOff.writeToFile(
+            raftState.level + ": Leader " + raftState.id + " appending log entry",
+            raftState.getLogFilePath()
+        );
 
         // Append the command to the log as an uncommitted entry
         raftState.log.appendEntry(msg, raftState.term);
@@ -37,7 +41,6 @@ public class Leader extends Role {
         // acting as leader.
         // Format: AppendEntries <term> <senderID> <success> <matchIndex>
         AppendEntriesReply AEReply = (AppendEntriesReply) messageParts;
-        System.out.println(raftState.level + ": Leader " + raftState.id + " received: " + raftState.gson.toJson(AEReply));
 
         // Update term and revert to follower if we see a higher term
         if (AEReply.term > raftState.term) {
@@ -54,18 +57,55 @@ public class Leader extends Role {
             raftState.matchIndex.put(AEReply.senderId, Math.max(raftState.matchIndex.get(AEReply.senderId), AEReply.matchIndex));
             raftState.nextIndex.put(AEReply.senderId, raftState.matchIndex.get(AEReply.senderId) + 1);
 
+            // check if a learner has caught up and can be promoted
+            if (raftState.appendLearnerPromotion()) {
+                broadcastAppendEntries();
+            }
+
             // commit such that majority nodes have log entry
             for (int i = raftState.log.getLastIdx(); i > raftState.log.getCommitIdx(); i--) {
 
                 long count = 0;
-                for (int value : raftState.matchIndex.values()) {
-                    if (value >= i)
-                        count++;
+                boolean majority = false;
+
+                if (!raftState.jointConfig) {
+                    // Count only voters, not learners
+                    int threshold = (raftState.voters.size() / 2) + 1;
+                    for (String nid : raftState.voters.keySet()) {
+                        int v = raftState.matchIndex.getOrDefault(nid, -1);
+                        if (v >= i) count++;
+                    }
+                    if (count >= threshold) majority = true;
+                } else {
+                    int oldCount = 0;
+                    int nextCount = 0;
+                    int oldThreshold = (raftState.oldNodes.size() / 2) + 1;
+                    int nextThreshold = (raftState.nextNodes.size() / 2) + 1;
+
+                    for (Map.Entry<String, Integer> e : raftState.matchIndex.entrySet()) {
+                        int v = e.getValue();
+                        if (v >= i) {
+                            if (raftState.oldNodes.containsKey(e.getKey()))
+                                oldCount++;
+                            if (raftState.nextNodes.containsKey(e.getKey()))
+                                nextCount++;
+                        }
+                    }
+
+                    if (oldCount >= oldThreshold && nextCount >= nextThreshold)
+                        majority = true;
                 }
 
-                if (count > raftState.numberOfNodes / 2 
-                        && raftState.log.get(i).term == raftState.term) {
-                    raftState.log.commitEntries(i);
+                if (majority && raftState.log.get(i).term == raftState.term) {
+                    // Commit the entries up to i
+                    RaftConfig raftConfig = raftState.log.commitEntries(i);
+
+                    if (raftConfig != null) {
+                        if (raftConfig.jointConfig) {
+                            raftState.appendNewConfig(raftConfig.nodes, false);
+                        }
+                    }
+
                     broadcastAppendEntries();
                     break;
                 }
@@ -86,13 +126,16 @@ public class Leader extends Role {
                 nextIndices.add(v);
             Collections.sort(nextIndices);
 
-            int majorityPos = raftState.numberOfNodes / 2; // 0-based
+            int majorityPos = raftState.allNodes.size() / 2; // 0-based
             if (majorityPos < nextIndices.size()) {
                 int K = nextIndices.get(majorityPos);
                 int truncateTo = K - 1;
 
                 if (truncateTo < raftState.log.getLastIdx()) {
-                    System.out.println(raftState.level + ": Leader: truncating uncommitted entries to index " + truncateTo);
+                    HandOff.writeToFile(
+                        raftState.level + ": Leader: truncating uncommitted entries to index " + truncateTo,
+                        raftState.getLogFilePath()
+                    );
                     raftState.log.clearTo(truncateTo);
 
                     // Ensure matchIndex and nextIndex are consistent with truncated log
@@ -108,15 +151,17 @@ public class Leader extends Role {
                 }
             }
 
-            sendAppendEntries(raftState.nodes.get(AEReply.senderId));
+            sendAppendEntries(raftState.allNodes.get(AEReply.senderId));
         }
     }
 
     public void broadcastAppendEntries() {
-        System.out.println(raftState.level + ": leader node: " + raftState.id + 
-                           " broadcasting append entries message");
+        HandOff.writeToFile(
+            raftState.level + ": leader node: " + raftState.id + " broadcasting append entries message",
+            raftState.getLogFilePath()
+        );
 
-        for (Node node : raftState.nodes.values()) {
+        for (Node node : raftState.allNodes.values()) {
             if (!node.id.equals(raftState.id))
                 sendAppendEntries(node);
         }
@@ -146,10 +191,5 @@ public class Leader extends Role {
         sendToNode(node,
             raftState.gson.toJson(AEmsg)
         );
-    }
-
-    public void NewConfig() {
-        System.out.println(raftState.level + ": leader " + raftState.id + " appending new config message");
-        appendLogEntry(new RaftConfig(raftState.nodes,raftState.nodesVersion));
     }
 }

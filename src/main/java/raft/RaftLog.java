@@ -1,20 +1,23 @@
 package raft;
 
 import java.util.ArrayList;
+
+import communication.HandOff;
 import communication.Pipe;
+import message.Ack;
 import message.Message;
 import message.RaftConfig;
 
 public class RaftLog {
     private ArrayList<LogEntry> committedLog;
     private ArrayList<LogEntry> uncommittedLog;
-    private Pipe stateMachineIn;
+    private Pipe outPipe;
     private RaftState raftState;
 
-    public RaftLog(Pipe stateMachineIn, RaftState raftState) {
+    public RaftLog(Pipe outPipe, RaftState raftState) {
         this.committedLog = new ArrayList<>();
         this.uncommittedLog = new ArrayList<>();
-        this.stateMachineIn = stateMachineIn;
+        this.outPipe = outPipe;
         this.raftState = raftState;
     }
 
@@ -27,16 +30,30 @@ public class RaftLog {
         uncommittedLog.add(newEntry);
     }
 
-    public void commitEntries(int upToIndex) {
+    public RaftConfig commitEntries(int upToIndex) {
+        HandOff.writeToFile("Node " + raftState.id + " " + raftState.level + ": commiting upto index " + upToIndex, raftState.getLogFilePath());
+
+        RaftConfig rtnValue = null;
+
         while (!uncommittedLog.isEmpty()
                 && uncommittedLog.get(0).index <= upToIndex) {
             LogEntry entryToCommit = uncommittedLog.remove(0);
             committedLog.add(entryToCommit);
-            if (entryToCommit.msg.type.equals("DictMsg"))
-                stateMachineIn.put(entryToCommit.msg);
-            else if (entryToCommit.msg.type.equals("RaftConfig"));
-                raftState.initConfig(((RaftConfig)entryToCommit.msg).nodes);
+            if (entryToCommit.msg.type.equals("DictMsg") || entryToCommit.msg.type.equals("NodeMsg")) {
+                outPipe.put(entryToCommit.msg);
+            } else if (entryToCommit.msg.type.equals("RaftConfig")) {
+                RaftConfig raftConfig = (RaftConfig) entryToCommit.msg;
+
+                // Let RaftState handle joint vs final config application.
+                raftState.proccessNewConfig(raftConfig);
+                rtnValue = raftConfig;
+                if (raftConfig.targetVersion == raftConfig.version) {
+                    raftState.callbackPipe.put(new Ack(raftConfig.version));
+                }
+            }
         }
+
+        return rtnValue;
     }
 
     public Message getLastCommittedCommand() {

@@ -1,11 +1,11 @@
 package raft;
 
+import communication.HandOff;
 import message.Message;
 import message.RequestVote;
 import message.AppendEntries;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
-import message.DictMsg;
 
 /**
  * Follower role for Raft consensus.
@@ -26,7 +26,10 @@ public class Follower extends Role {
         // Parse RequestVote RPC parameters from messageParts
         // Format: RequestVote <term> <candidateId> <lastLogIndex> <lastLogTerm>
         RequestVote RVmsg = (RequestVote) message;
-        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg));
+        HandOff.writeToFile(
+            raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg),
+            raftState.getLogFilePath()
+        );
 
         // Check current term and update if necessary
         if (RVmsg.term > raftState.term) {
@@ -60,7 +63,7 @@ public class Follower extends Role {
         // Send vote grant status back to the candidate
         RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted, raftState.version);
         sendToNode(
-            raftState.nodes.get(RVmsg.candidateId),
+            raftState.allNodes.get(RVmsg.candidateId),
             raftState.gson.toJson(RVReply)
         );
 
@@ -78,12 +81,12 @@ public class Follower extends Role {
         // Format: AppendEntries <term> <leaderId> <prevLogIndex>
         // <prevLogTerm> <leaderCommit> [entries...]
         AppendEntries AEmsg = (AppendEntries) message;
-        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(AEmsg));
 
         // Update term and revert to follower if we see a higher term
         if (AEmsg.term > raftState.term) {
             raftState.term = AEmsg.term;
-            raftState.type = "follower";
+            if (raftState.type != "learner")
+                raftState.type = "follower";
             raftState.votedFor = null;
         } else if (AEmsg.term < raftState.term) {
             // Reject if leader's term is less than current term
@@ -92,7 +95,7 @@ public class Follower extends Role {
 
         if (raftState.leader == null || !raftState.leader.id.equals(AEmsg.leaderId)) {
             // Update leader information if this is a new leader
-            raftState.leader = raftState.nodes.get(AEmsg.leaderId);
+            raftState.leader = raftState.allNodes.get(AEmsg.leaderId);
             raftState.log.clearUncommitted();
         }
 
@@ -110,10 +113,28 @@ public class Follower extends Role {
             // commands are in format:
             // [ClientCommand <insert command>,ClientCommand <insert command>,...]
             if (AEmsg.entries != null && AEmsg.entries.size() > 0) {
+                int nextIndex = AEmsg.prevLogIndex + 1;
 
-                raftState.log.clearTo(AEmsg.prevLogIndex);
-                for (LogEntry entry : AEmsg.entries) {
-                    raftState.log.appendEntry(entry.msg, entry.term);
+                for (int i = 0; i < AEmsg.entries.size(); i++) {
+                    int targetIndex = nextIndex + i;
+                    LogEntry incoming = AEmsg.entries.get(i);
+                    LogEntry existing = raftState.log.get(targetIndex);
+
+                    if (existing != null) {
+                        if (existing.term != incoming.term) {
+                            raftState.log.clearTo(targetIndex - 1);
+                            for (int j = i; j < AEmsg.entries.size(); j++) {
+                                raftState.log.appendEntry(
+                                    AEmsg.entries.get(j).msg,
+                                    AEmsg.entries.get(j).term
+                                );
+                            }
+                            break;
+                        }
+                        continue;
+                    }
+
+                    raftState.log.appendEntry(incoming.msg, incoming.term);
                 }
             }
 
@@ -130,11 +151,9 @@ public class Follower extends Role {
     }
 
     public void handToLeader(Message message) {
-        DictMsg cmdMsg = (DictMsg) message;
-        System.out.println(raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(cmdMsg));
 
         if (raftState.leader != null) {
-            sendToNode(raftState.leader, raftState.gson.toJson(cmdMsg));
+            sendToNode(raftState.leader, raftState.gson.toJson(message));
         } else {
             // No known leader, could buffer the message or ignore
         }

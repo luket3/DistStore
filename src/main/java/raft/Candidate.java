@@ -3,6 +3,7 @@ package raft;
 import java.util.HashSet;
 import java.util.Set;
 
+import communication.HandOff;
 import message.Message;
 import message.RequestVoteReply;
 import message.RequestVote;
@@ -26,7 +27,6 @@ public class Candidate extends Role {
         // Format: RequestVoteReply <term> <senderID> <voteGranted>
         
         RequestVoteReply RVReply = (RequestVoteReply) message;
-        System.out.println(raftState.level + ": Candidate " + raftState.id + " received: " + raftState.gson.toJson(RVReply));
 
         // Update term and revert to follower if we see a higher term
         if (RVReply.term > raftState.term) {
@@ -50,7 +50,7 @@ public class Candidate extends Role {
             votedNodes.add(RVReply.senderId);
             this.votesReceived++;
             // Check if we have won the election
-            if (this.votesReceived > raftState.numberOfNodes / 2) {
+            if (this.votesReceived > raftState.voters.size() / 2) {
                 raftState.type = "leader";
                 // Initialize leader state (matchIndex and nextIndex) for this node
                 raftState.initializeLeaderState();
@@ -89,9 +89,11 @@ public class Candidate extends Role {
      * @param message the message to broadcast
      */
     public void broadcast(String message) {
-        System.out.println(raftState.level + ": Candidate " + raftState.id + " Broadcasting message to all nodes: " +
-                            message);
+        HandOff.writeToFile(
+            raftState.level + ": Candidate " + raftState.id + " Broadcasting message to all nodes: " + message,
+            raftState.getLogFilePath()
+        );
 
-        communication.HandOff.broadcast(message, raftState.config.values(), raftState.id);
+        communication.HandOff.broadcast(message, raftState.voters.values(), raftState.id);
     }
 }

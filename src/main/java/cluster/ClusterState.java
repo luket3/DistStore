@@ -1,8 +1,10 @@
 package cluster;
 import communication.Comm;
+import communication.HandOff;
 import communication.Pipe;
 import message.Message;
-import java.util.List;
+
+import java.util.Map;
 import message.NodeMsg;
 import message.Config;
 import message.Reply;
@@ -23,10 +25,13 @@ public class ClusterState implements Runnable {
     String currShardID;
     int currShardSize;
     int version;
-    String NodeID;
-    Pipe ShardRaft;
-    Pipe clusterRaft;
+    String nodeID;
+    Pipe shardRaftIn;
+    Pipe clusterRaftIn;
+    Pipe shardRaftOut;
+    Pipe clusterRaftOut;
     Gson gson;
+    String logPath;
 
     /**
      * Creates a new cluster state manager for the given node.
@@ -38,32 +43,27 @@ public class ClusterState implements Runnable {
      * @param clusterRaft pipe for cluster-wide Raft messages
      * @throws Exception if the current shard cannot be resolved from the cluster map
      */
-    public ClusterState(Pipe inPipe, List<String> configData, String NodeID, Pipe ShardRaft, Pipe clusterRaft) throws Exception {
+    public ClusterState(Pipe inPipe, Map<String, Node> nodes, String nodeID, Pipe shardRaftIn, Pipe clusterRaftIn, Pipe shardRaftOut, Pipe clusterRaftOut) throws Exception {
         this.inPipe = inPipe;
         this.cluster = new ConsistentHashMap();
-        this.NodeID = NodeID;
-        this.ShardRaft = ShardRaft;
-        this.clusterRaft = clusterRaft;
+        this.nodeID = nodeID;
+        this.shardRaftIn = shardRaftIn;
+        this.clusterRaftIn = clusterRaftIn;
+        this.shardRaftOut = shardRaftOut;
+        this.clusterRaftOut = clusterRaftOut;
         this.version = 0;
         this.gson = new Gson();
+        this.logPath = "logs/ClusterState.log";
 
         // Initialize the cluster with the provided configuration data.
-        for (String line : configData) {
-            String[] split = line.split(",");
-            cluster.addNode(new Node(
-                    split[0],
-                    split[1],
-                    Integer.parseInt(split[2])
-            ));
+        for (Node n : nodes.values()) {
+            cluster.addNode(n);
         }
 
         // Cache the node's initial shard identity and shard size for later comparisons.
-        Shard currShard = cluster.getShard(NodeID);
+        Shard currShard = cluster.getShard(nodeID);
         this.currShardID = currShard.id;
         this.currShardSize = currShard.size();
-
-        ShardRaft.put(new message.UpdateShard("Init", currShard.getAllNodes(), version));
-        clusterRaft.put(new message.UpdateShard("Init", cluster.getAllNodes(), version));
     }
 
     public void replyConfig(Comm comm) {
@@ -73,7 +73,7 @@ public class ClusterState implements Runnable {
             String json = gson.toJson(configMsg);
             comm.sendString(json);
         } catch (Exception e) {
-            System.out.println("Error sending config reply: " + e);
+            HandOff.writeToFile("Error sending config reply: " + e, this.logPath);
         }
     }
 
@@ -96,13 +96,14 @@ public class ClusterState implements Runnable {
             return;
 
         // Only NodeMsg messages are recognized for cluster topology updates.
-        if (message.type.equals("Config")) {
+        if (message.type.equals("Reply")) {
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: replying with cluster config", this.logPath);
             Reply replymsg = (Reply) message;
             replyConfig(replymsg.comm);
             return;
         }
         if (!(message.type.equals("NodeMsg"))) {
-            System.out.println("Node " + this.NodeID + " ClusterState: unsupported message type " + message.type);
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unsupported message type " + message.type, this.logPath);
             return;
         }
 
@@ -118,19 +119,22 @@ public class ClusterState implements Runnable {
             cluster.addNode(node);
             updatedShard = cluster.getShard(nodeMsg.node.id);
             version++;
-            System.out.println("Node " + this.NodeID + " ClusterState: added node " + nodeMsg.node.id);
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: added node " + nodeMsg.node.id, this.logPath);
         } else if (action.equals("Remove")) {
             // Remove a node from the cluster and publish the new stable membership view.
             updatedShard = cluster.getShard(nodeMsg.node.id);
             cluster.removeNode(nodeMsg.node.id);
             version++;
-            System.out.println("Node " + this.NodeID + " ClusterState: removed node " + nodeMsg.node.id);
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: removed node " + nodeMsg.node.id, this.logPath);
         } else {
-            System.out.println("Node " + this.NodeID + " ClusterState: unknown NodeMsg action " + nodeMsg.action);
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unknown NodeMsg action " + nodeMsg.action, this.logPath);
             return;
         }
-        System.out.println("Node " + this.NodeID + " sending update message to raft cluster");
-        clusterRaft.put(new message.UpdateShard("Update", cluster.getAllNodes(), version));
+        HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
+        clusterRaftIn.put(new message.Update("Update", cluster.getAllNodes(), version));
+
+        // Wait for the Raft log to commit the cluster update before continuing.
+        this.clusterRaftOut.take();
 
         // Dispatch shard-specific notifications after the cluster update completes.
         updateShard(updatedShard);
@@ -148,24 +152,32 @@ public class ClusterState implements Runnable {
             return;
         }
 
-        Shard shard = cluster.getShard(NodeID);
+        Shard shard = cluster.getShard(nodeID);
 
         // If the local node migrated to a different shard, or the current shard became
         // unexpectedly too small relative to its tracked size, publish the full distributed
         // data snapshot and the updated node list for the shard.
         if (!shard.id.equals(currShardID) || currShardSize > shard.size() + 1) {
-            System.out.println("Node " + this.NodeID + " sending Distribute message to Shard");
+            HandOff.writeToFile("Node " + this.nodeID + " sending Distribute message to Shard", this.logPath);
             /*
-            ShardRaft.put(new message.UpdateShard("Distribute", shard.getAllNodes(), cluster, version));
+            this.pendingShardAckPipe = new Pipe();
+            ShardRaft.put(new message.Update("Distribute", shard.getAllNodes(), this.pendingShardAckPipe, version));
+            Message shardAck = this.pendingShardAckPipe.take();
+            if (shardAck != null) {
+                this.pendingShardAckPipe = null;
+            }
             currShardID = shard.id;
             currShardSize = shard.size();
             */
         } else if (currShardID.equals(updatedShard.id)) {
             // When the local node remains in the same shard, only the affected shard's
             // node list needs to be propagated.
-            System.out.println("Node " + this.NodeID + " sending Update message to Shard");
-            ShardRaft.put(new message.UpdateShard("Update", updatedShard.getAllNodes(), version));
+            HandOff.writeToFile("Node " + this.nodeID + " sending Update message to Shard", this.logPath);
+            shardRaftIn.put(new message.Update("Update", updatedShard.getAllNodes(), version));
+            this.shardRaftOut.take();
         }
+
+        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
     }
 
     /**
@@ -180,7 +192,7 @@ public class ClusterState implements Runnable {
             try {
                 UpdateCluster();
             } catch (Exception e) {
-                System.out.println("ClusterState: error updating cluster: " + e.getMessage());
+                HandOff.writeToFile("ClusterState: error updating cluster: " + e.getMessage(), this.logPath);
             }
         }
     }

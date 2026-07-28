@@ -125,6 +125,9 @@ public class Shard {
 
     /** Return the first node in the left list, or null if empty. */
     public Node get(HashSet<String> killed) {
+        if (killed == null)
+            killed = new HashSet<>();
+
         for (Node n : left)
             if (!killed.contains(n.id))
                 return n;

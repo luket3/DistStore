@@ -10,6 +10,8 @@ package raft;
 
 import communication.Pipe;
 import message.Message;
+import java.util.Map;
+import cluster.Node;
 
 /**
  * Partial Raft role implementation for handling incoming RPCs.
@@ -33,9 +35,11 @@ public class Raft implements Runnable {
         Pipe inPipe,
         Pipe outPipe,
         String nodeId,
-        String level
+        String level,
+        Map<String,Node> configData,
+        Pipe ackPipe
     ) {
-        node = new RaftNode(nodeId, outPipe, level);
+        node = new RaftNode(nodeId, outPipe, level, configData, ackPipe);
         this.inPipe = inPipe;
         this.outPipe = outPipe;
         this.nodeId = nodeId;
@@ -81,8 +85,8 @@ public class Raft implements Runnable {
                     // Timeout occurred: no message received within the
                     // election timeout
 
-                    if (node.getRole().equals("follower")
-                        || node.getRole().equals("candidate")) {
+                    if ((node.getRole().equals("follower")
+                        || node.getRole().equals("candidate"))) {
                         // Follower or candidate timeout: start election
                         node.startElection();
                     }

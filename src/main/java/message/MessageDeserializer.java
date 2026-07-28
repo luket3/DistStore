@@ -26,7 +26,8 @@ public class MessageDeserializer implements JsonDeserializer<Message> {
             case "RequestVoteReply" -> ctx.deserialize(json, RequestVoteReply.class);
             case "RaftConfig" -> ctx.deserialize(json, RaftConfig.class);
             case "Config" -> ctx.deserialize(json, Config.class);
-            case "UpdateShard" -> ctx.deserialize(json, UpdateShard.class);
+            case "Update" -> ctx.deserialize(json, Update.class);
+            case "Ack" -> ctx.deserialize(json, Ack.class);
             default -> throw new JsonParseException("Unknown message type: " + type);
         };
     }

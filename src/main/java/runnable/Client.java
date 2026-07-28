@@ -29,11 +29,11 @@ public class Client {
      * @throws Exception if initialization fails
      */
    public static void main(String[] args) throws Exception {
+
       List<Thread> threads = new ArrayList<>();
       ClientImp client = new ClientImp(threads);
 
       client.addSeeds();
-      client.initCluster();
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
       while(true) {
@@ -43,7 +43,13 @@ public class Client {
             break;
          }
 
-         System.out.println(client.sendQuery(query));
+         client.initCluster();
+         String output = client.sendQuery(query);
+         String[] split = output.split(" ");
+         System.out.println(output);
+         if (split[0].equals("NodeMsg"))
+            continue;
+
          try {
             String response = client.getResponse();
             System.out.println(response);

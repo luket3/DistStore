@@ -158,12 +158,12 @@ public class ClientImp {
             Files.writeString(Path.of("nextPort.config"), String.valueOf(nextPortInt+1));
 
             String command = "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
-                                n.id + " " + nextPort;
+                                split[1] + " " + nextPort;
             Thread t = new Thread(() -> runnable.StartNodes.runCommand(command));
             threads.add(t);
             t.start();
 
-            NodeMsg msg = new NodeMsg(split[0], split[1], version);
+            NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", nextPortInt), version);
 
             comm.createSocket(n.ip, n.port);
             comm.sendString(gson.toJson(msg));

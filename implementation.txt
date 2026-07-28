@@ -1,0 +1,21 @@
+fix cluster membership change bug
+
+add functionality for shard spliting and removal with cluster membership
+
+for request with stale version, cluster should reply with new config
+
+fill out test suite
+
+fill out comments
+
+fill out readme
+
+bugs:
+
+if first query is invalid freezes and dosne't get response properly
+
+if leader dies mid config update make new leader finish config change
+
+make some sort of controller for all the nodes so when client start a new node it sends controller a message
+
+remove msg dosen't work correctly
