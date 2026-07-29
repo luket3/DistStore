@@ -1,5 +1,6 @@
 package raft;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,6 +8,7 @@ import communication.HandOff;
 import message.Message;
 import message.RequestVoteReply;
 import message.RequestVote;
+import cluster.Node;
 
 /**
  * Candidate role for Raft consensus.
@@ -94,6 +96,10 @@ public class Candidate extends Role {
             raftState.getLogFilePath()
         );
 
-        communication.HandOff.broadcast(message, raftState.voters.values(), raftState.id);
+        HashMap<String, Node> nodes = new HashMap<>(raftState.voters);
+        for (Node node : nodes.values()) {
+            if (!node.id.equals(raftState.id))
+                sendToNode(node, message);
+        }
     }
 }

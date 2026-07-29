@@ -34,4 +34,4 @@
 /home/croissant/projects/DistStore/src/main/java/raft/RaftState.java
 /home/croissant/projects/DistStore/src/main/java/raft/Role.java
 /home/croissant/projects/DistStore/src/main/java/runnable/Client.java
-/home/croissant/projects/DistStore/src/main/java/runnable/StartNodes.java
+/home/croissant/projects/DistStore/src/main/java/runnable/Spawner.java

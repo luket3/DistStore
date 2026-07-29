@@ -47,7 +47,7 @@ public class Client {
          String output = client.sendQuery(query);
          String[] split = output.split(" ");
          System.out.println(output);
-         if (split[0].equals("NodeMsg"))
+         if (split[0].equals("NodeMsg") || output.equals("Invalid query"))
             continue;
 
          try {

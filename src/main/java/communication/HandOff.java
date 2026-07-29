@@ -43,8 +43,7 @@ public class HandOff {
              comm.sendString(message);
              comm.closeSocket();
         } catch (Exception e) {
-            System.err.println("Failed to send message to node "
-                    + node.id);
+            throw new RuntimeException("failed to send message to node " + node.id);
         }
     }
 

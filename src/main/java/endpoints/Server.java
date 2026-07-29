@@ -27,7 +27,6 @@ import message.MessageDeserializer;
 import message.DictMsg;
 import message.Reply;
 import message.RaftMsg;
-import message.NodeMsg;
 import cluster.ClusterState;
 import cluster.Node;
 
@@ -118,9 +117,6 @@ public class Server {
             clusterStateIn.put(new message.Reply(comm, msg.version));
             return;
         } else if (msg.type.equals("NodeMsg")) {
-            NodeMsg nodeMsg = (NodeMsg) msg;
-            if (nodeMsg.action.equals("Remove") && nodeMsg.node.id.equals(nodeId))
-                System.exit(0);
             // if it's a cluster membership update, forward to ClusterState
             clusterRaftIn.put(msg);
             return;

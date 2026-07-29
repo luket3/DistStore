@@ -24,6 +24,7 @@ import communication.Comm;
 import message.DictMsg;
 import message.NodeMsg;
 import message.Config;
+import message.Ack;
 
 /**
  * Client for the distributed key-value store.
@@ -44,7 +45,6 @@ public class ClientImp {
     private Map<String, Node> nodes;
 
     private Gson gson;
-    private List<Thread> threads;
 
     /**
      * Create a new {@code Client} instance and initialize communication and
@@ -57,7 +57,6 @@ public class ClientImp {
         nodes = new HashMap<>();
         gson = new Gson();
         version = -1;
-        this.threads = threads;
     }
 
     /**
@@ -153,25 +152,25 @@ public class ClientImp {
         else if (split.length == 2 && (split[0].equals("Add") || split[0].equals("Remove"))) {
             Node n = map.getShard(split[1]).get(null);
 
-            String nextPort = Files.readString(Path.of("nextPort.config"));
-            int nextPortInt = Integer.parseInt(nextPort);
-            Files.writeString(Path.of("nextPort.config"), String.valueOf(nextPortInt+1));
-
-            String command = "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
-                                split[1] + " " + nextPort;
-            Thread t = new Thread(() -> runnable.StartNodes.runCommand(command));
-            threads.add(t);
-            t.start();
-
-            NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", nextPortInt), version);
-
-            comm.createSocket(n.ip, n.port);
+            NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", -1), version);
+            String SpawnerPort = Files.readString(Path.of("spawner.config"));
+            comm.createSocket("localhost", Integer.parseInt(SpawnerPort));
             comm.sendString(gson.toJson(msg));
+            Ack ack = gson.fromJson(comm.readString(), Ack.class);
+            comm.closeSocket();
 
-            return msg.type + " query sent successfully to node " + n.id;
+            System.out.println(ack.message);
+            if (ack.success) {
+                msg.node = ack.node;
+                comm.createSocket(n.ip, n.port);
+                comm.sendString(gson.toJson(msg));
+                return msg.type + " query sent successfully to node " + n.id;
+            } else {
+                return "Invalid query";
+            }
         }
         else {
-            return "Error: Invalid query format";
+            return "Invalid query";
         }
     }
 

@@ -21,6 +21,11 @@ public abstract class Role {
      * @param message message to send
      */
     protected void sendToNode(Node node, String message) {
-        HandOff.sendToNode(node,message, raftState.getLogFilePath());
+        try {
+            HandOff.sendToNode(node,message, raftState.getLogFilePath());
+        }
+        catch (Exception e) {
+            HandOff.writeToFile(e.getMessage(), raftState.getLogFilePath());
+        }
     }
 }

@@ -19,3 +19,9 @@ if leader dies mid config update make new leader finish config change
 make some sort of controller for all the nodes so when client start a new node it sends controller a message
 
 remove msg dosen't work correctly
+
+next:
+
+create spawner class for spawning nodes in cluster, client sends this class a message to spawn new node, spawner responds with wheather nodeid is valid or port and ip of node
+move clientimp into client
+if client sends messages from an invalid version, reply to client and say invalid config

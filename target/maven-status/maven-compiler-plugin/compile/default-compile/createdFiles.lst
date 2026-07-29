@@ -1,6 +1,5 @@
 message/RequestVoteReply.class
 raft/LogEntry.class
-runnable/StartNodes.class
 message/Config.class
 message/DictMsg.class
 message/Update.class
@@ -20,6 +19,7 @@ raft/Follower.class
 communication/Pipe.class
 luket3/App.class
 communication/HandOff.class
+runnable/Spawner.class
 raft/RaftLog.class
 message/AppendEntriesReply.class
 message/MessageDeserializer.class

@@ -1,5 +1,5 @@
 startservers:
-	mvn exec:java -Dexec.mainClass=runnable.StartNodes
+	mvn exec:java -Dexec.mainClass=runnable.Spawner
 
 startclient:
 	mvn exec:java -Dexec.mainClass=runnable.Client
