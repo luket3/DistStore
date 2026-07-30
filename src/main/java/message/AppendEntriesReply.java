@@ -6,8 +6,8 @@ public class AppendEntriesReply extends RaftMsg {
     public boolean success;
     public int matchIndex;
 
-    public AppendEntriesReply(String level, int term, String senderId, boolean success, int matchIndex, int version) {
-        super("AppendEntriesReply", level, version);
+    public AppendEntriesReply(String level, int term, String senderId, boolean success, int matchIndex) {
+        super("AppendEntriesReply", level);
         this.term = term;
         this.senderId = senderId;
         this.success = success;

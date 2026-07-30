@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Iterator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,6 +29,7 @@ import message.DictMsg;
 import message.Message;
 import message.MessageDeserializer;
 import message.NodeMsg;
+import message.Reply;
 import message.Response;
 import message.Config;
 import message.Ack;
@@ -50,6 +51,7 @@ public class ClientImp {
     private Gson gson;
     private Node client;
     private Pipe responsePipe;
+    private int spawnerPort;
 
     /**
      * Create a new {@code Client} instance and initialize communication and
@@ -57,12 +59,13 @@ public class ClientImp {
      *
      * @throws Exception if initialization of underlying components fails
      */
-    public ClientImp(List<Thread> threads) throws Exception {
+    public ClientImp() throws Exception {
         nodes = new HashMap<>();
         gson = new Gson();
         version = -1;
         client = new Node("Client0", "localhost", 4565);
         responsePipe = new Pipe();
+        spawnerPort = Integer.parseInt(Files.readString(Path.of("spawner.config")));
     }
 
     public static void listen(Pipe response, int port) {
@@ -113,22 +116,20 @@ public class ClientImp {
         }
     }
 
-    public void initCluster() {
-        // get a random node from the cluster to use as the initial point for the consistent hash map
-        Node n = nodes.values()
-                   .stream()
-                   .skip(ThreadLocalRandom.current().nextInt(nodes.size()))
-                   .findFirst()
-                   .orElse(null);
-
+    public void getCluster() {
+        System.out.println("Requesting cluster configuration");
         Config configMsg = new Config(client);
-
         Message response = null;
+
         try {
-            HandOff.sendToNode(n, gson.toJson(configMsg), null);
-            response = responsePipe.take();
+            Iterator<Node> it = nodes.values().iterator();
+            while (response == null && it.hasNext()) {
+                Node n = it.next();
+                HandOff.sendToNode(n, gson.toJson(configMsg), null);
+                response = responsePipe.take(3000);
+            }
         } catch (Exception e) {
-            System.out.println("Error initializing client map: " + e);
+            System.out.println("Error installing client map: " + e);
             return;
         }
 
@@ -139,11 +140,11 @@ public class ClientImp {
             nodes = map.getAllNodes();
             version = configResponse.version;
         } else {
-            System.out.println("Error initializing client map from response");
+            System.out.println("Error installing client map from response");
             return;
         }
 
-        System.out.println("Client initialized with cluster configuration:");
+        System.out.println("Client installed with cluster configuration:");
         map.print();
         System.out.println("Node lookup map:");
         for (Map.Entry<String, Node> entry : nodes.entrySet()) {
@@ -167,48 +168,68 @@ public class ClientImp {
      * @return a message indicating the result of the operation
      * @throws Exception on communication errors while attempting to send
      */
-    public String sendQuery(String query) throws Exception {
+    public void sendQuery(Message msg) throws Exception {
+        Node n = null;
+        if (msg.type.equals("NodeMsg")) {
+            NodeMsg castMsg = (NodeMsg) msg;
+            n = map.getShard(castMsg.node.id).get(null);
+        } else if (msg.type.equals("DictMsg")) {
+            DictMsg castMsg = (DictMsg) msg;
+            n = map.getShard(castMsg.key).get(null);
+        }
+
+        HandOff.sendToNode(n, gson.toJson(msg), null);
+        return;
+    }
+
+    public Message buildMessage(String query) throws Exception {
         String[] split = query.split(" ");
 
         if (
-            (split.length == 2
-             && (split[0].equals("Get") || split[0].equals("Delete")))
-            || (split.length == 3 && split[0].equals("Put"))
+            (split.length == 2 && (split[0].equals("Get") || split[0].equals("Delete"))) ||
+            (split.length == 3 && split[0].equals("Put"))
         ) {
-            Node n = map.getShard(split[1]).get(null);
             DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null, version, client);
-            HandOff.sendToNode(n, gson.toJson(msg), null);
-
-            return msg.type + " query sent successfully to node " + n.id;
+            return msg;
         }
         else if (split.length == 2 && (split[0].equals("Add") || split[0].equals("Remove"))) {
-            Node n = map.getShard(split[1]).get(null);
-
             NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", -1), version, client);
-            String SpawnerPort = Files.readString(Path.of("spawner.config"));
-            
-            Node spawner = new Node("spawner", "localhost", Integer.parseInt(SpawnerPort));
-            HandOff.sendToNode(spawner, gson.toJson(msg), null);
-            Message response = responsePipe.take();
-
-
-            if (!response.type.equals("Ack")) {
-                System.out.println("Invalid response from spawner");
-            }
-            Ack ack = (Ack) response;
-
-            System.out.println(ack.message);
-            if (ack.success) {
-                msg.node = ack.node;
-                HandOff.sendToNode(n, gson.toJson(msg), null);
-                return msg.type + " query sent successfully to node " + n.id;
-            } else {
-                return "Invalid query";
-            }
+            return msg;
         }
         else {
-            return "Invalid query";
+            return null;
         }
+    }
+
+    public Message updateMessage(Message msg) {
+        if (!(msg.type.equals("NodeMsg") || msg.type.equals("DictMsg")))
+            return null;
+
+        Reply castMsg = (Reply) msg;
+        castMsg.version = this.version;
+        return castMsg;
+    }
+
+    public NodeMsg querySpawner(NodeMsg msg) throws Exception {
+
+        Node spawner = new Node("spawner", "localhost", spawnerPort);
+        HandOff.sendToNode(spawner, gson.toJson(msg), null);
+        Message response = responsePipe.take();
+
+        if (!response.type.equals("Ack")) {
+            System.out.println("Invalid response from spawner");
+            return null;
+        }
+        Ack ack = (Ack) response;
+
+        System.out.println(ack.message);
+        if (ack.success) {
+            msg.node = ack.node;
+            return msg;
+        } else {
+            return null;
+        }
+
     }
 
     /**

@@ -3,6 +3,8 @@ import communication.HandOff;
 import communication.Pipe;
 import message.Message;
 import message.Update;
+import message.Reply;
+import message.Response;
 import java.util.Map;
 import cluster.Node;
 
@@ -47,9 +49,9 @@ public class RaftNode {
             raftState.getLogFilePath()
         );
 
-        if (message.type.equals("Update") && message.version == raftState.version + 1) {
+        if (message.type.equals("Update")) {
             Update castMsg = (Update) message;
-            if (castMsg.action.equals("Update") || castMsg.action.equals("Distribute")) {
+            if ((castMsg.action.equals("Update") || castMsg.action.equals("Distribute")) && castMsg.version == raftState.version + 1) {
                 // Process a membership update that should be replicated through Raft.
                     HandOff.writeToFile(
                     "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request",
@@ -65,16 +67,23 @@ public class RaftNode {
             followerRole.appendEntries(message);
         else if (message.type.equals("RequestVote") && !raftState.type.equals("learner"))
             followerRole.requestVote(message);
-        else if ((message.type.equals("DictMsg") || message.type.equals("NodeMsg"))
-                    && !raftState.type.equals("leader"))
-            followerRole.handToLeader(message);
+        else if ((message.type.equals("DictMsg") || message.type.equals("NodeMsg"))) {
+            Reply msg = (Reply) message;
+            if (msg.version < raftState.version) {
+                HandOff.sendToNode(msg.client, raftState.gson.toJson(new Response("Invalid config")), raftState.getLogFilePath());
+                return;
+            }
+
+
+            if (!raftState.type.equals("leader"))
+                followerRole.handToLeader(message);
+            else
+                leaderRole.appendLogEntry(message);
+        }
 
         if (raftState.type.equals("leader")) {
             if (message.type.equals("AppendEntriesReply")) {
                 leaderRole.appendEntries(message);
-            } else if (message.type.equals("DictMsg") || message.type.equals("NodeMsg")){
-                // Handle client command
-                leaderRole.appendLogEntry(message);
             }
         } else if (raftState.type.equals("candidate")) {
             if (message.type.equals("RequestVoteReply")) {

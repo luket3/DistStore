@@ -77,8 +77,7 @@ public class Candidate extends Role {
             raftState.term,
             raftState.id,
             raftState.log.getLastIdx(),
-            raftState.log.getLastTerm(),
-            raftState.version
+            raftState.log.getLastTerm()
         );
         broadcast(raftState.gson.toJson(RVmsg));
     }

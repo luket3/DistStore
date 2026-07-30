@@ -11,7 +11,7 @@ public class RaftConfig extends Message {
     public Map<String, Node> nodes;
     public Map<String, Node> oldNodes;
     public boolean jointConfig;
-    public int targetVersion;
+    public int version;
 
     /**
      * Creates a Raft configuration message.
@@ -22,10 +22,10 @@ public class RaftConfig extends Message {
      * @param version raft message version
      */
     public RaftConfig(Map<String, Node> nodes, Map<String, Node> oldNodes, boolean jointConfig, int version) {
-        super("RaftConfig", version);
+        super("RaftConfig");
         this.nodes = nodes;
         this.oldNodes = oldNodes;
         this.jointConfig = jointConfig;
-        this.targetVersion = version;
+        this.version = version;
     }
 }

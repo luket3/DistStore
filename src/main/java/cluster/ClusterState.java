@@ -91,7 +91,7 @@ public class ClusterState implements Runnable {
 
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
         if (nodeMsg.client != null) {
-            Response response = new Response("Cluster successfully updated", version);
+            Response response = new Response("Cluster successfully updated");
             HandOff.sendToNode(nodeMsg.client, gson.toJson(response), this.logPath);
         }
     }

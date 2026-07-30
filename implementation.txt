@@ -37,3 +37,8 @@ responses, make a new message which is repliable, where a message extends this c
 this message holds the comm, make node check if comm = null before replying if nessisary
 
 may need to add an additional parameter on server boolean SEED, true if seed node, determines if node starts as learner or not
+
+error if kill leader, dosen't respond properly as message is passed onto leader but the leader node is already dead, therefore message is lost
+and never gets delivered to new leader
+
+potential error responding to client, what happens if leader nodes dies after it sends out the entry but before it commits it and responds

@@ -53,8 +53,8 @@ public class RaftLog {
                 // Let RaftState handle joint vs final config application.
                 raftState.proccessNewConfig(raftConfig);
                 rtnValue = raftConfig;
-                if (raftConfig.targetVersion == raftConfig.version) {
-                    raftState.callbackPipe.put(new Ack(raftConfig.version));
+                if (raftConfig.version == raftConfig.version) {
+                    raftState.callbackPipe.put(new Ack());
                 }
             }
         }

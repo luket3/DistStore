@@ -184,8 +184,7 @@ public class Leader extends Role {
             prevLogTerm,
             raftState.log.getCommitIdx(),
             raftState.log.get(raftState.nextIndex.get(node.id),
-                                            raftState.log.getLastIdx()),
-            raftState.version
+                                            raftState.log.getLastIdx())
         );
 
         sendToNode(node,

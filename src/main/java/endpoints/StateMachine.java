@@ -51,7 +51,7 @@ public class StateMachine implements Runnable {
         if (dictMsg.client == null)
             return;
         
-        Response clientResponse = new Response(response, -1);
+        Response clientResponse = new Response(response);
         HandOff.sendToNode(dictMsg.client, gson.toJson(clientResponse), this.logPath);
     }
 

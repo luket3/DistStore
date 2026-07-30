@@ -61,7 +61,7 @@ public class Follower extends Role {
         }
 
         // Send vote grant status back to the candidate
-        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted, raftState.version);
+        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted);
         sendToNode(
             raftState.allNodes.get(RVmsg.candidateId),
             raftState.gson.toJson(RVReply)
@@ -142,7 +142,7 @@ public class Follower extends Role {
             raftState.log.commitEntries(AEmsg.leaderCommit);
         }
 
-        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx(), raftState.version);
+        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx());
         sendToNode(
             raftState.leader,
             raftState.gson.toJson(AEReply)

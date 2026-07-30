@@ -11,21 +11,21 @@ public class Ack extends Message {
     public String message;
     public Node node;
 
-    public Ack(int version) {
-        super("Ack", version);
+    public Ack() {
+        super("Ack");
         success = true;
         node = null;
     }
 
-    public Ack(int version, boolean success, String message) {
-        super("Ack", version);
+    public Ack(boolean success, String message) {
+        super("Ack");
         this.success = success;
         this.message = message;
         this.node = null;
     }
 
-        public Ack(boolean success, String message, Node n) {
-        super("Ack", -1);
+    public Ack(boolean success, String message, Node n) {
+        super("Ack");
         this.success = success;
         this.message = message;
         this.node = n;

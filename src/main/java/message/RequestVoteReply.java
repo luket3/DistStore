@@ -5,8 +5,8 @@ public class RequestVoteReply extends RaftMsg {
     public String senderId;
     public boolean voteGranted;
 
-    public RequestVoteReply(String level, int term, String senderId, boolean voteGranted, int version) {
-        super("RequestVoteReply", level, version);
+    public RequestVoteReply(String level, int term, String senderId, boolean voteGranted) {
+        super("RequestVoteReply", level);
         this.term = term;
         this.senderId = senderId;
         this.voteGranted = voteGranted;

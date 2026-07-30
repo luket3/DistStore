@@ -11,10 +11,11 @@ package runnable;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import endpoints.ClientImp;
+
+import message.Message;
+import message.NodeMsg;
 
 /**
  * Simple runner that creates a {@code Client} instance and initializes the
@@ -29,38 +30,46 @@ public class Client {
      * @throws Exception if initialization fails
      */
    public static void main(String[] args) throws Exception {
-
-      List<Thread> threads = new ArrayList<>();
-      ClientImp client = new ClientImp(threads);
+      ClientImp client = new ClientImp();
 
       client.addSeeds();
       client.startListener();
+      client.getCluster();
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
       while(true) {
-         String query = br.readLine();
-
-         if (query.equals("exit") || query.equals("Exit")) {
-            break;
-         }
-
-         client.initCluster();
-         String output = client.sendQuery(query);
-         System.out.println(output);
-         if (output.equals("Invalid query"))
+         String query = br.readLine();     
+         String response = null;
+         Message msg = client.buildMessage(query);
+         
+         if (msg == null) {
+            System.out.println("Invalid input");
             continue;
-
-         try {
-            String response = client.getResponse();
-            System.out.println("client responded with: " + response);
-         } catch (Exception e) {
-            System.err.println("Error getting response: " + e);
          }
-      }
+         
+         if (msg.type.equals("NodeMsg")) {
+            msg = client.querySpawner((NodeMsg) msg);
+            if (msg == null) {
+               System.out.println("Error querying spawner");
+               continue;
+            }
+         }
 
-      // Wait for all threads to finish
-      for (Thread t : threads) {
-         t.join();
+         while (true) {
+            client.sendQuery(msg);
+            response = client.getResponse();
+            if (response.equals("Invalid config")) {
+               System.out.println("notified by client of invalid config");
+               client.getCluster();
+               msg = client.updateMessage(msg);
+               continue;
+            } else if (response.equals("Invalid response")) {
+               System.out.println("Recieved Invalid Response");
+            } else
+               break;
+         }
+
+         System.out.println("Cluster responded with: " + response);
       }
    }
 }
