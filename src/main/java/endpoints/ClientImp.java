@@ -17,12 +17,19 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Comm;
+import communication.HandOff;
+import communication.Pipe;
+import communication.Listener;
 import message.DictMsg;
+import message.Message;
+import message.MessageDeserializer;
 import message.NodeMsg;
+import message.Response;
 import message.Config;
 import message.Ack;
 
@@ -38,13 +45,11 @@ public class ClientImp {
     private ConsistentHashMap map;
     private int version;
 
-    /** Communication helper used to send/receive messages to nodes. */
-    private Comm comm;
-
     /** Raw node lookup by id. */
     private Map<String, Node> nodes;
-
     private Gson gson;
+    private Node client;
+    private Pipe responsePipe;
 
     /**
      * Create a new {@code Client} instance and initialize communication and
@@ -53,10 +58,34 @@ public class ClientImp {
      * @throws Exception if initialization of underlying components fails
      */
     public ClientImp(List<Thread> threads) throws Exception {
-        comm = new Comm();
         nodes = new HashMap<>();
         gson = new Gson();
         version = -1;
+        client = new Node("Client0", "localhost", 4565);
+        responsePipe = new Pipe();
+    }
+
+    public static void listen(Pipe response, int port) {
+        try {
+            Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Message.class, new MessageDeserializer())
+                .create();
+            
+            Listener listener = new Listener();
+            listener.createSocket(port);
+
+            while (true) {
+                Comm comm = new Comm(listener.listenForConnection());
+                response.put(gson.fromJson(comm.readString(), Message.class));
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void startListener() {
+        Thread t = new Thread(() -> listen(responsePipe, client.port));
+        t.start();
     }
 
     /**
@@ -92,22 +121,27 @@ public class ClientImp {
                    .findFirst()
                    .orElse(null);
 
-        Config configMsg = new Config();
+        Config configMsg = new Config(client);
 
-        String response = null;
+        Message response = null;
         try {
-            comm.createSocket(n.ip, n.port);
-            String json = gson.toJson(configMsg);
-            comm.sendString(json);
-            response = comm.readString();
+            HandOff.sendToNode(n, gson.toJson(configMsg), null);
+            response = responsePipe.take();
         } catch (Exception e) {
             System.out.println("Error initializing client map: " + e);
+            return;
         }
 
-        Config responseMsg = gson.fromJson(response, Config.class);
-        map = responseMsg.config;
-        nodes = map.getAllNodes();
-        version = responseMsg.version;
+        if (response.type.equals("Config") && response != null) {
+            Config configResponse = (Config) response;
+            
+            map = configResponse.config;
+            nodes = map.getAllNodes();
+            version = configResponse.version;
+        } else {
+            System.out.println("Error initializing client map from response");
+            return;
+        }
 
         System.out.println("Client initialized with cluster configuration:");
         map.print();
@@ -142,28 +176,31 @@ public class ClientImp {
             || (split.length == 3 && split[0].equals("Put"))
         ) {
             Node n = map.getShard(split[1]).get(null);
-            DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null, version);
-
-            comm.createSocket(n.ip, n.port);
-            comm.sendString(gson.toJson(msg));
+            DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null, version, client);
+            HandOff.sendToNode(n, gson.toJson(msg), null);
 
             return msg.type + " query sent successfully to node " + n.id;
         }
         else if (split.length == 2 && (split[0].equals("Add") || split[0].equals("Remove"))) {
             Node n = map.getShard(split[1]).get(null);
 
-            NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", -1), version);
+            NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", -1), version, client);
             String SpawnerPort = Files.readString(Path.of("spawner.config"));
-            comm.createSocket("localhost", Integer.parseInt(SpawnerPort));
-            comm.sendString(gson.toJson(msg));
-            Ack ack = gson.fromJson(comm.readString(), Ack.class);
-            comm.closeSocket();
+            
+            Node spawner = new Node("spawner", "localhost", Integer.parseInt(SpawnerPort));
+            HandOff.sendToNode(spawner, gson.toJson(msg), null);
+            Message response = responsePipe.take();
+
+
+            if (!response.type.equals("Ack")) {
+                System.out.println("Invalid response from spawner");
+            }
+            Ack ack = (Ack) response;
 
             System.out.println(ack.message);
             if (ack.success) {
                 msg.node = ack.node;
-                comm.createSocket(n.ip, n.port);
-                comm.sendString(gson.toJson(msg));
+                HandOff.sendToNode(n, gson.toJson(msg), null);
                 return msg.type + " query sent successfully to node " + n.id;
             } else {
                 return "Invalid query";
@@ -182,8 +219,13 @@ public class ClientImp {
      * @throws Exception on I/O or communication errors
      */
     public String getResponse() throws Exception{
-        String response = comm.readString();
-        comm.closeSocket();
-        return response;
+        System.out.println("waiting for response...");
+        Message msg = responsePipe.take();
+        
+        if (!msg.type.equals("Response")) {
+            System.out.println("Invalid response");
+        } 
+        Response response = (Response) msg;
+        return response.msg;
     }
 }

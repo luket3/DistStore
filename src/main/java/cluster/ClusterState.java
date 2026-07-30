@@ -1,5 +1,4 @@
 package cluster;
-import communication.Comm;
 import communication.HandOff;
 import communication.Pipe;
 import message.Message;
@@ -7,7 +6,7 @@ import message.Message;
 import java.util.Map;
 import message.NodeMsg;
 import message.Config;
-import message.Reply;
+import message.Response;
 import com.google.gson.Gson;
 
 /**
@@ -66,12 +65,42 @@ public class ClusterState implements Runnable {
         this.currShardSize = currShard.size();
     }
 
-    public void replyConfig(Comm comm) {
+    public void takeAndHandle() throws Exception{
+        // Block until a new message arrives on the input pipe.
+        Message message = inPipe.take();
+        if (message == null)
+            return;
+
+        // Only NodeMsg messages are recognized for cluster topology updates.
+        if (message.type.equals("Config")) {
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: replying with cluster config", this.logPath);
+            Config configMsg = (Config) message;
+            replyConfig(configMsg.client);
+            return;
+        }
+
+        if (!(message.type.equals("NodeMsg"))) {
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unsupported message type " + message.type, this.logPath);
+            return;
+        }
+
+        NodeMsg nodeMsg = (NodeMsg) message;
+        Shard updated = updateCluster(nodeMsg);
+        if (updated != null)
+            updateShard(updated);
+
+        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
+        if (nodeMsg.client != null) {
+            Response response = new Response("Cluster successfully updated", version);
+            HandOff.sendToNode(nodeMsg.client, gson.toJson(response), this.logPath);
+        }
+    }
+
+    public void replyConfig(Node client) {
         Config configMsg = new Config(cluster, version);
 
         try {
-            String json = gson.toJson(configMsg);
-            comm.sendString(json);
+            HandOff.sendToNode(client, gson.toJson(configMsg), this.logPath);
         } catch (Exception e) {
             HandOff.writeToFile("Error sending config reply: " + e, this.logPath);
         }
@@ -89,25 +118,7 @@ public class ClusterState implements Runnable {
      *
      * @throws Exception if a pipe write or cluster access operation fails
      */
-    private void UpdateCluster() throws Exception {
-        // Block until a new message arrives on the input pipe.
-        Message message = inPipe.take();
-        if (message == null)
-            return;
-
-        // Only NodeMsg messages are recognized for cluster topology updates.
-        if (message.type.equals("Reply")) {
-            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: replying with cluster config", this.logPath);
-            Reply replymsg = (Reply) message;
-            replyConfig(replymsg.comm);
-            return;
-        }
-        if (!(message.type.equals("NodeMsg"))) {
-            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unsupported message type " + message.type, this.logPath);
-            return;
-        }
-
-        NodeMsg nodeMsg = (NodeMsg) message;
+    private Shard updateCluster(NodeMsg nodeMsg) throws Exception {
         String action = nodeMsg.action;
 
         // Tracks the shard impacted by the latest node operation.
@@ -128,16 +139,16 @@ public class ClusterState implements Runnable {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: removed node " + nodeMsg.node.id, this.logPath);
         } else {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unknown NodeMsg action " + nodeMsg.action, this.logPath);
-            return;
+            return null;
         }
+
+        // update cluster and wait for acknowledgement
         HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
         clusterRaftIn.put(new message.Update("Update", cluster.getAllNodes(), version));
-
-        // Wait for the Raft log to commit the cluster update before continuing.
         this.clusterRaftOut.take();
 
         // Dispatch shard-specific notifications after the cluster update completes.
-        updateShard(updatedShard);
+        return updatedShard;
     }
 
     /**
@@ -176,8 +187,6 @@ public class ClusterState implements Runnable {
             shardRaftIn.put(new message.Update("Update", updatedShard.getAllNodes(), version));
             this.shardRaftOut.take();
         }
-
-        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
     }
 
     /**
@@ -190,7 +199,7 @@ public class ClusterState implements Runnable {
     public void run() {
         while (true) {
             try {
-                UpdateCluster();
+                takeAndHandle();
             } catch (Exception e) {
                 HandOff.writeToFile("ClusterState: error updating cluster: " + e.getMessage(), this.logPath);
             }

@@ -2,7 +2,6 @@ package raft;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import cluster.Node;
 import communication.HandOff;
@@ -162,8 +161,7 @@ public class Leader extends Role {
             raftState.getLogFilePath()
         );
 
-        HashMap<String, Node> nodes = new HashMap<>(raftState.allNodes);
-        for (Node node : nodes.values()) {
+        for (Node node : raftState.allNodes.values()) {
             if (!node.id.equals(raftState.id))
                 sendAppendEntries(node);
         }

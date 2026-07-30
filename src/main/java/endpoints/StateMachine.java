@@ -17,7 +17,7 @@ import communication.Pipe;
 
 import message.Message;
 import message.DictMsg;
-import message.Reply;
+import message.Response;
 
 import com.google.gson.Gson;
 
@@ -36,12 +36,8 @@ public class StateMachine implements Runnable {
     Gson gson;
     String logPath;
 
-    HashMap<Integer, Comm> clientInfo = new HashMap<>();
-    int returnCode;
-
 
     StateMachine(Pipe inPipe, String nodeId) throws Exception {
-        this.returnCode = 0;
         this.inPipe = inPipe;
         this.nodeId = nodeId;
         this.comm = new Comm();
@@ -49,16 +45,14 @@ public class StateMachine implements Runnable {
         this.logPath = "logs/StateMachine.log";
     }
 
-    private void sendResponse(String response) throws Exception {
-        HandOff.writeToFile("Node:" + nodeId + " StateMachine: sending reply: " + response, this.logPath);
-        Comm client = clientInfo.get(returnCode);
-        if (client == null) {
-            return;
-        }
+    private void sendResponse(String response, Message query) throws Exception {
+        DictMsg dictMsg = (DictMsg) query;
 
-        client.sendString(response);
-        client.closeSocket();
-        clientInfo.remove(returnCode);
+        if (dictMsg.client == null)
+            return;
+        
+        Response clientResponse = new Response(response, -1);
+        HandOff.sendToNode(dictMsg.client, gson.toJson(clientResponse), this.logPath);
     }
 
     /**
@@ -70,21 +64,8 @@ public class StateMachine implements Runnable {
     public String parseQuery(Message query) {
         String res;
 
-        // Handle Reply messages by storing the client Comm for later response sending
-        if (query.type.equals("Reply")) {
-            Reply reply = (Reply) query;
-            clientInfo.put(reply.reply_num, reply.comm);
-            return "no response";
-        }
-
-        // Only process DictMsg queries in store
-        if (!query.type.equals("DictMsg")) {
-            return "store operation failed: unsupported message type " + query.type;
-        }
-
         // Process DictMsg queries and execute the corresponding store operation
         DictMsg dictMsg = (DictMsg) query;
-        returnCode = dictMsg.reply_num;
         if (dictMsg.action.equals("Get"))
             res = store.get(dictMsg.key);
         else if (dictMsg.action.equals("Put"))
@@ -105,13 +86,16 @@ public class StateMachine implements Runnable {
         while (true) {
             try {
                 Message query = inPipe.take();
-                HandOff.writeToFile("Node:" + nodeId + " StateMachine: recieved command: " + query.type, this.logPath);
+                // Only process DictMsg queries in store
+                if (!query.type.equals("DictMsg")) {
+                    HandOff.writeToFile("store operation failed: unsupported message type " + query.type, this.logPath);
+                    continue;
+                } else {
+                    HandOff.writeToFile("Node:" + nodeId + " StateMachine: recieved command: " + query.type, this.logPath);
+                }
 
                 String response = parseQuery(query);
-
-                if (!response.equals("no response")) {
-                    sendResponse(response);
-                }
+                sendResponse(response, query);
             }
             catch(Exception e) {
                 HandOff.writeToFile(e.getMessage(), this.logPath);

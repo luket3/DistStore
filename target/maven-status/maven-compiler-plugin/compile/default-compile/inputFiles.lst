@@ -23,6 +23,7 @@
 /home/croissant/projects/DistStore/src/main/java/message/Reply.java
 /home/croissant/projects/DistStore/src/main/java/message/RequestVote.java
 /home/croissant/projects/DistStore/src/main/java/message/RequestVoteReply.java
+/home/croissant/projects/DistStore/src/main/java/message/Response.java
 /home/croissant/projects/DistStore/src/main/java/message/Update.java
 /home/croissant/projects/DistStore/src/main/java/raft/Candidate.java
 /home/croissant/projects/DistStore/src/main/java/raft/Follower.java

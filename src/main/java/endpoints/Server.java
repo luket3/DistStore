@@ -24,8 +24,6 @@ import communication.Pipe;
 import raft.Raft;
 import message.Message;
 import message.MessageDeserializer;
-import message.DictMsg;
-import message.Reply;
 import message.RaftMsg;
 import cluster.ClusterState;
 import cluster.Node;
@@ -47,6 +45,7 @@ public class Server {
     public static Pipe clusterRaftAck;
     public static Pipe shardRaftAck;
     public static Map<String, Node> configData;
+    public static boolean learner;
 
 
     /**
@@ -56,15 +55,18 @@ public class Server {
      */
     public static void init(String args[]) throws Exception {
         
+        nodeId = args[0];
+        port = Integer.parseInt(args[1]);
+        learner = false;
+        if (args.length > 2)
+            learner = Boolean.parseBoolean(args[2]);
+
+        returnCode = 1;
+        configData = new HashMap<String,Node>();
+        listener = new Listener();
         gson = new GsonBuilder()
                 .registerTypeAdapter(Message.class, new MessageDeserializer())
                 .create();
-
-        listener = new Listener();
-        nodeId = args[0];
-        port = Integer.parseInt(args[1]);
-        returnCode = 1;
-        configData = new HashMap<String,Node>();
 
         try {
             List<String> configDataString =
@@ -100,26 +102,17 @@ public class Server {
         Comm comm = new Comm(listener.listenForConnection());
         String request = comm.readString();
         Message msg = gson.fromJson(request, Message.class);
+        comm.closeSocket();
 
         if (msg.type.equals("DictMsg")) {
             // if it's a client request, assign a return code and trigger state machine response
-            DictMsg dictMsg = (DictMsg) msg;
-            if (dictMsg.reply_num == -1) {
-                dictMsg.reply_num = returnCode;
-
-                Reply reply = new Reply(comm, returnCode, msg.version);
-                stateMachineIn.put(reply);
-                returnCode += 1;
-            }
             shardRaftIn.put(msg);
         } else if (msg.type.equals("Config")) {
             // return the current cluster configuration for client queries
-            clusterStateIn.put(new message.Reply(comm, msg.version));
-            return;
+            clusterStateIn.put(msg);
         } else if (msg.type.equals("NodeMsg")) {
             // if it's a cluster membership update, forward to ClusterState
             clusterRaftIn.put(msg);
-            return;
         } else if (msg.type.equals("AppendEntries") || 
                    msg.type.equals("RequestVote") || 
                    msg.type.equals("AppendEntriesReply") || 
@@ -132,7 +125,6 @@ public class Server {
             } else if (raftMsg.level.equals("Cluster")) {
                 clusterRaftIn.put(msg);
             }
-            return;
         }
     }
 
@@ -153,7 +145,8 @@ public class Server {
                 nodeId,
                 "Shard",
                 configData,
-                shardRaftAck
+                shardRaftAck,
+                learner
         ));
         shardRaft.start();
 
@@ -163,7 +156,8 @@ public class Server {
                 nodeId,
                 "Cluster",
                 configData,
-                clusterRaftAck
+                clusterRaftAck,
+                learner
         ));
         clusterRaft.start();
 

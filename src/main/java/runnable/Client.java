@@ -34,6 +34,7 @@ public class Client {
       ClientImp client = new ClientImp(threads);
 
       client.addSeeds();
+      client.startListener();
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
       while(true) {
@@ -45,16 +46,15 @@ public class Client {
 
          client.initCluster();
          String output = client.sendQuery(query);
-         String[] split = output.split(" ");
          System.out.println(output);
-         if (split[0].equals("NodeMsg") || output.equals("Invalid query"))
+         if (output.equals("Invalid query"))
             continue;
 
          try {
             String response = client.getResponse();
-            System.out.println(response);
+            System.out.println("client responded with: " + response);
          } catch (Exception e) {
-            System.out.println("Error getting response");
+            System.err.println("Error getting response: " + e);
          }
       }
 

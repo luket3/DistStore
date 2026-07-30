@@ -24,10 +24,11 @@ public class RaftNode {
             Pipe stateMachineIn,
             String level,
             Map<String,Node> configData,
-            Pipe ackPipe
+            Pipe ackPipe,
+            boolean learner
     ) {
         // Initialize shared state in Role base class
-        raftState = new RaftState(id, stateMachineIn, level, configData, ackPipe);
+        raftState = new RaftState(id, stateMachineIn, level, configData, ackPipe, learner);
 
         // Initialize role instances
         this.candidateRole = new Candidate(raftState);

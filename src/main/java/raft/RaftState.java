@@ -16,8 +16,7 @@ public class RaftState {
     public Map<String, Node> nextNodes;
     public Map<String, Node> oldNodes;
     public Map<String, Node> allNodes;
-    public Map<String,Node> aliveLearners;
-    public Map<String,Node> deadLearners;
+    public Map<String,Node> learners;
     public Map<String, Node> voters;
     public boolean jointConfig;
     public boolean configChangePending;
@@ -40,29 +39,32 @@ public class RaftState {
             Pipe outPipe,
             String level,
             Map<String, Node> configData,
-            Pipe ackPipe
+            Pipe ackPipe,
+            boolean learner
     ) {
-        this.nextNodes = null;
-        this.oldNodes = null;
-        this.aliveLearners = new HashMap<>();
-        this.deadLearners = new HashMap<>();
-        this.allNodes = null;
-        this.voters = null;
-        this.jointConfig = false;
         this.id = nodeId;
-        this.log = new RaftLog(outPipe,this);
         this.term = 0;
-        this.votedFor = null;
+        this.nextNodes = new HashMap<>(configData);
+        this.oldNodes = new HashMap<>(configData);
+        this.allNodes = new HashMap<>(configData);
+        this.learners = new HashMap<>();
+        this.voters = new HashMap<>(configData);
+        this.jointConfig = false;
+        this.configChangePending = false;
+        this.log = new RaftLog(outPipe,this);
         this.leader = null;
-        this.type = "follower";
+        this.votedFor = null;
         this.gson = new Gson();
-        this.version = -1;
+        this.version = 0;
         this.nextVersion = -1;
         this.level = level;
         this.outPipe = outPipe;
         this.callbackPipe = ackPipe;
-        this.configChangePending = false;
-        initConfig(configData, 0);
+
+        if (learner)
+            this.type = "learner";
+        else
+            this.type = "follower";
     }
 
     /**
@@ -86,32 +88,6 @@ public class RaftState {
         return "logs/ShardRaft.log";
     }
 
-    public void initConfig(Map<String, Node> nodes, int version) {
-        if (nodes == null || nodes.isEmpty()) {
-            return;
-        }
-        if (nodes.get(this.id) == null) {
-            this.type = "learner";
-        }
-        changeConfig(nodes, version);
-    }
-
-    public void changeConfig(Map<String, Node> nodes, int version) {
-        if (nodes == null) {
-            this.oldNodes = new HashMap<>();
-            this.allNodes = new HashMap<>();
-            this.voters = new HashMap<>();
-            this.jointConfig = false;
-            return;
-        }
-
-        this.oldNodes = new HashMap<>(nodes);
-        this.allNodes = new HashMap<>(nodes);
-        this.voters = new HashMap<>(nodes);
-        this.jointConfig = false;
-        this.version = version;
-    }
-
     public void readNewConfig(Map<String, Node> nodes, int nextVersion) {
         this.nextVersion = nextVersion;
 
@@ -127,7 +103,7 @@ public class RaftState {
             Map<String, Node> addedNodes = new HashMap<>(nodes);
             addedNodes.keySet().removeAll(this.allNodes.keySet());
             this.allNodes.putAll(addedNodes);
-            this.aliveLearners.putAll(addedNodes);
+            this.learners.putAll(addedNodes);
 
             if (this.matchIndex != null && this.nextIndex != null) {
                 for (Node n : addedNodes.values()) {
@@ -149,7 +125,7 @@ public class RaftState {
             return false;
 
         HashMap<String, Node> newConfig = new HashMap<>();
-        for (Node n : this.aliveLearners.values()) {
+        for (Node n : this.learners.values()) {
             if (this.matchIndex.get(n.id) >= this.log.getCommitIdx()) {
                 newConfig.put(n.id, n);
             }
@@ -195,7 +171,7 @@ public class RaftState {
 
             // New nodes in nextNodes should be tracked as learners until final-config commits.
             for (Node n : this.nextNodes.values()) {
-                this.aliveLearners.remove(n.id);
+                this.learners.remove(n.id);
             }
 
             if (this.allNodes == null) {
@@ -229,7 +205,6 @@ public class RaftState {
                 if (this.id.equals(n.id)) {
                     this.type = "learner";
                 }
-                this.deadLearners.put(n.id, n);
             }
 
             if (this.type.equals("learner") && this.voters.get(this.id) != null) {

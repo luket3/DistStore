@@ -22,6 +22,18 @@ remove msg dosen't work correctly
 
 next:
 
-create spawner class for spawning nodes in cluster, client sends this class a message to spawn new node, spawner responds with wheather nodeid is valid or port and ip of node
-move clientimp into client
 if client sends messages from an invalid version, reply to client and say invalid config
+
+how too?
+
+make client store leader of each shard as nessisary
+when sends a request to node, if node is not leader send newleader response message
+client updates leader of said shard or the cluster to be new leader when recieve new leader
+
+if the version of the cluster client holds is invalid where invalid means < current version send client stale config message
+on stale config message client requests new cluster state
+
+responses, make a new message which is repliable, where a message extends this class if it can be replied too
+this message holds the comm, make node check if comm = null before replying if nessisary
+
+may need to add an additional parameter on server boolean SEED, true if seed node, determines if node starts as learner or not

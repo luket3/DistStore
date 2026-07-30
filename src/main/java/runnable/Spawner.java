@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import communication.Comm;
+import communication.HandOff;
 import communication.Listener;
 import message.Message;
 import message.MessageDeserializer;
@@ -52,7 +53,7 @@ public class Spawner {
             for (String line : configDataString) {
                 String[] split = line.split(",");
                 nextPort = Integer.parseInt(split[2]);
-                createThread(split[0]);
+                createThread(split[0], false);
             }
 
         } catch (Exception e) {
@@ -61,11 +62,11 @@ public class Spawner {
         }
     }
 
-    public static Node createThread(String nodeID) throws IOException {
+    public static Node createThread(String nodeID, boolean learner) throws IOException {
         String port = String.valueOf(nextPort);
         Node n = new Node(nodeID, "localhost", Integer.parseInt(port));
         nextPort++;
-        String command = createCommand(nodeID, port);
+        String command = createCommand(nodeID, port, learner);
 
         System.out.println("Creating new Node id:" + n.id + ", ip:" + n.ip + ", port:" + n.port);
         Thread t = new Thread(() -> runCommand(command));
@@ -81,9 +82,9 @@ public class Spawner {
      * @return List of command strings, each suitable for launching a server instance.
      *         Each command has the form: "java Server <nodeId> <port>"
      */
-    public static String createCommand(String nodeID, String port) throws IOException {
+    public static String createCommand(String nodeID, String port, boolean learner) throws IOException {
         return "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
-                                  nodeID + " " + port;
+                                  nodeID + " " + port + " " + String.valueOf(learner);
     }
 
     /**
@@ -108,10 +109,9 @@ public class Spawner {
         }
     }
 
-    public static void reply(Comm comm, boolean success, String message, Node n) throws Exception {
+    public static void reply(Node client, boolean success, String message, Node n) throws Exception {
         Ack response = new Ack(success, message, n);
-        comm.sendString(gson.toJson(response));
-        comm.closeSocket();
+        HandOff.sendToNode(client, gson.toJson(response), null);
     }
 
     public static void handleConnection() throws Exception {
@@ -120,32 +120,40 @@ public class Spawner {
         Message msg = gson.fromJson(request, Message.class);
 
         if (!msg.type.equals("NodeMsg")) {
-            reply(comm, false, "invalid request", null);
+            System.out.println("Invalid message type unable to handle");
             return;
         }
 
         NodeMsg nodeMsg = (NodeMsg) msg;
         Node n = nodeMsg.node;
         if (n == null || n.id == null) {
-            reply(comm, false, "invalid request", null);
+            reply(nodeMsg.client, false, "Invalid request: indescipherable nodeID", null);
             return;
         }
 
         if (nodeMsg.action.equals("Add")) {
-            if (nodes.get(n.id) != null)
-                return; // nodeID already exists
+            if (nodes.get(n.id) != null) {
+                reply(nodeMsg.client, false, "Illegal nodeID: nodeID already exists", null);
+                return;
+            }
+            else if (n.id.startsWith("SEED")) {
+                reply(nodeMsg.client, false, "Illegal nodeID: nodeID cannot start with SEED", null);
+                return;
+            }
 
-            Node newNode = createThread(n.id);
-            reply(comm, true, "Successfully created Node: " + n.id, newNode);
+            Node newNode = createThread(n.id, true);
+            reply(nodeMsg.client, true, "Successfully created Node: " + n.id, newNode);
         } else if (nodeMsg.action.equals("Remove")) {
             Thread targetNode = nodes.get(n.id);
-            if (targetNode == null)
-                return; // NodeID dosen't exist
+            if (targetNode == null) {
+                reply(nodeMsg.client, false, "removal failed: nodeID " + n.id + " not found", null);
+                return;
+            }
 
             System.out.println("Killing node id:" + n.id);
             targetNode.interrupt();
             nodes.remove(n.id);
-            reply(comm, true, "Successfully killed Node: " + n.id, new Node(n.id, n.ip, n.port));
+            reply(nodeMsg.client, true, "Successfully killed Node: " + n.id, new Node(n.id, n.ip, n.port));
         }
     }
 

@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
-import java.util.Collection;
 
 import cluster.Node;
 
@@ -44,27 +43,6 @@ public class HandOff {
              comm.closeSocket();
         } catch (Exception e) {
             throw new RuntimeException("failed to send message to node " + node.id);
-        }
-    }
-
-        /**
-     * Send a message to all other nodes in the cluster.
-     *
-     * @param message the message to broadcast
-     */
-    public static void broadcast(String message, Collection<Node> nodes, String id) {
-        Comm comm = new Comm();
-        for (Node node : nodes) {
-            if (!node.id.equals(id)) {
-                try {
-                    comm.createSocket(node.ip, node.port);
-                    comm.sendString(message);
-                    comm.closeSocket();
-                } catch (Exception e) {
-                    System.err.println("Failed to send message to node "
-                            + node.id);
-                }
-            }
         }
     }
 }

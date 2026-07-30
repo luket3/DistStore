@@ -1,6 +1,4 @@
 package raft;
-
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -96,8 +94,7 @@ public class Candidate extends Role {
             raftState.getLogFilePath()
         );
 
-        HashMap<String, Node> nodes = new HashMap<>(raftState.voters);
-        for (Node node : nodes.values()) {
+        for (Node node : raftState.voters.values()) {
             if (!node.id.equals(raftState.id))
                 sendToNode(node, message);
         }

@@ -1,3 +1,4 @@
+message/Response.class
 message/RequestVoteReply.class
 raft/LogEntry.class
 message/Config.class

@@ -37,9 +37,10 @@ public class Raft implements Runnable {
         String nodeId,
         String level,
         Map<String,Node> configData,
-        Pipe ackPipe
+        Pipe ackPipe,
+        boolean learner
     ) {
-        node = new RaftNode(nodeId, outPipe, level, configData, ackPipe);
+        node = new RaftNode(nodeId, outPipe, level, configData, ackPipe, learner);
         this.inPipe = inPipe;
         this.outPipe = outPipe;
         this.nodeId = nodeId;

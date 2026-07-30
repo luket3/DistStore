@@ -1,7 +1,7 @@
-startservers:
+spawner:
 	mvn exec:java -Dexec.mainClass=runnable.Spawner
 
-startclient:
+client:
 	mvn exec:java -Dexec.mainClass=runnable.Client
 
 build:

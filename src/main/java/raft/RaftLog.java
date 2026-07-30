@@ -7,6 +7,7 @@ import communication.Pipe;
 import message.Ack;
 import message.Message;
 import message.RaftConfig;
+import message.Reply;
 
 public class RaftLog {
     private ArrayList<LogEntry> committedLog;
@@ -40,7 +41,12 @@ public class RaftLog {
             LogEntry entryToCommit = uncommittedLog.remove(0);
             committedLog.add(entryToCommit);
             if (entryToCommit.msg.type.equals("DictMsg") || entryToCommit.msg.type.equals("NodeMsg")) {
-                outPipe.put(entryToCommit.msg);
+                Reply msg = (Reply) entryToCommit.msg;
+                if (this.raftState.type != "leader") {
+                    msg.client = null;
+                }
+
+                outPipe.put(msg);
             } else if (entryToCommit.msg.type.equals("RaftConfig")) {
                 RaftConfig raftConfig = (RaftConfig) entryToCommit.msg;
 
