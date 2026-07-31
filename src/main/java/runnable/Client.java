@@ -30,7 +30,7 @@ public class Client {
      * @throws Exception if initialization fails
      */
    public static void main(String[] args) throws Exception {
-      ClientImp client = new ClientImp();
+      ClientImp client = new ClientImp(Integer.parseInt(args[0]));
 
       client.addSeeds();
       client.startListener();
@@ -58,6 +58,10 @@ public class Client {
          while (true) {
             client.sendQuery(msg);
             response = client.getResponse();
+            if (response == null) {
+               System.out.println("cluster didn't respond trying new node");
+               continue;
+            }
             if (response.equals("Invalid config")) {
                System.out.println("notified by client of invalid config");
                client.getCluster();

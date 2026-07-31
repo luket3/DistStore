@@ -58,9 +58,7 @@ public class Leader extends Role {
             raftState.nextIndex.put(AEReply.senderId, raftState.matchIndex.get(AEReply.senderId) + 1);
 
             // check if a learner has caught up and can be promoted
-            if (raftState.appendLearnerPromotion()) {
-                broadcastAppendEntries();
-            }
+            raftState.appendLearnerPromotion();
 
             // commit such that majority nodes have log entry
             for (int i = raftState.log.getLastIdx(); i > raftState.log.getCommitIdx(); i--) {
@@ -102,7 +100,7 @@ public class Leader extends Role {
 
                     if (raftConfig != null) {
                         if (raftConfig.jointConfig) {
-                            raftState.appendNewConfig(raftConfig.nodes, false);
+                            raftState.appendNewConfig(raftConfig.nodes, false, false);
                         }
                     }
 

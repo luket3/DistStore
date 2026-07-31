@@ -33,6 +33,7 @@ public class RaftState {
     public String level;
     public Pipe outPipe;
     public Pipe callbackPipe;
+    public boolean pendingLog;
 
     public RaftState(
             String nodeId,
@@ -60,6 +61,7 @@ public class RaftState {
         this.level = level;
         this.outPipe = outPipe;
         this.callbackPipe = ackPipe;
+        this.pendingLog = false;
 
         if (learner)
             this.type = "learner";
@@ -79,6 +81,15 @@ public class RaftState {
             this.matchIndex.put(nodeId, -1);
             this.nextIndex.put(nodeId, this.log.getLastIdx() + 1);
         }
+        checkConfigChange();
+    }
+
+    public void checkConfigChange() {
+        if (configChangePending && !jointConfig && !this.log.uncommitedJointConfig &&
+            nextNodes.size() < allNodes.size()) {
+            appendNewConfig(nextNodes, true, true);
+        }
+
     }
 
     public String getLogFilePath() {
@@ -86,6 +97,14 @@ public class RaftState {
             return "logs/ClusterRaft.log";
         }
         return "logs/ShardRaft.log";
+    }
+
+    public boolean getPendingLog() {
+        if (this.pendingLog) {
+            this.pendingLog = false;
+            return true;
+        } else
+            return false;
     }
 
     public void readNewConfig(Map<String, Node> nodes, int nextVersion) {
@@ -113,16 +132,19 @@ public class RaftState {
             }
         } else if (nodes.size() < this.allNodes.size()) {
             boolean configChanged = this.voters == null || !this.voters.equals(nodes);
-            if (this.type.equals("leader") && configChanged && !this.configChangePending) {
-                appendNewConfig(nodes, true);
+            if (configChanged && !this.configChangePending) {
                 configChangePending = true;
+                nextNodes = nodes;
+
+                if (this.type.equals("leader"))
+                    appendNewConfig(nodes, true, true);
             }
         }
     }
 
-    public boolean appendLearnerPromotion() {
+    public void appendLearnerPromotion() {
         if (configChangePending)
-            return false;
+            return;
 
         HashMap<String, Node> newConfig = new HashMap<>();
         for (Node n : this.learners.values()) {
@@ -130,17 +152,17 @@ public class RaftState {
                 newConfig.put(n.id, n);
             }
         }
-        if (newConfig.size() > 0) {
+        if (newConfig.size() > 0 && !configChangePending) {
             newConfig.putAll(this.voters);
-            this.appendNewConfig(newConfig, true);
+            this.appendNewConfig(newConfig, true, true);
             this.configChangePending = true;
-            return true;
+            return;
         }
 
-        return false;
+        return;
     }
 
-    public void appendNewConfig(Map<String,Node> newConfig, boolean jointConfig) {
+    public void appendNewConfig(Map<String,Node> newConfig, boolean jointConfig, boolean pendingLog) {
         if (jointConfig) {
             // Append a joint-config entry: oldNodes should be the current voter set
             this.log.appendEntry(new RaftConfig(newConfig, this.voters, true, nextVersion), term);
@@ -148,6 +170,8 @@ public class RaftState {
             // Append a final, non-joint config. oldNodes is null for the stable config.
             this.log.appendEntry(new RaftConfig(newConfig, null, false, nextVersion), term);
         }
+        matchIndex.put(id, log.getLastIdx());
+        this.pendingLog = pendingLog;
     }
 
     public void proccessNewConfig(RaftConfig msg) {

@@ -14,21 +14,29 @@ public class RaftLog {
     private ArrayList<LogEntry> uncommittedLog;
     private Pipe outPipe;
     private RaftState raftState;
+    public boolean uncommitedJointConfig;
 
     public RaftLog(Pipe outPipe, RaftState raftState) {
         this.committedLog = new ArrayList<>();
         this.uncommittedLog = new ArrayList<>();
         this.outPipe = outPipe;
         this.raftState = raftState;
+        this.uncommitedJointConfig = false;
     }
 
-    public void appendEntry(Message command, int term) {
+    public void appendEntry(Message msg, int term) {
         LogEntry newEntry = new LogEntry(
-                command,
+                msg,
                 term,
                 committedLog.size() + uncommittedLog.size()
         );
         uncommittedLog.add(newEntry);
+
+        if (msg.type.equals("RaftConfig")) {
+            RaftConfig raftConfig = (RaftConfig) msg;
+            if (raftConfig.jointConfig)
+                this.uncommitedJointConfig = true;
+        }
     }
 
     public RaftConfig commitEntries(int upToIndex) {
@@ -53,9 +61,12 @@ public class RaftLog {
                 // Let RaftState handle joint vs final config application.
                 raftState.proccessNewConfig(raftConfig);
                 rtnValue = raftConfig;
-                if (raftConfig.version == raftConfig.version) {
+                if (raftState.version == raftConfig.version) {
                     raftState.callbackPipe.put(new Ack());
                 }
+
+                if (raftConfig.jointConfig)
+                    this.uncommitedJointConfig = false;
             }
         }
 

@@ -89,6 +89,11 @@ public class ClusterState implements Runnable {
         if (updated != null)
             updateShard(updated);
 
+        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster", this.logPath);
+        this.clusterRaftOut.take();
+        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from Shard", this.logPath);
+        this.shardRaftOut.take();
+
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
         if (nodeMsg.client != null) {
             Response response = new Response("Cluster successfully updated");
@@ -142,10 +147,9 @@ public class ClusterState implements Runnable {
             return null;
         }
 
-        // update cluster and wait for acknowledgement
+        // update cluster
         HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
         clusterRaftIn.put(new message.Update("Update", cluster.getAllNodes(), version));
-        this.clusterRaftOut.take();
 
         // Dispatch shard-specific notifications after the cluster update completes.
         return updatedShard;
@@ -185,7 +189,6 @@ public class ClusterState implements Runnable {
             // node list needs to be propagated.
             HandOff.writeToFile("Node " + this.nodeID + " sending Update message to Shard", this.logPath);
             shardRaftIn.put(new message.Update("Update", updatedShard.getAllNodes(), version));
-            this.shardRaftOut.take();
         }
     }
 

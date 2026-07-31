@@ -9,10 +9,10 @@ package endpoints;
  */
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Iterator;
 
@@ -51,7 +51,9 @@ public class ClientImp {
     private Gson gson;
     private Node client;
     private Pipe responsePipe;
-    private int spawnerPort;
+    private Node spawner;
+    private static int timeOut = 3000;
+    private HashSet<String> dead;
 
     /**
      * Create a new {@code Client} instance and initialize communication and
@@ -59,13 +61,13 @@ public class ClientImp {
      *
      * @throws Exception if initialization of underlying components fails
      */
-    public ClientImp() throws Exception {
+    public ClientImp(int port) throws Exception {
         nodes = new HashMap<>();
         gson = new Gson();
         version = -1;
-        client = new Node("Client0", "localhost", 4565);
+        client = new Node("Client0", "localhost", port);
         responsePipe = new Pipe();
-        spawnerPort = Integer.parseInt(Files.readString(Path.of("spawner.config")));
+        dead = new HashSet<>();
     }
 
     public static void listen(Pipe response, int port) {
@@ -112,7 +114,10 @@ public class ClientImp {
                     split[1],
                     Integer.parseInt(split[2])
             );
-            nodes.put(n.id, n);
+            if (n.id.equals("spawner"))
+                spawner = n;
+            else
+                nodes.put(n.id, n);
         }
     }
 
@@ -121,16 +126,18 @@ public class ClientImp {
         Config configMsg = new Config(client);
         Message response = null;
 
-        try {
-            Iterator<Node> it = nodes.values().iterator();
-            while (response == null && it.hasNext()) {
-                Node n = it.next();
+        Iterator<Node> it = nodes.values().iterator();
+        while (response == null && it.hasNext()) {
+            Node n = it.next();
+            if (dead.contains(n.id))
+                continue;
+
+            try {
                 HandOff.sendToNode(n, gson.toJson(configMsg), null);
-                response = responsePipe.take(3000);
+                response = responsePipe.take(timeOut);
+            } catch (Exception e) {
+                System.out.println("Error installing client map: " + e);
             }
-        } catch (Exception e) {
-            System.out.println("Error installing client map: " + e);
-            return;
         }
 
         if (response.type.equals("Config") && response != null) {
@@ -139,6 +146,7 @@ public class ClientImp {
             map = configResponse.config;
             nodes = map.getAllNodes();
             version = configResponse.version;
+            dead.clear();
         } else {
             System.out.println("Error installing client map from response");
             return;
@@ -172,14 +180,22 @@ public class ClientImp {
         Node n = null;
         if (msg.type.equals("NodeMsg")) {
             NodeMsg castMsg = (NodeMsg) msg;
-            n = map.getShard(castMsg.node.id).get(null);
+            n = map.getShard(castMsg.node.id).get(dead);
         } else if (msg.type.equals("DictMsg")) {
             DictMsg castMsg = (DictMsg) msg;
-            n = map.getShard(castMsg.key).get(null);
+            n = map.getShard(castMsg.key).get(dead);
         }
 
-        HandOff.sendToNode(n, gson.toJson(msg), null);
-        return;
+        try {
+            HandOff.sendToNode(n, gson.toJson(msg), null);
+        } catch (Exception e) {
+            dead.add(n.id);
+            System.err.println(e);
+            if (dead.size() == nodes.size()) {
+                System.out.println("no nodes responding, clearing dead nodes");
+                dead.clear();
+            }
+        }
     }
 
     public Message buildMessage(String query) throws Exception {
@@ -211,8 +227,6 @@ public class ClientImp {
     }
 
     public NodeMsg querySpawner(NodeMsg msg) throws Exception {
-
-        Node spawner = new Node("spawner", "localhost", spawnerPort);
         HandOff.sendToNode(spawner, gson.toJson(msg), null);
         Message response = responsePipe.take();
 
@@ -221,6 +235,7 @@ public class ClientImp {
             return null;
         }
         Ack ack = (Ack) response;
+        dead.add(msg.node.id);
 
         System.out.println(ack.message);
         if (ack.success) {
@@ -229,7 +244,6 @@ public class ClientImp {
         } else {
             return null;
         }
-
     }
 
     /**
@@ -241,9 +255,11 @@ public class ClientImp {
      */
     public String getResponse() throws Exception{
         System.out.println("waiting for response...");
-        Message msg = responsePipe.take();
-        
-        if (!msg.type.equals("Response")) {
+        Message msg = responsePipe.take(timeOut);
+
+        if (msg == null)
+            return null;
+        else if (!msg.type.equals("Response")) {
             System.out.println("Invalid response");
         } 
         Response response = (Response) msg;

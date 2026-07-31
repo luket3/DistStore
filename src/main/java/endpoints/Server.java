@@ -74,7 +74,9 @@ public class Server {
 
             for (String line : configDataString) {
                 String[] split = line.split(",");
-                configData.put(split[0], new Node(split[0], split[1], Integer.parseInt(split[2])));
+                Node n = new Node(split[0], split[1], Integer.parseInt(split[2]));
+                if (!n.id.equals("spawner"))
+                    configData.put(split[0], n);
             }
 
         } catch (Exception e) {

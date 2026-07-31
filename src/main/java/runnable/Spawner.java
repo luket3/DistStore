@@ -11,7 +11,6 @@ package runnable;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +32,7 @@ public class Spawner {
     public static HashMap<String, Thread> nodes;
     public static Listener listener;
     public static int nextPort;
+    public static int listeningPort;
     public static Gson gson;
 
     // MUST be less than 6
@@ -52,8 +52,12 @@ public class Spawner {
 
             for (String line : configDataString) {
                 String[] split = line.split(",");
-                nextPort = Integer.parseInt(split[2]);
-                createThread(split[0], false);
+                if (split[0].equals("spawner"))
+                    listeningPort = Integer.parseInt(split[2]);
+                else {
+                    nextPort = Integer.parseInt(split[2]);
+                    createThread(split[0], false);
+                }
             }
 
         } catch (Exception e) {
@@ -159,9 +163,7 @@ public class Spawner {
 
     public static void main(String[] args) throws Exception {
         init();
-
-        int port = Integer.parseInt(Files.readString(Path.of("spawner.config")));
-        listener.createSocket(port);
+        listener.createSocket(listeningPort);
 
         while(true) {
             handleConnection();

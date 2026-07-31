@@ -81,14 +81,18 @@ public class RaftNode {
                 leaderRole.appendLogEntry(message);
         }
 
-        if (raftState.type.equals("leader")) {
-            if (message.type.equals("AppendEntriesReply")) {
-                leaderRole.appendEntries(message);
-            }
-        } else if (raftState.type.equals("candidate")) {
+        if (raftState.type.equals("candidate")) {
             if (message.type.equals("RequestVoteReply")) {
                 candidateRole.requestVote(message);
             }
+        } else if (raftState.type.equals("leader")) {
+            if (message.type.equals("AppendEntriesReply")) {
+                leaderRole.appendEntries(message);
+            }
+        }
+
+        if (raftState.type.equals("leader") && raftState.getPendingLog()) {
+            leaderRole.broadcastAppendEntries();
         }
     }
 
