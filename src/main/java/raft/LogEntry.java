@@ -11,19 +11,26 @@ import message.Message;
  */
 
 /**
- * Represents a single entry in the Raft log.
+ * Immutable record stored in the local Raft log.
  *
- * <p>Each entry contains the original command string, the leader term when the
- * entry was created, and the log index.</p>
+ * <p>The entry contains the serialized operation to apply, the term in which
+ * the leader accepted the entry, and the relative index assigned to it in the
+ * replicated log.</p>
  */
 public class LogEntry {
-    /** The command associated with this log entry. */
+    /**
+     * The message payload stored in this log position.
+     */
     final Message msg;
 
-    /** Raft term when this entry was created. */
+    /**
+     * Raft term in which the entry was created.
+     */
     final int term;
 
-    /** Log index for this entry. */
+    /**
+     * The log index assigned to this entry.
+     */
     final int index;
 
     /**

@@ -8,7 +8,8 @@ import message.RequestVoteReply;
 import message.AppendEntriesReply;
 
 /**
- * Follower role for Raft consensus.
+ * Role handler for a non-leader node that participates in vote requests,
+ * append-entry replication, and leader redirection for client commands.
  */
 public class Follower extends Role {
 

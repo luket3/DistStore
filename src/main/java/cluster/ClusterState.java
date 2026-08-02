@@ -10,12 +10,11 @@ import message.Response;
 import com.google.gson.Gson;
 
 /**
- * Maintains the local node's view of the cluster topology and propagates
- * cluster membership changes to the shard and cluster Raft pipes.
+ * Local cluster-topology controller for one node.
  *
- * <p>This class continuously listens for incoming {@link NodeMsg} messages, applies
- * add/remove operations to the local {@link ConsistentHashMap}, and then pushes the
- * resulting state updates to the relevant Raft communication channels.</p>
+ * <p>This service reads membership updates from its input pipe, mutates the
+ * node's local consistent-hash view, and publishes the resulting membership
+ * snapshot into the cluster-wide and shard-wide Raft pipelines.</p>
  */
 public class ClusterState implements Runnable {
 

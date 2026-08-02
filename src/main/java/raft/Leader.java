@@ -12,7 +12,9 @@ import message.AppendEntries;
 import message.RaftConfig;
 
 /**
- * Leader role for Raft consensus.
+ * Role handler responsible for appending new operations to the log,
+ * replicating log entries to followers, and committing entries once a majority
+ * has acknowledged them.
  */
 public class Leader extends Role {
 

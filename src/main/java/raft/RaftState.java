@@ -8,32 +8,131 @@ import message.RaftConfig;
 
 import com.google.gson.Gson;
 
+/**
+ * Mutable Raft runtime state for one node participating in either the
+ * cluster-wide or shard-wide consensus group.
+ *
+ * <p>This object stores the node's current term, voting configuration,
+ * commit indexes, and the per-node metadata needed to drive leader election
+ * and configuration changes.</p>
+ */
 public class RaftState {
 
+    /**
+     * Current Raft term observed by this node.
+     */
     public int term;
+
+    /**
+     * Local node identifier.
+     */
     public String id;
 
+    /**
+     * Target node set after the next configuration transition.
+     */
     public Map<String, Node> nextNodes;
+
+    /**
+     * Previous voter set used during joint configuration transitions.
+     */
     public Map<String, Node> oldNodes;
+
+    /**
+     * Current known nodes in the group.
+     */
     public Map<String, Node> allNodes;
+
+    /**
+     * Learner nodes tracked as part of the Raft membership model.
+     */
     public Map<String,Node> learners;
+
+    /**
+     * Current voter set for this Raft group.
+     */
     public Map<String, Node> voters;
+
+    /**
+     * Whether the node is currently operating in a joint-config transition.
+     */
     public boolean jointConfig;
+
+    /**
+     * Whether a configuration change is waiting to be applied.
+     */
     public boolean configChangePending;
 
+    /**
+     * Log storage for this node.
+     */
     public RaftLog log;
+
+    /**
+     * Leader node currently known to this follower or candidate.
+     */
     public Node leader;
+
+    /**
+     * The candidate that this node voted for in the current term.
+     */
     public String votedFor;
+
+    /**
+     * Current role: follower, candidate, leader, or learner.
+     */
     public String type;
+
+    /**
+     * Highest log index that each follower has acknowledged.
+     */
     public HashMap<String, Integer> matchIndex;
+
+    /**
+     * The next log index that a leader should send to each follower.
+     */
     public HashMap<String, Integer> nextIndex;
+
+    /**
+     * JSON serializer used for logging and RPC serialization.
+     */
     public Gson gson;
+
+    /**
+     * Last stable configuration version observed by this node.
+     */
     public int version;
+
+    /**
+     * Version associated with the pending configuration change.
+     */
     public int nextVersion;
+
+    /**
+     * Whether the current group governs shard or cluster traffic.
+     */
     public String level;
+
+    /**
+     * Outgoing message pipe used by the log to forward committed operations.
+     */
     public Pipe outPipe;
+
+    /**
+     * Pipe used to acknowledge configuration changes back to the caller.
+     */
     public Pipe callbackPipe;
+
+    /**
+     * Whether a log entry was appended and needs a follow-up broadcast.
+     */
     public boolean pendingLog;
+
+    /**
+     * Learners discovered during a configuration transition that still need
+     * replication and promotion work.
+     */
+    public HashMap<String, Node> newLearners;
 
     public RaftState(
             String nodeId,
@@ -62,6 +161,7 @@ public class RaftState {
         this.outPipe = outPipe;
         this.callbackPipe = ackPipe;
         this.pendingLog = false;
+        this.newLearners = new HashMap<>();
 
         if (learner)
             this.type = "learner";
@@ -123,6 +223,7 @@ public class RaftState {
             addedNodes.keySet().removeAll(this.allNodes.keySet());
             this.allNodes.putAll(addedNodes);
             this.learners.putAll(addedNodes);
+            this.newLearners.putAll(addedNodes);
 
             if (this.matchIndex != null && this.nextIndex != null) {
                 for (Node n : addedNodes.values()) {

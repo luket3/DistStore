@@ -29,8 +29,12 @@ import cluster.ClusterState;
 import cluster.Node;
 
 /**
- * Server runner program that initializes listening sockets and spawns a
- * {@link StateMachine} worker thread for each incoming connection.
+ * Process entry point for a single node in the distributed store.
+ *
+ * <p>The server initializes the local network configuration, starts one
+ * Raft thread for shard-level operations and one for cluster-wide
+ * membership changes, and exposes a listener that forwards incoming
+ * network messages into the appropriate message pipe.</p>
  */
 public class Server {
     public static Listener listener;

@@ -19,28 +19,40 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Simple consistent-hash implementation that maps keys to {@link Shard}
- * instances.
+ * Maintains a consistent-hash ring that maps a logical key to a shard
+ * abstraction.
  *
- * <p>Each real shard is represented by multiple virtual shard entries on the
- * ring (controlled by {@code virtualShards}). The structure automatically
- * splits and merges shards based on the configured {@code minShardSize}.</p>
+ * <p>Each real shard contributes several virtual ring positions so that the
+ * cluster can rebalance membership without a full remap of the entire ring.
+ * The class also implements the local split and merge policy used for shard
+ * resizing in the prototype.</p>
  */
 public class ConsistentHashMap {
 
-    /** Ring mapping 64-bit hash values to shard metadata. */
-    private final TreeMap<Long, Shard> ring; // ring containing node metadata
+    /**
+     * Ring mapping a 64-bit hash value to the shard metadata instance that
+     * owns that virtual position.
+     */
+    private final TreeMap<Long, Shard> ring;
 
-    /** Number of virtual shard replicas per real shard on the ring. */
+    /**
+     * Number of virtual replicas to place on the ring for each logical shard.
+     */
     private final int virtualShards = 3;
-    // number of instances of each real node in ring
 
-    /** Minimum desirable shard size before rebalancing occurs. */
+    /**
+     * Minimum shard size used by the simple split/merge policy.
+     */
     private final int minShardSize = 3;
 
-    /** Monotonically-increasing identifier used when creating new shards. */
+    /**
+     * Monotonically increasing identifier used when creating a new shard.
+     */
     private int currShardId = 0;
 
+    /**
+     * Number of logical shards currently present in the ring.
+     */
     public int numShards = 0;
 
     /**
@@ -142,6 +154,11 @@ public class ConsistentHashMap {
         return null;
     }
 
+    /**
+     * Returns the unique node set represented by all shards on the ring.
+     *
+     * @return a map of node identifier to node instance for the current ring
+     */
     public Map<String, Node> getAllNodes() {
         Map<String, Node> nodes = new HashMap<>();
         HashSet<Shard> visitedShards = new HashSet<>();

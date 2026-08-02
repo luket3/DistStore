@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Represents a shard (subset) of nodes stored on the consistent hash ring.
+ * Represents the logical node subset assigned to one shard on the ring.
  *
- * <p>Each {@code Shard} keeps a left and right list of {@link Node}s. New
- * nodes are appended to the left list until the minimum shard size is
- * reached; subsequent nodes go to the right list. Shards can be split into a
- * new shard when the size doubles the minimum.</p>
+ * <p>The shard keeps two ordered node lists, {@code left} and {@code right},
+ * which are used by the prototype's simple split policy. A shard is expected
+ * to grow until it reaches twice the configured minimum size, at which point
+ * the right-hand list can be promoted into a new shard.</p>
  */
 public class Shard {
     private LinkedList<Node> left;

@@ -9,13 +9,28 @@ import java.util.Map;
 import cluster.Node;
 
 /**
- * Base class for Raft implementations holding common state.
+ * Coordination layer that dispatches incoming Raft and client messages to the
+ * role implementation currently active on the node.
  */
 public class RaftNode {
-    /** Current role type: "follower", "candidate", or "leader". */
+    /**
+     * Candidate role handler used during election processing.
+     */
     private Candidate candidateRole;
+
+    /**
+     * Follower role handler used for vote and append-entry processing.
+     */
     private Follower followerRole;
+
+    /**
+     * Leader role handler used for replication and commit coordination.
+     */
     private Leader leaderRole;
+
+    /**
+     * Shared Raft consensus state for this node.
+     */
     private RaftState raftState;
     
     /**
@@ -93,6 +108,14 @@ public class RaftNode {
 
         if (raftState.type.equals("leader") && raftState.getPendingLog()) {
             leaderRole.broadcastAppendEntries();
+        }
+        if (raftState.newLearners.size() > 0) {
+            if (raftState.type.equals("leader")) {
+                for (Node n : raftState.newLearners.values()) {
+                    leaderRole.sendAppendEntries(n);
+                }
+            }
+            raftState.newLearners.clear();
         }
     }
 

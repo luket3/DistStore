@@ -22,13 +22,18 @@ import message.Response;
 import com.google.gson.Gson;
 
 /**
- * Per-connection server worker that executes simple key-value queries.
+ * Local application worker that executes a single in-memory key-value store
+ * for the node that receives the committed Raft operation.
  *
- * <p>Supported queries: {@code Get key}, {@code Put key value},
- * and {@code Delete key}.</p>
+ * <p>This implementation is not yet a fully shard-aware distributed state
+ * machine. It currently maintains one shared process-local {@link HashMap}
+ * and applies every supported client operation to that local table.</p>
  */
 public class StateMachine implements Runnable {
-    /** Shared in-memory key-value store. */
+    /**
+     * Single process-local key-value table used by this node to apply
+     * committed client operations.
+     */
     private static HashMap<String,String> store = new HashMap<>();
     Comm comm;
     Pipe inPipe;

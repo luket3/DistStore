@@ -15,8 +15,8 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Lightweight communication helper for reading and writing length-prefixed
- * UTF-8 strings over a TCP {@link Socket}.
+ * Small socket wrapper used to exchange length-prefixed UTF-8 messages with
+ * other nodes in the cluster.
  */
 public class Comm {
     /** Underlying TCP socket used for communication. */

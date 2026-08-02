@@ -14,11 +14,11 @@ import java.util.Map;
 import cluster.Node;
 
 /**
- * Partial Raft role implementation for handling incoming RPCs.
+ * Runnable wrapper that drives one Raft protocol instance for a node.
  *
- * <p>This class models a node's Raft role
- * (follower/candidate/leader) and provides an entry point for processing
- * messages received via a pipe.</p>
+ * <p>The class repeatedly waits on the input pipe for new RPCs and applies
+ * either the election timeout or a direct message dispatch to the underlying
+ * {@link RaftNode} role state machine.</p>
  */
 public class Raft implements Runnable {
     RaftNode node;

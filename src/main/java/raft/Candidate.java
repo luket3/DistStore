@@ -9,7 +9,10 @@ import message.RequestVote;
 import cluster.Node;
 
 /**
- * Candidate role for Raft consensus.
+ * Role handler for a node that is currently campaigning for leadership.
+ *
+ * <p>The candidate collects vote replies and promotes itself to leader once a
+ * majority of the current voter set has granted approval.</p>
  */
 public class Candidate extends Role {
 
