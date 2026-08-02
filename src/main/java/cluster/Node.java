@@ -6,7 +6,6 @@ package cluster;
  * with a node in the cluster.
  */
 public class Node {
-
     /** Node identifier (e.g. "N1"). */
     public String id;
 

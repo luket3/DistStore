@@ -1,13 +1,5 @@
 package raft;
 
-/*
- * File: Raft.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Partial Raft role implementation for handling incoming RPCs.
- */
-
 import communication.Pipe;
 import message.Message;
 import java.util.Map;
@@ -16,21 +8,36 @@ import cluster.Node;
 /**
  * Runnable wrapper that drives one Raft protocol instance for a node.
  *
- * The class repeatedly waits on the input pipe for new RPCs and applies
- * either the election timeout or a direct message dispatch to the underlying
- * {@link RaftNode} role state machine.
+ * The class repeatedly waits on its input pipe for incoming Raft messages,
+ * sends periodic leader heartbeats when the node is the leader, and triggers
+ * an election timeout transition when the node is a follower or candidate.
  */
 public class Raft implements Runnable {
-    RaftNode node;
-    Pipe inPipe;
-    Pipe outPipe;
+    /** The Raft node instance */
+    private RaftNode node;
+
+    /** The input pipe for receiving Raft messages */
+    private Pipe inPipe;
+
+    /** Timestamp of the last heartbeat sent by the leader */
     private long lastHeartbeatTime = -1;
+
+    /** Constants for heartbeat and election timeout intervals */
     private static final int HEARTBEAT_INTERVAL_MS = 1000; // 1 second heartbeat interval
     private static final int ELECTION_TIMEOUT_MIN_MS = 2000; // 2 seconds
     private static final int ELECTION_TIMEOUT_MAX_MS = 5000; // 5 seconds
-    String nodeId;
-    String level;
 
+    /**
+     * Creates a Raft runtime instance for one node.
+     *
+     * @param inPipe input pipe that receives Raft protocol traffic
+     * @param outPipe output pipe used by the node for outbound Raft messages
+     * @param nodeId identifier of the local node
+     * @param level Raft pipeline classification, such as Shard or Cluster
+     * @param configData known peer configuration for this runtime instance
+     * @param ackPipe pipe used to report acknowledgement state back to callers
+     * @param learner whether this node participates as a learner-only peer
+     */
     public Raft(
         Pipe inPipe,
         Pipe outPipe,
@@ -42,15 +49,16 @@ public class Raft implements Runnable {
     ) {
         node = new RaftNode(nodeId, outPipe, level, configData, ackPipe, learner);
         this.inPipe = inPipe;
-        this.outPipe = outPipe;
-        this.nodeId = nodeId;
-        this.level = level;
     }
 
     /**
-     * Start listening for incoming messages via the pipe and handle Raft
-     * timeouts. If no message is received within the election timeout the
-     * node becomes a candidate and an election is started.
+     * Runs the Raft protocol loop for the current node.
+     *
+     * The loop applies a leader heartbeat schedule when the node is leader,
+     * otherwise it waits for a randomized election timeout. If a message
+     * arrives before the timeout expires, it is dispatched to the underlying
+     * RaftNode state machine. If the timeout expires first, a follower or
+     * candidate escalates into an election.
      */
     @Override
     public void run() {

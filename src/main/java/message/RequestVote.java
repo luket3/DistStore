@@ -7,10 +7,13 @@ package message;
 public class RequestVote extends RaftMsg {
     /** The term of the candidate requesting votes. */
     public int term;
+
     /** The candidate requesting votes. */
     public String candidateId;
+
     /** Index of the candidate's last log entry (for log consistency check). */
     public int lastLogIndex;
+    
     /** Term of the candidate's last log entry (for log consistency check). */
     public int lastLogTerm;
 

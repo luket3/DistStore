@@ -4,13 +4,11 @@ import cluster.ConsistentHashMap;
 import cluster.Node;
 
 /**
- * Configuration snapshot reply used by clients to install the latest cluster
- * view locally.
+ * Configuration message used by clients to install the latest cluster
+ * view locally or request a snapshot of the current configuration.
  */
 public class Config extends Reply {
-    /**
-     * Serialized cluster topology snapshot returned to the requester.
-     */
+    /** cluster topology snapshot returned to the requester. */
     public ConsistentHashMap config;
 
     /**
@@ -22,7 +20,7 @@ public class Config extends Reply {
     }
 
     /**
-     * Creates a configuration reply addressed to a specific client.
+     * Creates a configuration request from a specified client.
      *
      * @param client reply destination
      */

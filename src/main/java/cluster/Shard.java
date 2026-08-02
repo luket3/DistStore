@@ -1,14 +1,5 @@
 package cluster;
 
-/*
- * File: Shard.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Represents a shard (subset) of nodes stored on the
- * consistent hash ring.
- */
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,13 +15,20 @@ import java.util.HashSet;
  * the right-hand list can be promoted into a new shard.
  */
 public class Shard {
+    /** Nodes in the left side of the Shard */
     private LinkedList<Node> left;
-    private LinkedList<Node> right;
-    private int minShardSize;
 
+    /** Nodes in the right side of the Shard */
+    private LinkedList<Node> right;
+
+    /** Minimum size for this shard */
+    private int minShardSize = 3;
+
+    /** Identifier for this shard */
     public String id;
+
+    /** Current number of nodes in this shard */
     public int length;
-    public Node leader;
 
     /**
      * Internal constructor used when creating a split shard with an initial
@@ -52,7 +50,6 @@ public class Shard {
 
         this.left = new LinkedList<>();
         this.right = new LinkedList<>();
-        this.leader = null;
     }
 
     /**

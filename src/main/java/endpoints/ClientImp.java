@@ -1,13 +1,5 @@
 package endpoints;
 
-/*
- * File: Client.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Client for the distributed key-value store.
- */
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -15,10 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Iterator;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Comm;
@@ -35,31 +25,46 @@ import message.Config;
 import message.Ack;
 
 /**
- * Client for the distributed key-value store.
+ * Client-side endpoint for a distributed key-value store.
  *
- * This class is responsible for loading the cluster configuration into a
- * consistent-hash map, sending queries to the shard responsible for a key,
- * and receiving responses from servers via the {@code Comm} helper.
+ * This class loads the current cluster topology from a configuration file,
+ * asks a live node for the latest cluster snapshot, routes user requests to
+ * the shard that owns the target key or node identity, and consumes server
+ * responses through a dedicated listener thread.
  */
 public class ClientImp {
     /** Map used to determine which shard holds a given key. */
     private ConsistentHashMap map;
+
+    /* Version of the cluster configuration */
     private int version;
 
     /** Raw node lookup by id. */
     private Map<String, Node> nodes;
+
+    /* JSON serializer for message conversion */
     private Gson gson;
+
+    /* Client node information (this node) */
     private Node client;
+
+    /* Pipe for receiving responses */
     private Pipe responsePipe;
+
+    /* Spawner node information */
     private Node spawner;
-    private static int timeOut = 3000;
+
+    /* Timeout for waiting for responses in milliseconds */
+    private final static int timeOut = 3000;
+
+    /* Set of unresponsive nodes */
     private HashSet<String> dead;
 
     /**
-     * Create a new {@code Client} instance and initialize communication and
-     * the consistent-hash map.
+     * Creates a new client endpoint bound to the supplied response port.
      *
-     * @throws Exception if initialization of underlying components fails
+     * @param port TCP port on which this client listens for incoming responses
+     * @throws Exception if the client endpoint cannot be initialized
      */
     public ClientImp(int port) throws Exception {
         nodes = new HashMap<>();
@@ -70,6 +75,15 @@ public class ClientImp {
         dead = new HashSet<>();
     }
 
+    /**
+     * Starts a blocking listener loop that accepts inbound server responses.
+     *
+     * Each decoded message is placed into the supplied response pipe so the
+     * client can consume it later through the synchronous request flow.
+     *
+     * @param response response pipe that receives decoded server messages
+     * @param port TCP port to listen on for incoming responses
+     */
     public static void listen(Pipe response, int port) {
         try {
             Gson gson = new GsonBuilder()
@@ -88,18 +102,21 @@ public class ClientImp {
         }
     }
 
+    /**
+     * Starts the background listener thread for the client's response port.
+     */
     public void startListener() {
         Thread t = new Thread(() -> listen(responsePipe, client.port));
         t.start();
     }
 
     /**
-     * Read the cluster configuration from `network.config`, add each
-     * defined node to the consistent-hash map, and perform sample node removals
-     * to exercise shard rebalancing.
+     * Loads the bootstrap node list from the network configuration file.
      *
-     * The configuration file is expected to contain one node per line in
-     * the format: {@code nodeId,ip,port}.
+     * Each line is expected to contain one node definition in the form
+     * nodeId,ip,port. The client stores all non-spawner nodes in its local
+     * node registry and keeps the spawner reference separately for later
+     * coordination requests.
      *
      * @throws Exception if the configuration file cannot be read or parsed
      */
@@ -121,11 +138,21 @@ public class ClientImp {
         }
     }
 
+    /**
+     * Requests and installs the latest cluster configuration from one of the
+     * known nodes.
+     *
+     * The method repeatedly sends a Config request until a valid configuration
+     * response is received or all candidate nodes have been exhausted. On
+     * success, it replaces the local cluster view and version metadata with the
+     * snapshot returned by the server.
+     */
     public void getCluster() {
         System.out.println("Requesting cluster configuration");
         Config configMsg = new Config(client);
         Message response = null;
 
+        // Iterate through known nodes until a valid response is received
         Iterator<Node> it = nodes.values().iterator();
         while (response == null && it.hasNext()) {
             Node n = it.next();
@@ -140,7 +167,8 @@ public class ClientImp {
             }
         }
 
-        if (response.type.equals("Config") && response != null) {
+        // Install the received configuration if valid, otherwise report an error
+        if (response != null && response.type.equals("Config")) {
             Config configResponse = (Config) response;
             
             map = configResponse.config;
@@ -152,6 +180,7 @@ public class ClientImp {
             return;
         }
 
+        // Print the installed cluster configuration and node lookup map
         System.out.println("Client installed with cluster configuration:");
         map.print();
         System.out.println("Node lookup map:");
@@ -161,18 +190,18 @@ public class ClientImp {
     }
 
     /**
-     * Validate and send a textual query to the shard responsible for the
-     * provided key.
+     * Routes a prepared message to the shard that should handle it.
      *
-     * Supported query formats are:
-     *   {@code Get key}
-     *   {@code Delete key}
-     *   {@code Put key value}
-     * @param query the query string to send
-     * @return a message indicating the result of the operation
-     * @throws Exception on communication errors while attempting to send
+     * DictMsg requests are resolved by key ownership, while NodeMsg requests
+     * are resolved by the referenced node identity. If the destination node is
+     * unreachable, the client records that node as dead and retries the next
+     * available candidate.
+     *
+     * @param msg request message to send to the appropriate shard endpoint
+     * @throws Exception if the network send fails unexpectedly
      */
     public void sendQuery(Message msg) throws Exception {
+        // Determine the target node based on message type and shard ownership
         Node n = null;
         if (msg.type.equals("NodeMsg")) {
             NodeMsg castMsg = (NodeMsg) msg;
@@ -182,6 +211,7 @@ public class ClientImp {
             n = map.getShard(castMsg.key).get(dead);
         }
 
+        // Send the message to the determined node, or mark it as dead if unreachable
         try {
             HandOff.sendToNode(n, gson.toJson(msg), null);
         } catch (Exception e) {
@@ -194,9 +224,20 @@ public class ClientImp {
         }
     }
 
+    /**
+     * Converts a command-line style query into the message type expected by the
+     * distributed system.
+     *
+     * Supported input forms are Get key, Delete key, Put key value, Add node,
+     * and Remove node. Unsupported commands return null.
+     *
+     * @param query user request expressed as a plain string
+     * @return the corresponding DictMsg or NodeMsg instance, or null for an
+     *     unsupported query
+     * @throws Exception if the query cannot be parsed into a valid message
+     */
     public Message buildMessage(String query) throws Exception {
         String[] split = query.split(" ");
-
         if (
             (split.length == 2 && (split[0].equals("Get") || split[0].equals("Delete"))) ||
             (split.length == 3 && split[0].equals("Put"))
@@ -213,6 +254,14 @@ public class ClientImp {
         }
     }
 
+    /**
+     * Attaches the current cluster version to a reply message before it is sent
+     * back through the client workflow.
+     *
+     * @param msg reply message that should carry the latest cluster version
+     * @return the same message instance with its version field updated, or null
+     *     when the message type is not a supported reply form
+     */
     public Message updateMessage(Message msg) {
         if (!(msg.type.equals("NodeMsg") || msg.type.equals("DictMsg")))
             return null;
@@ -222,6 +271,19 @@ public class ClientImp {
         return castMsg;
     }
 
+    /**
+     * Submits a node-management request to the spawner and waits for an
+     * acknowledgement.
+     *
+     * A successful acknowledgement updates the message with the assigned node
+     * information. A failure acknowledgement is reported back to the caller as
+     * null.
+     *
+     * @param msg node-management request sent to the spawner
+     * @return the updated message when the spawner acknowledges success, or null
+     *     on failure
+     * @throws Exception if the outbound send or response wait fails
+     */
     public NodeMsg querySpawner(NodeMsg msg) throws Exception {
         HandOff.sendToNode(spawner, gson.toJson(msg), null);
         Message response = responsePipe.take();
@@ -243,11 +305,14 @@ public class ClientImp {
     }
 
     /**
-     * Read a response string from the currently-open communication socket
-     * and close the socket afterwards.
+     * Waits for the next Response message and returns its textual payload.
      *
-     * @return the response string read from the server
-     * @throws Exception on I/O or communication errors
+     * The method times out after the configured client timeout and returns null
+     * if no suitable response is received in time.
+     *
+     * @return response text from the server, or null when no response arrives
+     *     before the timeout
+     * @throws Exception if the response pipe cannot be read safely
      */
     public String getResponse() throws Exception{
         System.out.println("waiting for response...");

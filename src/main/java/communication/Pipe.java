@@ -1,16 +1,7 @@
 package communication;
 
-/*
- * File: Pipe.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-23
- * Description: Thread-safe pipe for passing messages between components.
- */
-
 import java.util.LinkedList;
 import java.util.Queue;
-
 import message.Message;
 
 /**
@@ -19,6 +10,7 @@ import message.Message;
  * timeout support.
  */
 public class Pipe {
+    /* Internal queue for storing messages */
     private final Queue<Message> queue;
 
     /**
@@ -42,13 +34,13 @@ public class Pipe {
     /**
     * Takes a message from the pipe, blocking if necessary until a message is
     * available or the specified timeout elapses.
-     *
+    *
     * @param timeoutMillis the maximum time to wait in milliseconds, or 0 to
     *                      wait indefinitely
-     * @return the message taken from the pipe, or null if timeout elapsed
+    * @return the message taken from the pipe, or null if timeout elapsed
     * @throws InterruptedException if the current thread is interrupted while
     *                              waiting
-     */
+    */
     public synchronized Message take(
         long timeoutMillis
     ) throws InterruptedException {

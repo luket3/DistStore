@@ -7,14 +7,10 @@ import cluster.Node;
  * network view.
  */
 public class NodeMsg extends Reply {
-    /**
-     * Membership operation, such as {@code Add} or {@code Remove}.
-     */
+    /** Membership operation, such as Add or Remove. */
     public String action;
 
-    /**
-     * Target node reference involved in the membership change.
-     */
+    /** Target node reference involved in the membership change. */
     public Node node;
 
     /**

@@ -3,18 +3,14 @@ package message;
 import cluster.Node;
 
 /**
- * Common base class for request and response messages that carry a client
+ * Common base class for request messages that carry a client
  * reply destination and a cluster configuration version.
  */
 public class Reply extends Message {
-    /**
-     * Client node that should receive the response for this message.
-     */
+    /** Client node that should receive the response for this message. */
     public Node client;
 
-    /**
-     * Logical cluster configuration version associated with this message.
-     */
+    /** Logical cluster configuration version associated with this message. */
     public int version;
 
     /**
@@ -31,7 +27,7 @@ public class Reply extends Message {
     }
 
     /**
-     * Creates a reply-capable message that does not target a specific client.
+     * Creates a message that does not target a specific client.
      *
      * @param type concrete message type discriminator
      * @param version configuration version associated with the operation

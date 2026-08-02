@@ -7,8 +7,10 @@ package message;
 public class RequestVoteReply extends RaftMsg {
     /** The term of the responding node. */
     public int term;
+
     /** The ID of the node sending this vote response. */
     public String senderId;
+    
     /** True if the voter granted its vote to the candidate. */
     public boolean voteGranted;
 

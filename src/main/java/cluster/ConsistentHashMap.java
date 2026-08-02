@@ -1,14 +1,5 @@
 package cluster;
 
-/*
- * File: consistent_hash_map.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Simple consistent-hash implementation that maps keys to
- * Shard instances.
- */
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.TreeMap;
@@ -28,7 +19,6 @@ import java.util.HashSet;
  * resizing in the prototype.
  */
 public class ConsistentHashMap {
-
     /**
      * Ring mapping a 64-bit hash value to the shard metadata instance that
      * owns that virtual position.
@@ -38,12 +28,12 @@ public class ConsistentHashMap {
     /**
      * Number of virtual replicas to place on the ring for each logical shard.
      */
-    private final int virtualShards = 3;
+    private static final int virtualShards = 3;
 
     /**
      * Minimum shard size used by the simple split/merge policy.
      */
-    private final int minShardSize = 3;
+    private static final int minShardSize = 3;
 
     /**
      * Monotonically increasing identifier used when creating a new shard.

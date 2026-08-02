@@ -5,24 +5,18 @@ import cluster.Node;
 /**
  * Client-facing key-value operation carried through the Raft pipeline.
  *
- * Supported actions are {@code Get}, {@code Put}, and {@code Delete}.
+ * Supported actions are Get, Put, and Delete.
  * The message also carries a client reference so the receiving node can send
  * the response back to the originator.
  */
 public class DictMsg extends Reply {
-    /**
-     * Operation to apply to the distributed key-value store.
-     */
+    /** Operation to apply to the distributed key-value store. */
     public String action;
 
-    /**
-     * Key to read, write, or remove.
-     */
+    /** Key to read, write, or remove. */
     public String key;
 
-    /**
-     * Value for {@code Put} operations; otherwise {@code null}.
-     */
+    /** Value for Put operations; otherwise null. */
     public String value;
 
     /**

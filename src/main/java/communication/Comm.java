@@ -1,14 +1,5 @@
 package communication;
 
-/*
- * File: Comm.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Lightweight communication helper for reading and writing
- * length-prefixed UTF-8 strings over a TCP Socket.
- * */
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -23,7 +14,7 @@ public class Comm {
     private Socket socket;
 
     /**
-     * Create a {@code Comm} bound to an existing socket.
+     * Create a Comm bound to an existing socket.
      *
      * @param socket the already-connected socket
      */
@@ -32,7 +23,7 @@ public class Comm {
     }
 
     /**
-     * Create an uninitialized {@code Comm}; call {@link #createSocket} to
+     * Create an uninitialized Comm; call {@link #createSocket} to
      * connect.
      */
     public Comm() {}
@@ -88,6 +79,11 @@ public class Comm {
         out.flush();
     }
 
+    /**
+     * Return the IP address of the remote host this socket is connected to.
+     *
+     * @return the remote host IP or hostname, or null if not connected
+     */
     public String getHostIp() {
         if (socket == null) {
             return null;
@@ -96,6 +92,11 @@ public class Comm {
         return socket.getInetAddress().getHostAddress();
     }
 
+    /**
+     * Return the TCP port of the remote host this socket is connected to.
+     *
+     * @return the remote host TCP port, or -1 if not connected
+     */
     public int getHostPort() {
         if (socket == null) {
             return -1;
@@ -104,6 +105,11 @@ public class Comm {
         return socket.getPort();
     }
 
+    /**
+     * Return the IP address of the local host this socket is bound to.
+     *
+     * @return the local host IP or hostname, or null if not connected
+     */
     public String getLclIp() {
         if (socket == null) {
             return null;
@@ -112,6 +118,11 @@ public class Comm {
         return socket.getLocalAddress().getHostAddress();
     }
 
+    /**
+     * Return the TCP port of the local host this socket is bound to.
+     *
+     * @return the local host TCP port, or -1 if not connected
+     */
     public int getLclPort() {
         if (socket == null) {
             return -1;

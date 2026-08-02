@@ -1,13 +1,5 @@
 package communication;
 
-/*
- * File: Request_handler.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Simple blocking request handler that wraps a ServerSocket.
- */
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -16,6 +8,7 @@ import java.net.SocketTimeoutException;
  * Simple blocking request handler that wraps a {@link ServerSocket}.
  */
 public class Listener {
+    /** Underlying TCP server socket used for listening. */
     private ServerSocket serverSocket;
 
     /**
@@ -64,7 +57,7 @@ public class Listener {
         try {
             Socket socket = serverSocket.accept();
             // Reset timeout to 0 (no timeout) for subsequent calls if needed
-            // serverSocket.setSoTimeout(0);
+            serverSocket.setSoTimeout(0);
             return socket;
         } catch (SocketTimeoutException e) {
             // Timeout occurred

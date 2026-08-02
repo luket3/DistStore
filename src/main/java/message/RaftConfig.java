@@ -11,10 +11,13 @@ import java.util.Map;
 public class RaftConfig extends Message {
     /** Nodes that make up the configuration being replicated. */
     public Map<String, Node> nodes;
+
     /** Previous configuration for joint consensus (used during cluster membership changes). */
     public Map<String, Node> oldNodes;
+
     /** Whether this is a joint-config transition. */
     public boolean jointConfig;
+    
     /** Raft message version. */
     public int version;
 
