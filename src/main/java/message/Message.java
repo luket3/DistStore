@@ -3,8 +3,8 @@ package message;
 /**
  * Base type for all wire-format messages exchanged between the cluster nodes.
  *
- * <p>The {@code type} discriminator is used by the Gson deserializer to select
- * the concrete message subtype when a request or response is received.</p>
+ * The {@code type} discriminator is used by the Gson deserializer to select
+ * the concrete message subtype when a request or response is received.
  */
 public class Message {
     /**

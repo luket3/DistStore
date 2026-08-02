@@ -3,8 +3,8 @@ package luket3;
 /**
  * Minimal smoke-test entry point for the sample project.
  *
- * <p>This class currently prints a simple banner to standard output and is
- * not part of the runtime cluster implementation.</p>
+ * This class currently prints a simple banner to standard output and is
+ * not part of the runtime cluster implementation.
  */
 public class App {
     /**

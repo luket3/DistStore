@@ -18,10 +18,10 @@ import java.util.HashSet;
 /**
  * Represents the logical node subset assigned to one shard on the ring.
  *
- * <p>The shard keeps two ordered node lists, {@code left} and {@code right},
+ * The shard keeps two ordered node lists, {@code left} and {@code right},
  * which are used by the prototype's simple split policy. A shard is expected
  * to grow until it reaches twice the configured minimum size, at which point
- * the right-hand list can be promoted into a new shard.</p>
+ * the right-hand list can be promoted into a new shard.
  */
 public class Shard {
     private LinkedList<Node> left;

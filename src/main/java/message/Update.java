@@ -8,8 +8,8 @@ import cluster.ConsistentHashMap;
  * Internal topology-update message used to push changed node membership or
  * shard topology information through the Raft pipeline.
  *
- * <p>The {@code action} field is intended to distinguish update styles such as
- * a plain membership refresh or a shard redistribution event.</p>
+ * The {@code action} field is intended to distinguish update styles such as
+ * a plain membership refresh or a shard redistribution event.
  */
 public class Update extends Message {
     /**

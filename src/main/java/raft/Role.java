@@ -6,8 +6,8 @@ import communication.HandOff;
 /**
  * Shared utility base for the concrete Raft role implementations.
  *
- * <p>Role subclasses inherit the node's shared consensus state and use the
- * common {@link #sendToNode(Node, String)} helper to emit serialized RPCs.</p>
+ * Role subclasses inherit the node's shared consensus state and use the
+ * common {@link #sendToNode(Node, String)} helper to emit serialized RPCs.
  */
 public abstract class Role {
 

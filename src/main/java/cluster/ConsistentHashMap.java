@@ -22,10 +22,10 @@ import java.util.HashSet;
  * Maintains a consistent-hash ring that maps a logical key to a shard
  * abstraction.
  *
- * <p>Each real shard contributes several virtual ring positions so that the
+ * Each real shard contributes several virtual ring positions so that the
  * cluster can rebalance membership without a full remap of the entire ring.
  * The class also implements the local split and merge policy used for shard
- * resizing in the prototype.</p>
+ * resizing in the prototype.
  */
 public class ConsistentHashMap {
 

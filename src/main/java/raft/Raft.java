@@ -16,9 +16,9 @@ import cluster.Node;
 /**
  * Runnable wrapper that drives one Raft protocol instance for a node.
  *
- * <p>The class repeatedly waits on the input pipe for new RPCs and applies
+ * The class repeatedly waits on the input pipe for new RPCs and applies
  * either the election timeout or a direct message dispatch to the underlying
- * {@link RaftNode} role state machine.</p>
+ * {@link RaftNode} role state machine.
  */
 public class Raft implements Runnable {
     RaftNode node;

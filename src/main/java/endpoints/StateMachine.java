@@ -25,9 +25,9 @@ import com.google.gson.Gson;
  * Local application worker that executes a single in-memory key-value store
  * for the node that receives the committed Raft operation.
  *
- * <p>This implementation is not yet a fully shard-aware distributed state
+ * This implementation is not yet a fully shard-aware distributed state
  * machine. It currently maintains one shared process-local {@link HashMap}
- * and applies every supported client operation to that local table.</p>
+ * and applies every supported client operation to that local table.
  */
 public class StateMachine implements Runnable {
     /**

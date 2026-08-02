@@ -3,6 +3,10 @@ package message;
 import java.util.ArrayList;
 import raft.LogEntry;
 
+/**
+ * Represents an AppendEntries RPC request in the Raft consensus algorithm.
+ * Used by the leader to replicate log entries and provide heartbeat to followers.
+ */
 public class AppendEntries extends RaftMsg {
     public int term;
     public String leaderId;

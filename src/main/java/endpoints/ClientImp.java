@@ -37,9 +37,9 @@ import message.Ack;
 /**
  * Client for the distributed key-value store.
  *
- * <p>This class is responsible for loading the cluster configuration into a
+ * This class is responsible for loading the cluster configuration into a
  * consistent-hash map, sending queries to the shard responsible for a key,
- * and receiving responses from servers via the {@code Comm} helper.</p>
+ * and receiving responses from servers via the {@code Comm} helper.
  */
 public class ClientImp {
     /** Map used to determine which shard holds a given key. */
@@ -98,8 +98,8 @@ public class ClientImp {
      * defined node to the consistent-hash map, and perform sample node removals
      * to exercise shard rebalancing.
      *
-     * <p>The configuration file is expected to contain one node per line in
-     * the format: {@code nodeId,ip,port}.</p>
+     * The configuration file is expected to contain one node per line in
+     * the format: {@code nodeId,ip,port}.
      *
      * @throws Exception if the configuration file cannot be read or parsed
      */
@@ -164,14 +164,10 @@ public class ClientImp {
      * Validate and send a textual query to the shard responsible for the
      * provided key.
      *
-     * <p>Supported query formats are:
-     * <ul>
-     *   <li>{@code Get key}</li>
-     *   <li>{@code Delete key}</li>
-     *   <li>{@code Put key value}</li>
-     * </ul>
-     * </p>
-     *
+     * Supported query formats are:
+     *   {@code Get key}
+     *   {@code Delete key}
+     *   {@code Put key value}
      * @param query the query string to send
      * @return a message indicating the result of the operation
      * @throws Exception on communication errors while attempting to send

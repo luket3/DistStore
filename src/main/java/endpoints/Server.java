@@ -31,10 +31,10 @@ import cluster.Node;
 /**
  * Process entry point for a single node in the distributed store.
  *
- * <p>The server initializes the local network configuration, starts one
+ * The server initializes the local network configuration, starts one
  * Raft thread for shard-level operations and one for cluster-wide
  * membership changes, and exposes a listener that forwards incoming
- * network messages into the appropriate message pipe.</p>
+ * network messages into the appropriate message pipe.
  */
 public class Server {
     public static Listener listener;

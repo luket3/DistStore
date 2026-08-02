@@ -12,9 +12,9 @@ import com.google.gson.Gson;
 /**
  * Local cluster-topology controller for one node.
  *
- * <p>This service reads membership updates from its input pipe, mutates the
+ * This service reads membership updates from its input pipe, mutates the
  * node's local consistent-hash view, and publishes the resulting membership
- * snapshot into the cluster-wide and shard-wide Raft pipelines.</p>
+ * snapshot into the cluster-wide and shard-wide Raft pipelines.
  */
 public class ClusterState implements Runnable {
 
@@ -114,11 +114,9 @@ public class ClusterState implements Runnable {
      * Reads one incoming message from the input pipe and applies the corresponding
      * cluster membership change if the message is of the supported {@link NodeMsg} type.
      *
-     * <p>Supported actions are:</p>
-     * <ul>
-     *   <li>{@code Add} - add a node to the cluster and publish the updated membership</li>
-     *   <li>{@code Remove} - remove a node from the cluster and publish the updated membership</li>
-     * </ul>
+     * Supported actions are:
+     * {@code Add} - add a node to the cluster and publish the updated membership
+     * {@code Remove} - remove a node from the cluster and publish the updated membership
      *
      * @throws Exception if a pipe write or cluster access operation fails
      */
@@ -194,8 +192,8 @@ public class ClusterState implements Runnable {
     /**
      * Main execution loop for the cluster state service.
      *
-     * <p>The thread continuously waits for and processes incoming cluster membership
-     * updates, swallowing individual exceptions so the service can keep running.</p>
+     * The thread continuously waits for and processes incoming cluster membership
+     * updates, swallowing individual exceptions so the service can keep running.
      */
     @Override
     public void run() {

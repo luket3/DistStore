@@ -13,9 +13,9 @@ import message.Message;
 /**
  * Immutable record stored in the local Raft log.
  *
- * <p>The entry contains the serialized operation to apply, the term in which
+ * The entry contains the serialized operation to apply, the term in which
  * the leader accepted the entry, and the relative index assigned to it in the
- * replicated log.</p>
+ * replicated log.
  */
 public class LogEntry {
     /**

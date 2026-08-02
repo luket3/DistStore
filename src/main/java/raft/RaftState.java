@@ -12,9 +12,9 @@ import com.google.gson.Gson;
  * Mutable Raft runtime state for one node participating in either the
  * cluster-wide or shard-wide consensus group.
  *
- * <p>This object stores the node's current term, voting configuration,
+ * This object stores the node's current term, voting configuration,
  * commit indexes, and the per-node metadata needed to drive leader election
- * and configuration changes.</p>
+ * and configuration changes.
  */
 public class RaftState {
 
