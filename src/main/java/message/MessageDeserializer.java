@@ -7,6 +7,11 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonDeserializationContext;
 import java.lang.reflect.Type;
 
+/**
+ * Custom deserializer for Message objects that determines the concrete
+ * message type based on the "type" field and delegates to the appropriate
+ * subclass deserializer.
+ */
 public class MessageDeserializer implements JsonDeserializer<Message> {
 
     @Override

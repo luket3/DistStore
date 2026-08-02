@@ -5,14 +5,18 @@ import java.util.Collections;
 import java.util.Map;
 import cluster.Node;
 import communication.HandOff;
-
 import message.Message;
 import message.AppendEntriesReply;
 import message.AppendEntries;
 import message.RaftConfig;
 
 /**
- * Leader role for Raft consensus.
+ * Raft role handler responsible for leading the replicated log.
+ *
+ * The leader appends new client operations to its local log, publishes
+ * AppendEntries RPCs to followers, tracks follower acknowledgement through
+ * match and next indexes, and commits log positions once the configured
+ * majority has confirmed them.
  */
 public class Leader extends Role {
 
@@ -20,9 +24,13 @@ public class Leader extends Role {
         super(raftState);
     }
 
+    /**
+     * Appends a client command to the leader's local log and initiates
+     * replication to followers.
+     *
+     * @param msg client command to append to the replicated log
+     */
     public void appendLogEntry(Message msg) {
-        // Handle a client command when this node is the leader.
-        // Format: ClientCommand <command>
         HandOff.writeToFile(
             raftState.level + ": Leader " + raftState.id + " appending log entry",
             raftState.getLogFilePath()
@@ -30,17 +38,22 @@ public class Leader extends Role {
 
         // Append the command to the log as an uncommitted entry
         raftState.log.appendEntry(msg, raftState.term);
-        // Update own matchIndex to reflect the new entry
         raftState.matchIndex.put(raftState.id, raftState.log.getLastIdx());
-
         broadcastAppendEntries();
     }
 
-    public void appendEntries(Message messageParts) {
-        // Process a follower's AppendEntries response when this node is
-        // acting as leader.
-        // Format: AppendEntries <term> <senderID> <success> <matchIndex>
-        AppendEntriesReply AEReply = (AppendEntriesReply) messageParts;
+    /**
+     * Processes an AppendEntriesReply from a follower and advances the leader's
+     * replication state accordingly.
+     *
+     * The method upgrades the term on higher-term replies, updates the
+     * follower's match and next indexes, checks whether the current log prefix
+     * is now safe to commit, and retries an AppendEntries transmission when the
+     * follower reports a log mismatch.
+     *
+     * @param AEReply AppendEntriesReply RPC to evaluate
+     */
+    public void appendEntries(AppendEntriesReply AEReply) {
 
         // Update term and revert to follower if we see a higher term
         if (AEReply.term > raftState.term) {
@@ -50,10 +63,10 @@ public class Leader extends Role {
             return;
         }
 
-        // If AppendEntries was successful, update match index for that follower
+        // Process Reply if it was successful, otherwise decrement nextIndex and retry AppendEntries
         if (AEReply.success) {
 
-            // register follower as having entries up to senderMatchIdx
+            // Update the follower's matchIndex and nextIndex based on the reply
             raftState.matchIndex.put(AEReply.senderId, Math.max(raftState.matchIndex.get(AEReply.senderId), AEReply.matchIndex));
             raftState.nextIndex.put(AEReply.senderId, raftState.matchIndex.get(AEReply.senderId) + 1);
 
@@ -62,24 +75,21 @@ public class Leader extends Role {
 
             // commit such that majority nodes have log entry
             for (int i = raftState.log.getLastIdx(); i > raftState.log.getCommitIdx(); i--) {
-
                 long count = 0;
                 boolean majority = false;
-
                 if (!raftState.jointConfig) {
-                    // Count only voters, not learners
                     int threshold = (raftState.voters.size() / 2) + 1;
                     for (String nid : raftState.voters.keySet()) {
                         int v = raftState.matchIndex.getOrDefault(nid, -1);
                         if (v >= i) count++;
                     }
                     if (count >= threshold) majority = true;
+                // joint configuration, need majority of both old and new nodes
                 } else {
                     int oldCount = 0;
                     int nextCount = 0;
                     int oldThreshold = (raftState.oldNodes.size() / 2) + 1;
                     int nextThreshold = (raftState.nextNodes.size() / 2) + 1;
-
                     for (Map.Entry<String, Integer> e : raftState.matchIndex.entrySet()) {
                         int v = e.getValue();
                         if (v >= i) {
@@ -89,26 +99,24 @@ public class Leader extends Role {
                                 nextCount++;
                         }
                     }
-
                     if (oldCount >= oldThreshold && nextCount >= nextThreshold)
                         majority = true;
                 }
 
+                // commit the log entry if a majority of nodes have it and it was appended in the current term
                 if (majority && raftState.log.get(i).term == raftState.term) {
-                    // Commit the entries up to i
                     RaftConfig raftConfig = raftState.log.commitEntries(i);
-
                     if (raftConfig != null) {
                         if (raftConfig.jointConfig) {
                             raftState.appendNewConfig(raftConfig.nodes, false, false);
                         }
                     }
-
                     broadcastAppendEntries();
                     break;
                 }
             }
         }
+        // If the AppendEntriesReply was unsuccessful, decrement nextIndex and retry
         else {
             raftState.nextIndex.put(AEReply.senderId, raftState.nextIndex.get(AEReply.senderId) - 1);
             if (raftState.nextIndex.get(AEReply.senderId) < 0)
@@ -148,11 +156,13 @@ public class Leader extends Role {
                     }
                 }
             }
-
             sendAppendEntries(raftState.allNodes.get(AEReply.senderId));
         }
     }
 
+    /**
+     * Sends AppendEntries RPCs to every peer node except the local leader.
+     */
     public void broadcastAppendEntries() {
         HandOff.writeToFile(
             raftState.level + ": leader node: " + raftState.id + " broadcasting append entries message",
@@ -165,6 +175,12 @@ public class Leader extends Role {
         }
     }
 
+    /**
+     * Sends an AppendEntries RPC to one follower using the leader's current
+     * log replication window.
+     *
+     * @param node follower receiving the AppendEntries RPC
+     */
     public void sendAppendEntries(Node node) {
         // Send an empty AppendEntries RPC to all followers to maintain
         // leadership

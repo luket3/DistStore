@@ -2,36 +2,29 @@ package raft;
 
 import message.Message;
 
-/*
- * File: log_entry.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Represents a single entry in the Raft log.
- */
-
 /**
- * Represents a single entry in the Raft log.
+ * Immutable record stored in the local Raft log.
  *
- * <p>Each entry contains the original command string, the leader term when the
- * entry was created, and the log index.</p>
+ * Each entry holds the message payload that should be replayed, the Raft term
+ * in which the leader accepted that command, and the log index assigned to
+ * the entry within the replicated sequence.
  */
 public class LogEntry {
-    /** The command associated with this log entry. */
-    final Message msg;
+    /* The message payload stored in this log position. */
+    public final Message msg;
 
-    /** Raft term when this entry was created. */
-    final int term;
+    /** Raft term in which the entry was created. */
+    public final int term;
 
-    /** Log index for this entry. */
-    final int index;
+    /** The log index assigned to this entry. */
+    public final int index;
 
     /**
-     * Create a new log entry.
+     * Creates a new log entry.
      *
-     * @param command the command string
-     * @param term the term number
-     * @param index the index in the log
+     * @param msg message payload stored in the log position
+     * @param term Raft term in which the entry was accepted
+     * @param index log index assigned to the entry
      */
     LogEntry(Message msg, int term, int index) {
         this.msg =  msg;

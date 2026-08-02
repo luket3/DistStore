@@ -1,14 +1,5 @@
 package cluster;
 
-/*
- * File: Shard.java
- * Project: Distributed KV Store
- * Author: luket
- * Date: 2026-05-22
- * Description: Represents a shard (subset) of nodes stored on the
- * consistent hash ring.
- */
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,21 +7,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Represents a shard (subset) of nodes stored on the consistent hash ring.
+ * Represents the logical node subset assigned to one shard on the ring.
  *
- * <p>Each {@code Shard} keeps a left and right list of {@link Node}s. New
- * nodes are appended to the left list until the minimum shard size is
- * reached; subsequent nodes go to the right list. Shards can be split into a
- * new shard when the size doubles the minimum.</p>
+ * The shard keeps two ordered node lists, {@code left} and {@code right},
+ * which are used by the prototype's simple split policy. A shard is expected
+ * to grow until it reaches twice the configured minimum size, at which point
+ * the right-hand list can be promoted into a new shard.
  */
 public class Shard {
+    /** Nodes in the left side of the Shard */
     private LinkedList<Node> left;
-    private LinkedList<Node> right;
-    private int minShardSize;
 
+    /** Nodes in the right side of the Shard */
+    private LinkedList<Node> right;
+
+    /** Minimum size for this shard */
+    private int minShardSize = 3;
+
+    /** Identifier for this shard */
     public String id;
+
+    /** Current number of nodes in this shard */
     public int length;
-    public Node leader;
 
     /**
      * Internal constructor used when creating a split shard with an initial
@@ -52,7 +50,6 @@ public class Shard {
 
         this.left = new LinkedList<>();
         this.right = new LinkedList<>();
-        this.leader = null;
     }
 
     /**

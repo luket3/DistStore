@@ -1,12 +1,32 @@
 package message;
 
-import cluster.Node;;
+import cluster.Node;
 
+/**
+ * Client-facing key-value operation carried through the Raft pipeline.
+ *
+ * Supported actions are Get, Put, and Delete.
+ * The message also carries a client reference so the receiving node can send
+ * the response back to the originator.
+ */
 public class DictMsg extends Reply {
+    /** Operation to apply to the distributed key-value store. */
     public String action;
+
+    /** Key to read, write, or remove. */
     public String key;
+
+    /** Value for Put operations; otherwise null. */
     public String value;
 
+    /**
+     * Creates a dictionary message without an explicit reply destination.
+     *
+     * @param action the operation type
+     * @param key the target key
+     * @param value the value for write operations
+     * @param version configuration version carried by the request
+     */
     public DictMsg(String action, String key, String value, int version) {
         super("DictMsg", version);
         this.action = action;
@@ -15,6 +35,16 @@ public class DictMsg extends Reply {
 
     }
 
+    /**
+     * Creates a dictionary message that can return a reply directly to the
+     * supplied client node.
+     *
+     * @param action the operation type
+     * @param key the target key
+     * @param value the value for write operations
+     * @param version configuration version carried by the request
+     * @param client the client node that should receive the response
+     */
     public DictMsg(String action, String key, String value, int version, Node client) {
         super("DictMsg", version, client);
         this.action = action;

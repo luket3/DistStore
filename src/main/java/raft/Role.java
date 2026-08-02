@@ -4,12 +4,21 @@ import cluster.Node;
 import communication.HandOff;
 
 /**
- * Base class for Raft node roles (Follower, Leader, Candidate).
+ * Shared utility base for the concrete Raft role implementations.
+ *
+ * Role subclasses inherit the node's shared consensus state and use the
+ * common sendToNode(Node, String) helper to emit serialized RPCs.
  */
 public abstract class Role {
 
-    RaftState raftState;
+    /** Shared Raft consensus state for the local node. */
+    protected RaftState raftState;
 
+    /**
+     * Creates a role handler for the supplied Raft state.
+     *
+     * @param raftState shared Raft runtime state for the local node
+     */
     public Role(RaftState raftState) {
         this.raftState = raftState;
     }

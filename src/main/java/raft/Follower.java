@@ -1,36 +1,40 @@
 package raft;
 
-import communication.HandOff;
 import message.Message;
 import message.RequestVote;
+import communication.HandOff;
 import message.AppendEntries;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
 
 /**
- * Follower role for Raft consensus.
+ * Raft role handler for a non-leader node that receives election requests,
+ * applies replicated log entries from a leader, and forwards client traffic to
+ * the current known leader.
  */
 public class Follower extends Role {
 
+    /**
+     * Creates a follower role for the supplied Raft state.
+     *
+     * @param raftState shared Raft runtime state for the local node
+     */
     public Follower(RaftState raftState) {
         super(raftState);
     }
 
     /**
-     * Process a RequestVote RPC from candidate.
+     * Processes a RequestVote RPC received from a candidate.
      *
-     * @param messageParts the parsed RPC message parts
-     * @return true if vote was granted, false otherwise
+     * The follower upgrades its term when needed, validates the candidate's
+     * log freshness, and returns a RequestVoteReply that reports whether the
+     * vote was granted.
+     *
+     * @param RVmsg RequestVote RPC to evaluate
+     * @return true when the vote is granted, false when the request is stale or
+     *     rejected
      */
-    public boolean requestVote(Message message) {
-        // Parse RequestVote RPC parameters from messageParts
-        // Format: RequestVote <term> <candidateId> <lastLogIndex> <lastLogTerm>
-        RequestVote RVmsg = (RequestVote) message;
-        HandOff.writeToFile(
-            raftState.level + ": Follower " + raftState.id + " received: " + raftState.gson.toJson(RVmsg),
-            raftState.getLogFilePath()
-        );
-
+    public boolean requestVote(RequestVote RVmsg) {
         // Check current term and update if necessary
         if (RVmsg.term > raftState.term) {
             raftState.term = RVmsg.term;
@@ -46,7 +50,6 @@ public class Follower extends Role {
         // Check if candidate's log is at least as up-to-date as receiver's log
         int receiverLastLogIndex = raftState.log.getLastIdx();
         int receiverLastLogTerm = raftState.log.getLastTerm();
-
         boolean logUpToDate = (RVmsg.lastLogTerm > receiverLastLogTerm)
             || ((RVmsg.lastLogTerm == receiverLastLogTerm) 
             && RVmsg.lastLogIndex >= receiverLastLogIndex);
@@ -71,16 +74,17 @@ public class Follower extends Role {
     }
 
     /**
-     * Process an AppendEntries RPC from leader.
+     * Processes an AppendEntries RPC received from the current leader.
      *
-     * @param messageParts the parsed RPC message parts
-     * @return true if the RPC was successful, false otherwise
+     * The follower accepts the leader's term when it is current, validates the
+     * previous log index and term to ensure log continuity, applies any new
+     * entries, advances the commit point, and returns an AppendEntriesReply to
+     * the leader.
+     *
+     * @param AEmsg AppendEntries RPC to evaluate
+     * @return true when the append request is accepted and processed
      */
-    public boolean appendEntries(Message message) {
-        // Parse AppendEntries RPC parameters from messageParts
-        // Format: AppendEntries <term> <leaderId> <prevLogIndex>
-        // <prevLogTerm> <leaderCommit> [entries...]
-        AppendEntries AEmsg = (AppendEntries) message;
+    public boolean appendEntries(AppendEntries AEmsg) {
 
         // Update term and revert to follower if we see a higher term
         if (AEmsg.term > raftState.term) {
@@ -93,8 +97,9 @@ public class Follower extends Role {
             return false;
         }
 
+
+        // Update leader information if this is a new leader
         if (raftState.leader == null || !raftState.leader.id.equals(AEmsg.leaderId)) {
-            // Update leader information if this is a new leader
             raftState.leader = raftState.allNodes.get(AEmsg.leaderId);
             raftState.log.clearUncommitted();
         }
@@ -109,17 +114,16 @@ public class Follower extends Role {
             }
         }
 
+        // If the log matches, append new entries and update commit index
         if (logMatch) {
-            // commands are in format:
-            // [ClientCommand <insert command>,ClientCommand <insert command>,...]
             if (AEmsg.entries != null && AEmsg.entries.size() > 0) {
-                int nextIndex = AEmsg.prevLogIndex + 1;
 
+                // Append new entries to the log, replacing any conflicting entries
+                int nextIndex = AEmsg.prevLogIndex + 1;
                 for (int i = 0; i < AEmsg.entries.size(); i++) {
                     int targetIndex = nextIndex + i;
                     LogEntry incoming = AEmsg.entries.get(i);
                     LogEntry existing = raftState.log.get(targetIndex);
-
                     if (existing != null) {
                         if (existing.term != incoming.term) {
                             raftState.log.clearTo(targetIndex - 1);
@@ -133,15 +137,14 @@ public class Follower extends Role {
                         }
                         continue;
                     }
-
                     raftState.log.appendEntry(incoming.msg, incoming.term);
                 }
             }
-
             // commit upto leadercommit
             raftState.log.commitEntries(AEmsg.leaderCommit);
         }
 
+        // Send AppendEntriesReply back to the leader
         AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx());
         sendToNode(
             raftState.leader,
@@ -150,12 +153,24 @@ public class Follower extends Role {
         return true;
     }
 
+    /**
+     * Forwards a message to the current known leader.
+     *
+     * This method is used when the follower needs to relay client or control
+     * traffic to the established leader node.
+     *
+     * @param message outbound message to send to the leader
+     */
     public void handToLeader(Message message) {
 
         if (raftState.leader != null) {
             sendToNode(raftState.leader, raftState.gson.toJson(message));
         } else {
-            // No known leader, could buffer the message or ignore
+            // No known leader Igornore message and log a warning.
+            HandOff.writeToFile(
+                "Level: " + raftState.level + " Node: " + raftState.id + "ignoring message, No leader Known", 
+                raftState.getLogFilePath()
+            );
         }
     }
 }

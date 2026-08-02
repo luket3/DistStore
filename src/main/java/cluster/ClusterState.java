@@ -10,37 +10,62 @@ import message.Response;
 import com.google.gson.Gson;
 
 /**
- * Maintains the local node's view of the cluster topology and propagates
- * cluster membership changes to the shard and cluster Raft pipes.
+ * Maintains the local node's view of the cluster membership state.
  *
- * <p>This class continuously listens for incoming {@link NodeMsg} messages, applies
- * add/remove operations to the local {@link ConsistentHashMap}, and then pushes the
- * resulting state updates to the relevant Raft communication channels.</p>
+ * This class consumes membership updates from an input pipe, applies the
+ * corresponding Add or Remove operation to a local consistent-hash model,
+ * and then publishes the new cluster membership view through the cluster Raft
+ * pipeline. It also answers configuration requests by returning the current
+ * membership snapshot and version number to the requesting client.
  */
 public class ClusterState implements Runnable {
+    /** input pipe used to receive membership and configuration messages */
+    private Pipe inPipe;
 
-    Pipe inPipe;
-    ConsistentHashMap cluster;
-    String currShardID;
-    int currShardSize;
-    int version;
-    String nodeID;
-    Pipe shardRaftIn;
-    Pipe clusterRaftIn;
-    Pipe shardRaftOut;
-    Pipe clusterRaftOut;
-    Gson gson;
-    String logPath;
+    /** local consistent-hash model of the cluster membership state */
+    private ConsistentHashMap cluster;
+
+    /** cached shard identity of the local node */
+    private String currShardID;
+
+    /** cached shard size of the local node */
+    private int currShardSize;
+
+    /** version number of the current cluster membership state */
+    private int version;
+
+    /** identifier of the local node */
+    private String nodeID;
+
+    /** input pipe used to send shard-level Raft updates */
+    private Pipe shardRaftIn;
+
+    /** input pipe used to send cluster-level Raft updates */
+    private Pipe clusterRaftIn;
+
+    /** output pipe used to wait for shard acknowledgements */
+    private Pipe shardRaftOut;
+
+    /** output pipe used to wait for cluster acknowledgements */
+    private Pipe clusterRaftOut;
+
+    /** Gson instance for JSON serialization and deserialization */
+    private Gson gson;
+
+    /** path to the log file for recording cluster state operations */
+    private String logPath;
 
     /**
-     * Creates a new cluster state manager for the given node.
+     * Creates a new cluster state manager for the local node.
      *
-     * @param inPipe pipe from which membership update messages are consumed
-     * @param cluster the current cluster map used to track nodes and shards
-     * @param NodeID the local node identifier
-     * @param ShardRaft pipe for shard-related Raft messages
-     * @param clusterRaft pipe for cluster-wide Raft messages
-     * @throws Exception if the current shard cannot be resolved from the cluster map
+     * @param inPipe input pipe used to receive membership and configuration messages
+     * @param nodes initial node set used to seed the local consistent-hash view
+     * @param nodeID identifier of the local node
+     * @param shardRaftIn pipe used to send shard-level Raft updates
+     * @param clusterRaftIn pipe used to send cluster-level Raft updates
+     * @param shardRaftOut pipe used to wait for shard acknowledgements
+     * @param clusterRaftOut pipe used to wait for cluster acknowledgements
+     * @throws Exception if the local shard cannot be resolved from the initial node set
      */
     public ClusterState(Pipe inPipe, Map<String, Node> nodes, String nodeID, Pipe shardRaftIn, Pipe clusterRaftIn, Pipe shardRaftOut, Pipe clusterRaftOut) throws Exception {
         this.inPipe = inPipe;
@@ -65,35 +90,48 @@ public class ClusterState implements Runnable {
         this.currShardSize = currShard.size();
     }
 
+    /**
+     * Processes a single incoming message from the input pipe.
+     *
+     * A Config message causes this class to return the current cluster snapshot
+     * to the requesting client. A NodeMsg message triggers a membership change,
+     * followed by cluster and shard Raft acknowledgement waits before the
+     * result is reported back to the client when one is attached.
+     *
+     * @throws Exception if an input or output pipe operation fails while handling
+     *     the message
+     */
     public void takeAndHandle() throws Exception{
         // Block until a new message arrives on the input pipe.
         Message message = inPipe.take();
         if (message == null)
             return;
 
-        // Only NodeMsg messages are recognized for cluster topology updates.
+        // Only Config and NodeMsg messages are recognized.
         if (message.type.equals("Config")) {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: replying with cluster config", this.logPath);
             Config configMsg = (Config) message;
             replyConfig(configMsg.client);
             return;
         }
-
         if (!(message.type.equals("NodeMsg"))) {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: unsupported message type " + message.type, this.logPath);
             return;
         }
 
+        // Handle a membership change request.
         NodeMsg nodeMsg = (NodeMsg) message;
         Shard updated = updateCluster(nodeMsg);
         if (updated != null)
             updateShard(updated);
 
+        // wait for acknowledgements from the cluster and shard Raft pipelines before reporting success to the client.
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster", this.logPath);
         this.clusterRaftOut.take();
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from Shard", this.logPath);
         this.shardRaftOut.take();
 
+        // send response to client if one is attached to the NodeMsg request.
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
         if (nodeMsg.client != null) {
             Response response = new Response("Cluster successfully updated");
@@ -101,6 +139,11 @@ public class ClusterState implements Runnable {
         }
     }
 
+    /**
+     * Sends the current cluster snapshot and version to the requesting client.
+     *
+     * @param client destination node for the configuration response
+     */
     public void replyConfig(Node client) {
         Config configMsg = new Config(cluster, version);
 
@@ -112,15 +155,17 @@ public class ClusterState implements Runnable {
     }
 
     /**
-     * Reads one incoming message from the input pipe and applies the corresponding
-     * cluster membership change if the message is of the supported {@link NodeMsg} type.
+     * Applies a single membership change to the local consistent-hash state.
      *
-     * <p>Supported actions are:</p>
-     * <ul>
-     *   <li>{@code Add} - add a node to the cluster and publish the updated membership</li>
-     *   <li>{@code Remove} - remove a node from the cluster and publish the updated membership</li>
-     * </ul>
+     * Supported actions are Add and Remove. Add validates the node address,
+     * inserts the node into the local cluster model, increments the version, and
+     * publishes the updated node list to the cluster Raft input pipe. Remove
+     * removes the requested node from the local view, increments the version,
+     * and publishes the new cluster snapshot to the same Raft pipe.
      *
+     * @param nodeMsg membership change request to apply
+     * @return the shard affected by the operation, or null when the action is
+     *     unsupported or cannot be processed
      * @throws Exception if a pipe write or cluster access operation fails
      */
     private Shard updateCluster(NodeMsg nodeMsg) throws Exception {
@@ -156,10 +201,15 @@ public class ClusterState implements Runnable {
     }
 
     /**
-     * Propagates shard-level state changes to the shard Raft pipeline when the local
-     * node's assigned shard changes or when the shard membership has changed significantly.
+     * Propagates shard membership information to the shard Raft pipeline.
      *
-     * @param updatedShard the shard affected by the most recent node add/remove action
+     * If the local node has moved to a different shard, or the currently
+     * assigned shard has shrunk beyond the previous tracked size, the method
+     * records that a shard-level redistribution is needed. When the updated
+     * shard is the same as the one the local node already belongs to, this
+     * method sends the affected shard's node list to the shard Raft input pipe.
+     *
+     * @param updatedShard shard affected by the most recent node add or remove action
      * @throws Exception if writing to the shard Raft pipe fails
      */
     private void updateShard(Shard updatedShard) throws Exception {
@@ -193,10 +243,10 @@ public class ClusterState implements Runnable {
     }
 
     /**
-     * Main execution loop for the cluster state service.
+     * Runs the service loop for the cluster state component.
      *
-     * <p>The thread continuously waits for and processes incoming cluster membership
-     * updates, swallowing individual exceptions so the service can keep running.</p>
+     * The thread repeatedly waits for the next input message, processes it, and
+     * logs any failure so the service can continue to accept new work.
      */
     @Override
     public void run() {
