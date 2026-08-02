@@ -1,2 +1,0 @@
-
-how to handle shard spliting and removal

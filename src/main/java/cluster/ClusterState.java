@@ -1,8 +1,8 @@
 package cluster;
+
 import communication.HandOff;
 import communication.Pipe;
 import message.Message;
-
 import java.util.Map;
 import message.NodeMsg;
 import message.Config;

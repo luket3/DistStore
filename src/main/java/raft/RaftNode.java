@@ -1,4 +1,5 @@
 package raft;
+
 import communication.HandOff;
 import communication.Pipe;
 import message.Message;
