@@ -107,14 +107,16 @@ public class ConsistentHashMap {
      *
      * @param id identifier of the node to remove
      * @throws Exception on errors during shard merging or modification
+     * @return the shard which the node was removed from
      */
-    public void removeNode(String id) throws Exception {
+    public Shard removeNode(String id) throws Exception {
         Shard shard = getShardWithNode(id);
         if (shard != null) {
             shard.removeNode(id);
             if (shard.length < minShardSize && ring.size() > 1)
                 removeShard(shard);
         }
+        return shard;
     }
 
     /**

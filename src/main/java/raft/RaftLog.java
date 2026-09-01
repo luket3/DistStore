@@ -7,7 +7,6 @@ import message.Ack;
 import message.Message;
 import message.RaftConfig;
 import message.Reply;
-import message.SplitRaftConfig;
 
 /**
  * Local Raft log container that separates committed and uncommitted entries.

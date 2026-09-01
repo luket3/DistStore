@@ -21,9 +21,10 @@ public class SplitShard extends Update {
      * @param nodes the node configuration of the inital shard after split event
      * @param newNodes the node configuration of the new shard after split event
      * @param version the cluster configuration version
+     * @param shardRemoved whether the shard has been removed from a Shard
      */
     public SplitShard(Map<String, Node> nodes, Map<String, Node> newNodes, int version) {
-        super("SplitShard", nodes,version);
+        super("SplitShard", nodes,version, false);
         this.newNodes = newNodes;
     }
 }

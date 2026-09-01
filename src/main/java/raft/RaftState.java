@@ -218,6 +218,7 @@ public class RaftState {
             return false;
         }
 
+        HandOff.writeToFile("nodes.size() = " + nodes.keySet() + "this.activeNodes.size() = " + this.activeNodes.keySet(), this.getLogFilePath());
         // If the incoming configuration is larger, add new nodes to the tracked membership and learner lists
         if (nodes.size() > this.activeNodes.size()) {
             Map<String, Node> addedNodes = new HashMap<>(nodes);
@@ -277,6 +278,23 @@ public class RaftState {
     }
 
     /**
+     * Resets the Raft state for a shard removal event, clearing the log and
+     * returning the node to a learner role.
+     * @param nodes the new set of nodes that will be active after the shard removaling config
+     */
+    public void shardRemoval(Map<String, Node> nodes) {
+        this.term = 0;
+        this.activeNodes = new HashMap<>(nodes);
+        this.voters = new HashMap<>(nodes);
+        this.jointConfig = false;
+        this.splitConfig = "false";
+        this.configChangePending = true;
+        this.log.wipe();
+        this.type = "learner";
+        distributeData();
+    }
+
+    /**
      * Promotes any learner that has caught up to the current committed index.
      *
      * Learners that are fully replicated are folded into the next configuration
@@ -293,7 +311,7 @@ public class RaftState {
                 newConfig.put(n.id, n);
             }
         }
-        if (newConfig.size() > 0 && !configChangePending) {
+        if (newConfig.size() == this.learners.size() && newConfig.size() > 0 && !configChangePending ) {
             newConfig.putAll(this.voters);
             nextNodes = newConfig;
             this.appendNewConfig(true, true);
@@ -398,7 +416,7 @@ public class RaftState {
      * @param msg committed RaftConfig entry that should be materialized locally
      */
     public void proccessNewConfig(RaftConfig msg) {
-        if (msg == null) {
+        if (msg == null || msg.version <= this.version) {
             return;
         }
 
@@ -430,6 +448,7 @@ public class RaftState {
                 SplitRaftConfig castMsg = (SplitRaftConfig) msg;
                 if (castMsg.inNodes.containsKey(this.id)) {
                     newNodes = castMsg.inNodes;
+                    distributeData();
                 } else {
                     newNodes = castMsg.newNodes;
                 }
@@ -448,13 +467,6 @@ public class RaftState {
             Map<String, Node> removed = new HashMap<>(this.activeNodes);
             removed.keySet().removeAll(this.voters.keySet());
             for (Node n : removed.values()) {
-                /*
-                if (this.matchIndex != null) {
-                    this.matchIndex.remove(n.id);
-                }
-                if (this.nextIndex != null) {
-                    this.nextIndex.remove(n.id);
-                } */
                 this.activeNodes.remove(n.id);
             
                 if (this.id.equals(n.id)) {
@@ -476,4 +488,7 @@ public class RaftState {
             }
         }
     }
+
+    // TODO: implement data redistribution for shard split events
+    public void distributeData() {}
 }

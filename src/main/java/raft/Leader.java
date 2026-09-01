@@ -181,17 +181,24 @@ public class Leader extends Role {
                 sendAppendEntries(node);
         }
 
+        // If the leader has finalized a split configuration, send AppendEntries to old nodes and clean up their state
         if (this.raftState.splitConfig.equals("finalized")) {
             this.raftState.splitConfig = "false";
             this.raftState.oldNodes.keySet().removeAll(raftState.activeNodes.keySet());
-            System.out.println("Leader " + raftState.id + " broadcasting append entries to old nodes: " + this.raftState.oldNodes.keySet());
             for (Node n : this.raftState.oldNodes.values()) {
                 if (!n.id.equals(raftState.id)) {
                     sendAppendEntries(n);
                 }
             }
+            for (Node n : this.raftState.oldNodes.values()) {
+                if (this.raftState.matchIndex != null) {
+                    this.raftState.matchIndex.remove(n.id);
+                }
+                if (this.raftState.nextIndex != null) {
+                    this.raftState.nextIndex.remove(n.id);
+                }
+            }
             this.raftState.oldNodes.clear();
-            //TODO remove match and next index for old nodes
         }
     }
 

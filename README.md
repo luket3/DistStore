@@ -6,3 +6,5 @@ TODO:
 4. add ablity for snapshots to be sent and proccessed
 5. TEST EVERYTHING
 5. fill in readme, make detailed talk about trade offs ect
+
+only add one of the nodes after shard removal

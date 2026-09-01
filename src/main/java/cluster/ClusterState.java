@@ -32,6 +32,12 @@ public class ClusterState implements Runnable {
     /** identifier of the local node */
     private String nodeID;
 
+    /** identifier of the current shard to which the local node belongs */
+    private String currShardID;
+
+    /** current size of the shard to which the local node belongs */
+    private int currShardSize;
+
     /** input pipe used to send shard-level Raft updates */
     private Pipe shardRaftIn;
 
@@ -78,6 +84,14 @@ public class ClusterState implements Runnable {
         for (Node n : nodes.values()) {
             cluster.addNode(n);
         }
+
+        Shard currShard = cluster.getShardWithNode(nodeID);
+        this.currShardSize = -1;
+        this.currShardID = null;
+        if (currShard != null) {
+            this.currShardID = currShard.id;
+            this.currShardSize = currShard.getAllNodes().size();
+        }
     }
 
     /**
@@ -116,7 +130,7 @@ public class ClusterState implements Runnable {
         if (cluster.getShardWithNode(nodeID) != null) {
             // send update message to cluster Raft pipe
             HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
-            clusterRaftIn.put(new message.Update(cluster.getAllNodes(), version));
+            clusterRaftIn.put(new message.Update(cluster.getAllNodes(), version, false));
 
             // Update shard if necessary, and wait for acknowledgements from both the cluster and shard Raft pipelines.
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster for version: " + this.version, this.logPath);
@@ -132,6 +146,12 @@ public class ClusterState implements Runnable {
                 Response response = new Response("Cluster successfully updated");
                 HandOff.sendToNode(nodeMsg.client, gson.toJson(response), this.logPath);
             }
+        }
+
+        Shard currShard = cluster.getShardWithNode(nodeID);
+        if (currShard != null) {
+            this.currShardID = currShard.id;
+            this.currShardSize = currShard.getAllNodes().size();
         }
     }
 
@@ -175,9 +195,8 @@ public class ClusterState implements Runnable {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: added node " + nodeMsg.node.id, this.logPath);
         } else if (action.equals("Remove")) {
             // Remove a node from the cluster and publish the new stable membership view.
-            cluster.removeNode(nodeMsg.node.id);
             result = new HashMap<>();
-            result.put("old", cluster.getShardWithNode(nodeID));
+            result.put("old", cluster.removeNode(nodeMsg.node.id));
             version++;
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: removed node " + nodeMsg.node.id, this.logPath);
         } else {
@@ -210,11 +229,15 @@ public class ClusterState implements Runnable {
             HandOff.writeToFile("Node " + this.nodeID + " sending SplitShard message to Shard", this.logPath);
             shardRaftIn.put(new message.SplitShard(result.get("old").getAllNodes(), result.get("new").getAllNodes(), version));
             shardChanged = true;
-        } else if (result.get("old").contains(nodeID)) {
-            // When the local node remains in the same shard, only the affected shard's
-            // node list needs to be propagated.
+        } else if (!(currShardID == null) && !this.currShardID.equals(shard.id)) {
+            // check if node has moved to a different shard
             HandOff.writeToFile("Node " + this.nodeID + " sending Update message to Shard", this.logPath);
-            shardRaftIn.put(new message.Update(shard.getAllNodes(), version));
+            shardRaftIn.put(new message.Update(shard.getAllNodes(), version, true));
+            shardChanged = true;
+        } else if (currShardID == null || (shard.getAllNodes().size() != this.currShardSize)) {
+            // check if shard has shrunk or grown beyond the previous tracked size
+            HandOff.writeToFile("Node " + this.nodeID + " sending Update message to Shard", this.logPath);
+            shardRaftIn.put(new message.Update(shard.getAllNodes(), version, false));
             shardChanged = true;
         }
 

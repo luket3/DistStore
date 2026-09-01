@@ -12,7 +12,6 @@ import message.RequestVote;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
 import message.SplitShard;
-import message.RaftMsg;
 import java.util.HashMap;
 import java.util.Map;
 import cluster.Node;
@@ -88,7 +87,15 @@ public class RaftNode {
                 "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request",
                 raftState.getLogFilePath()
             );
-            raftState.readNewConfig(castMsg.nodes, castMsg.version);
+            if (castMsg.shardRemoved) {
+                HandOff.writeToFile(
+                    "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request with shard removed",
+                    raftState.getLogFilePath()
+                );
+                raftState.shardRemoval(castMsg.nodes);
+            } else {
+                raftState.readNewConfig(castMsg.nodes, castMsg.version);
+            }
             return;
         } else if (message.type.equals("SplitShard") && message.version > raftState.version) {
             // proccess a ShardSplit message for cluster configuration change during split event
@@ -97,25 +104,17 @@ public class RaftNode {
                 "Node " + raftState.id + " " + raftState.level + " level raft recieved split Shard update request",
                 raftState.getLogFilePath()
             );
+            
             Map<String, Node> allNodes = new HashMap<>();
             allNodes.putAll(castMsg.nodes);
             allNodes.putAll(castMsg.newNodes);
             raftState.readNewConfig(allNodes, castMsg.nodes, castMsg.newNodes, castMsg.version);
-            HandOff.writeToFile(
-                "Node " + raftState.id + " " + raftState.level + " Made it",
-                raftState.getLogFilePath()
-            );
             return;
         }
 
         // Validate the message to ensure it is from a known node
         if (!checkvalidMessage(message)) {
             return;
-        }
-
-        // step down as leader if message belongs to a higher version
-        if (message.version > raftState.version) {
-            raftState.stepDown();
         }
 
         // handle request vote, append entries, DictMsg and NodeMsg messages

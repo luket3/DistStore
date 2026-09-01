@@ -1,0 +1,667 @@
+2026-09-01T12:31:06.154646236Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:06.157614442Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":1,"numShards":1},"type":"Config","version":0}
+2026-09-01T12:31:08.561917634Z Node SEED0 ClusterState: added node n1
+2026-09-01T12:31:08.564019928Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:08.564398069Z Node SEED1 ClusterState: added node n1
+2026-09-01T12:31:08.564729991Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:08.565706571Z Node SEED2 ClusterState: added node n1
+2026-09-01T12:31:08.566496573Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:31:08.568473385Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:08.571248314Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:31:08.572603762Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:31:09.623463140Z Node n1 ClusterState: added node n1
+2026-09-01T12:31:09.624873738Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:09.626862114Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:31:09.637397789Z Node SEED0 sending Update message to Shard
+2026-09-01T12:31:09.637725163Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:31:09.638918198Z Node SEED1 sending Update message to Shard
+2026-09-01T12:31:09.639670627Z Node SEED2 sending Update message to Shard
+2026-09-01T12:31:09.640029364Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:31:09.640312552Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:31:09.640696011Z Node n1 sending Update message to Shard
+2026-09-01T12:31:09.640901926Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:31:10.652200152Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:31:10.653132116Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:31:10.654179159Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:31:10.654899602Z Node n1 ClusterState: new config finalised
+2026-09-01T12:31:10.655270683Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:31:13.908250568Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:13.908696749Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-09-01T12:31:13.922099264Z Node SEED0 ClusterState: added node n2
+2026-09-01T12:31:13.922339570Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:13.922512020Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:31:13.924693704Z Node SEED1 ClusterState: added node n2
+2026-09-01T12:31:13.924953108Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:13.925023964Z Node SEED2 ClusterState: added node n2
+2026-09-01T12:31:13.925355453Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:13.925826650Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:31:13.925333798Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:31:13.925945479Z Node n1 ClusterState: added node n2
+2026-09-01T12:31:13.926213639Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:13.926446955Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:31:14.984229474Z Node n2 ClusterState: added node n1
+2026-09-01T12:31:14.984447792Z Node n2 ClusterState: added node n2
+2026-09-01T12:31:14.986073174Z Node n2 sending update message to raft cluster
+2026-09-01T12:31:14.987852385Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:31:14.988049178Z Node n2 sending Update message to Shard
+2026-09-01T12:31:14.988233167Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:31:14.996929771Z Node SEED0 sending Update message to Shard
+2026-09-01T12:31:14.997286471Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:31:14.998401373Z Node SEED1 sending Update message to Shard
+2026-09-01T12:31:14.998533716Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:31:14.998673546Z Node n1 sending Update message to Shard
+2026-09-01T12:31:14.999001801Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:31:15.000154073Z Node SEED2 sending Update message to Shard
+2026-09-01T12:31:15.000598192Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:31:16.013591761Z Node n2 ClusterState: new config finalised
+2026-09-01T12:31:16.033829635Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:31:16.037474174Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:31:16.039806864Z Node n1 ClusterState: new config finalised
+2026-09-01T12:31:16.041614428Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:31:16.042242442Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:31:21.277101009Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:21.277356426Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5}},"currShardId":1,"numShards":1},"type":"Config","version":2}
+2026-09-01T12:31:21.286791529Z Node SEED0 ClusterState: added node n3
+2026-09-01T12:31:21.286958777Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:21.287103791Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:21.288329272Z Node SEED2 ClusterState: added node n3
+2026-09-01T12:31:21.288466761Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:21.288672605Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:21.288700067Z Node n1 ClusterState: added node n3
+2026-09-01T12:31:21.288836118Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:21.289029021Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:21.289241025Z Node SEED1 ClusterState: added node n3
+2026-09-01T12:31:21.289437567Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:21.289681325Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:21.291256762Z Node n2 ClusterState: added node n3
+2026-09-01T12:31:21.291456921Z Node n2 sending update message to raft cluster
+2026-09-01T12:31:21.291693861Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:21.292147114Z Node n2 sending SplitShard message to Shard
+2026-09-01T12:31:21.292422969Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:21.292546734Z Node n2 ClusterState: new config finalised
+2026-09-01T12:31:22.347254876Z Node n3 ClusterState: added node n1
+2026-09-01T12:31:22.347470702Z Node n3 ClusterState: added node n2
+2026-09-01T12:31:22.347987328Z Node n3 ClusterState: added node n3
+2026-09-01T12:31:22.349061842Z Node n3 sending update message to raft cluster
+2026-09-01T12:31:22.351573769Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:31:22.351822138Z Node n3 sending SplitShard message to Shard
+2026-09-01T12:31:22.352030906Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:22.360685608Z Node SEED0 sending SplitShard message to Shard
+2026-09-01T12:31:22.360837153Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:22.361272800Z Node SEED1 sending SplitShard message to Shard
+2026-09-01T12:31:22.361425471Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:22.361960796Z Node SEED2 sending SplitShard message to Shard
+2026-09-01T12:31:22.362140680Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:22.362817079Z Node n1 sending SplitShard message to Shard
+2026-09-01T12:31:22.363126979Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:31:23.379108609Z Node n3 ClusterState: new config finalised
+2026-09-01T12:31:23.419608502Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:31:23.422213012Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:31:23.422954303Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:31:23.423182772Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:31:23.424318794Z Node n1 ClusterState: new config finalised
+2026-09-01T12:31:26.930997366Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:26.931412470Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":3}
+2026-09-01T12:31:26.943870069Z Node SEED0 ClusterState: added node n4
+2026-09-01T12:31:26.944083557Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:26.944246298Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.946065462Z Node SEED2 ClusterState: added node n4
+2026-09-01T12:31:26.946210024Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:26.946309611Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.947753169Z Node SEED1 ClusterState: added node n4
+2026-09-01T12:31:26.948025641Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:26.948292988Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.951269432Z Node n1 ClusterState: added node n4
+2026-09-01T12:31:26.951686412Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:26.952073228Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.952123559Z Node n2 ClusterState: added node n4
+2026-09-01T12:31:26.952570849Z Node n2 sending update message to raft cluster
+2026-09-01T12:31:26.953204809Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.953301052Z Node n3 ClusterState: added node n4
+2026-09-01T12:31:26.953580685Z Node n3 sending update message to raft cluster
+2026-09-01T12:31:26.953688130Z Node n2 sending Update message to Shard
+2026-09-01T12:31:26.953942532Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:26.954037277Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:31:26.954260451Z Node n2 ClusterState: new config finalised
+2026-09-01T12:31:26.954518216Z Node n3 sending Update message to Shard
+2026-09-01T12:31:26.954832866Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:31:26.955084427Z Node n3 ClusterState: new config finalised
+2026-09-01T12:31:28.016755619Z Node n4 ClusterState: added node n1
+2026-09-01T12:31:28.016968999Z Node n4 ClusterState: added node n2
+2026-09-01T12:31:28.017469114Z Node n4 ClusterState: added node n3
+2026-09-01T12:31:28.017676276Z Node n4 ClusterState: added node n4
+2026-09-01T12:31:28.019284085Z Node n4 sending update message to raft cluster
+2026-09-01T12:31:28.021003272Z Node n4 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:31:28.021238209Z Node n4 sending Update message to Shard
+2026-09-01T12:31:28.021427234Z Node n4 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:31:28.021668695Z Node n4 ClusterState: new config finalised
+2026-09-01T12:31:28.041401308Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:31:28.041528063Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:31:28.043087767Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:31:28.043129025Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:31:28.043801934Z Node n1 sending Update message to Shard
+2026-09-01T12:31:28.043985080Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:31:28.044083635Z Node n1 ClusterState: new config finalised
+2026-09-01T12:31:31.759910508Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:31.760254048Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":4}
+2026-09-01T12:31:31.771599110Z Node SEED0 ClusterState: removed node n4
+2026-09-01T12:31:31.771797774Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:31.772014855Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.774187136Z Node SEED2 ClusterState: removed node n4
+2026-09-01T12:31:31.774172482Z Node SEED1 ClusterState: removed node n4
+2026-09-01T12:31:31.774467097Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:31.774463246Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:31.774698805Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.774783715Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.775543942Z Node n1 ClusterState: removed node n4
+2026-09-01T12:31:31.775716347Z Node n2 ClusterState: removed node n4
+2026-09-01T12:31:31.775860773Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:31.775952451Z Node n2 sending update message to raft cluster
+2026-09-01T12:31:31.776243816Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.776305115Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.776499163Z Node n2 sending Update message to Shard
+2026-09-01T12:31:31.776604621Z Node n3 ClusterState: removed node n4
+2026-09-01T12:31:31.776792844Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:31:31.776878665Z Node n3 sending update message to raft cluster
+2026-09-01T12:31:31.777374999Z Node n2 ClusterState: new config finalised
+2026-09-01T12:31:31.780620827Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:31:31.781248919Z Node n3 sending Update message to Shard
+2026-09-01T12:31:31.781743074Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:31:31.782077325Z Node n3 ClusterState: new config finalised
+2026-09-01T12:31:31.799289588Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:31:31.799467546Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:31:31.802958322Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:31:31.804480813Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:31:31.805794222Z Node n1 sending Update message to Shard
+2026-09-01T12:31:31.806229512Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:31:32.791757311Z Node n1 ClusterState: new config finalised
+2026-09-01T12:31:38.251138215Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:31:38.251588119Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":5}
+2026-09-01T12:31:38.262989177Z Node SEED0 ClusterState: removed node n3
+2026-09-01T12:31:38.263162601Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:31:38.263271733Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:31:38.264881506Z Node SEED1 ClusterState: removed node n3
+2026-09-01T12:31:38.265117764Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:31:38.265347038Z Node n1 ClusterState: removed node n3
+2026-09-01T12:31:38.265410997Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:31:38.265519594Z Node SEED2 ClusterState: removed node n3
+2026-09-01T12:31:38.265530821Z Node n1 sending update message to raft cluster
+2026-09-01T12:31:38.265641775Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:31:38.265801735Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:31:38.265821269Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:31:38.266810091Z Node n2 ClusterState: removed node n3
+2026-09-01T12:31:38.267110976Z Node n2 sending update message to raft cluster
+2026-09-01T12:31:38.267463957Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:31:38.267931664Z Node n2 sending Update message to Shard
+2026-09-01T12:31:38.269026898Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:31:38.269586006Z Node n2 ClusterState: new config finalised
+2026-09-01T12:31:38.277401062Z Node SEED0 sending Update message to Shard
+2026-09-01T12:31:38.277520004Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:31:38.279868928Z Node SEED1 sending Update message to Shard
+2026-09-01T12:31:38.280131357Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:31:38.280911055Z Node SEED2 sending Update message to Shard
+2026-09-01T12:31:38.281273631Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:31:38.282806120Z Node n1 sending Update message to Shard
+2026-09-01T12:31:38.283413293Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:33:11.875107182Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:11.877078844Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":1,"numShards":1},"type":"Config","version":0}
+2026-09-01T12:33:13.615038530Z Node SEED1 ClusterState: added node n1
+2026-09-01T12:33:13.615559671Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:13.617976217Z Node SEED0 ClusterState: added node n1
+2026-09-01T12:33:13.619357798Z Node SEED2 ClusterState: added node n1
+2026-09-01T12:33:13.622868835Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:33:13.623371950Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:13.623576152Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:13.628324977Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:33:13.628334081Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:33:14.671536801Z Node n1 ClusterState: added node n1
+2026-09-01T12:33:14.672982337Z Node n1 sending update message to raft cluster
+2026-09-01T12:33:14.675453558Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:33:14.685160971Z Node SEED1 sending Update message to Shard
+2026-09-01T12:33:14.685673147Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:33:14.687267673Z Node SEED0 sending Update message to Shard
+2026-09-01T12:33:14.687369809Z Node n1 sending Update message to Shard
+2026-09-01T12:33:14.687484495Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:33:14.687579614Z Node SEED2 sending Update message to Shard
+2026-09-01T12:33:14.687558904Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:33:14.687945997Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:33:15.704247349Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:33:15.705404041Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:33:15.705811832Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:33:15.706281063Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:33:15.707221069Z Node n1 ClusterState: new config finalised
+2026-09-01T12:33:18.767557162Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:18.768526821Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-09-01T12:33:18.790724322Z Node SEED1 ClusterState: added node n2
+2026-09-01T12:33:18.791552918Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:18.792267067Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:33:18.793413419Z Node SEED2 ClusterState: added node n2
+2026-09-01T12:33:18.793975042Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:18.794511155Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:33:18.800994983Z Node n1 ClusterState: added node n2
+2026-09-01T12:33:18.800839929Z Node SEED0 ClusterState: added node n2
+2026-09-01T12:33:18.801444916Z Node n1 sending update message to raft cluster
+2026-09-01T12:33:18.801766977Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:18.801908748Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:33:18.802386911Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:33:19.857139535Z Node n2 ClusterState: added node n1
+2026-09-01T12:33:19.857456201Z Node n2 ClusterState: added node n2
+2026-09-01T12:33:19.859354058Z Node n2 sending update message to raft cluster
+2026-09-01T12:33:19.861417354Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:33:19.861623765Z Node n2 sending Update message to Shard
+2026-09-01T12:33:19.861878791Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:33:19.869922102Z Node SEED1 sending Update message to Shard
+2026-09-01T12:33:19.870048091Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:33:19.871249771Z Node SEED2 sending Update message to Shard
+2026-09-01T12:33:19.871552833Z Node n1 sending Update message to Shard
+2026-09-01T12:33:19.871893141Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:33:19.871757481Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:33:19.873260456Z Node SEED0 sending Update message to Shard
+2026-09-01T12:33:19.873407268Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:33:20.887455964Z Node n2 ClusterState: new config finalised
+2026-09-01T12:33:20.908069661Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:33:20.912674903Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:33:20.913083033Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:33:20.913255003Z Node n1 ClusterState: new config finalised
+2026-09-01T12:33:20.914423194Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:33:23.793630551Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:23.794059032Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5}},"currShardId":1,"numShards":1},"type":"Config","version":2}
+2026-09-01T12:33:23.803861057Z Node SEED1 ClusterState: added node n3
+2026-09-01T12:33:23.804039381Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:23.804160998Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:23.805525147Z Node SEED2 ClusterState: added node n3
+2026-09-01T12:33:23.805810588Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:23.806178760Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:23.807332225Z Node n1 ClusterState: added node n3
+2026-09-01T12:33:23.807855661Z Node n1 sending update message to raft cluster
+2026-09-01T12:33:23.808343748Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:23.809111593Z Node n2 ClusterState: added node n3
+2026-09-01T12:33:23.809717338Z Node n2 sending update message to raft cluster
+2026-09-01T12:33:23.810346548Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:23.811823574Z Node n2 sending SplitShard message to Shard
+2026-09-01T12:33:23.812684138Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:23.813436596Z Node n2 ClusterState: new config finalised
+2026-09-01T12:33:23.815108697Z Node SEED0 ClusterState: added node n3
+2026-09-01T12:33:23.815473381Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:23.817108325Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:24.865519688Z Node n3 ClusterState: added node n1
+2026-09-01T12:33:24.865727405Z Node n3 ClusterState: added node n2
+2026-09-01T12:33:24.866081016Z Node n3 ClusterState: added node n3
+2026-09-01T12:33:24.867358718Z Node n3 sending update message to raft cluster
+2026-09-01T12:33:24.869201386Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:33:24.869399289Z Node n3 sending SplitShard message to Shard
+2026-09-01T12:33:24.869638055Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:24.878993098Z Node SEED1 sending SplitShard message to Shard
+2026-09-01T12:33:24.879112385Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:24.880827569Z Node SEED2 sending SplitShard message to Shard
+2026-09-01T12:33:24.880988637Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:24.881340331Z Node n1 sending SplitShard message to Shard
+2026-09-01T12:33:24.881525017Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:24.883148154Z Node SEED0 sending SplitShard message to Shard
+2026-09-01T12:33:24.883297028Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:33:25.900351926Z Node n3 ClusterState: new config finalised
+2026-09-01T12:33:25.939179221Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:33:25.942065425Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:33:25.942600969Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:33:25.943182414Z Node n1 ClusterState: new config finalised
+2026-09-01T12:33:25.943313125Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:33:28.006076783Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:28.006484345Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":3}
+2026-09-01T12:33:28.021523522Z Node SEED1 ClusterState: added node n4
+2026-09-01T12:33:28.021790050Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:28.022254243Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.022351102Z Node SEED2 ClusterState: added node n4
+2026-09-01T12:33:28.022518399Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:28.022724687Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.023140082Z Node n2 ClusterState: added node n4
+2026-09-01T12:33:28.023455819Z Node n2 sending update message to raft cluster
+2026-09-01T12:33:28.023644111Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.023843615Z Node n1 ClusterState: added node n4
+2026-09-01T12:33:28.023878439Z Node n2 sending Update message to Shard
+2026-09-01T12:33:28.023996332Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:33:28.023998775Z Node n1 sending update message to raft cluster
+2026-09-01T12:33:28.024074113Z Node n2 ClusterState: new config finalised
+2026-09-01T12:33:28.024192643Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.027313311Z Node SEED0 ClusterState: added node n4
+2026-09-01T12:33:28.027491298Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:28.027665304Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.028247692Z Node n3 ClusterState: added node n4
+2026-09-01T12:33:28.028529905Z Node n3 sending update message to raft cluster
+2026-09-01T12:33:28.029052761Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:28.029683924Z Node n3 sending Update message to Shard
+2026-09-01T12:33:28.030201497Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:33:28.030579437Z Node n3 ClusterState: new config finalised
+2026-09-01T12:33:29.088006614Z Node n4 ClusterState: added node n1
+2026-09-01T12:33:29.088203186Z Node n4 ClusterState: added node n2
+2026-09-01T12:33:29.088556639Z Node n4 ClusterState: added node n3
+2026-09-01T12:33:29.088701786Z Node n4 ClusterState: added node n4
+2026-09-01T12:33:29.089958162Z Node n4 sending update message to raft cluster
+2026-09-01T12:33:29.092035915Z Node n4 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:33:29.092262905Z Node n4 sending Update message to Shard
+2026-09-01T12:33:29.092443137Z Node n4 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:33:29.100514856Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:33:29.100585078Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:33:29.102207143Z Node n1 sending Update message to Shard
+2026-09-01T12:33:29.102337521Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:33:29.103856990Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:33:29.105340559Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:33:31.810424514Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:31.810748514Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":4}
+2026-09-01T12:33:31.823469654Z Node SEED1 ClusterState: removed node n4
+2026-09-01T12:33:31.823693563Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:31.823910623Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:33:31.825218854Z Node SEED2 ClusterState: removed node n4
+2026-09-01T12:33:31.825377224Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:31.825927977Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:33:31.826161063Z Node n2 ClusterState: removed node n4
+2026-09-01T12:33:31.826463025Z Node n2 sending update message to raft cluster
+2026-09-01T12:33:31.826815335Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:33:31.827031970Z Node n2 sending Update message to Shard
+2026-09-01T12:33:31.827282260Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:33:31.827351826Z Node SEED0 ClusterState: removed node n4
+2026-09-01T12:33:31.827349139Z Node n3 ClusterState: removed node n4
+2026-09-01T12:33:31.827510170Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:31.827529924Z Node n3 sending update message to raft cluster
+2026-09-01T12:33:31.827655796Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:33:31.827691889Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:33:31.827824689Z Node n3 sending Update message to Shard
+2026-09-01T12:33:31.827958452Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:33:31.828052903Z Node n3 ClusterState: new config finalised
+2026-09-01T12:33:31.834228434Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:33:31.834473145Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:33:31.836463179Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:33:31.839988434Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:33:35.714303870Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:33:35.714489801Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":5}
+2026-09-01T12:33:35.720111516Z Node SEED1 ClusterState: removed node n3
+2026-09-01T12:33:35.720258897Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:33:35.720371143Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:33:35.720940255Z Node SEED2 ClusterState: removed node n3
+2026-09-01T12:33:35.721055372Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:33:35.721184972Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:33:35.721530956Z Node SEED0 ClusterState: removed node n3
+2026-09-01T12:33:35.721629543Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:33:35.721711041Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:33:35.729653881Z Node SEED1 sending Update message to Shard
+2026-09-01T12:33:35.729730615Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:33:35.731239960Z Node SEED2 sending Update message to Shard
+2026-09-01T12:33:35.731239126Z Node SEED0 sending Update message to Shard
+2026-09-01T12:33:35.731350230Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:33:35.731371508Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:08.879336411Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:08.881640862Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":1,"numShards":1},"type":"Config","version":0}
+2026-09-01T12:34:10.814446434Z Node SEED1 ClusterState: added node n1
+2026-09-01T12:34:10.814947371Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:10.817217574Z Node SEED2 ClusterState: added node n1
+2026-09-01T12:34:10.818761007Z Node SEED0 ClusterState: added node n1
+2026-09-01T12:34:10.819661576Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:34:10.819877335Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:10.823424292Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:10.824594832Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:34:10.827606111Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:34:11.876427928Z Node n1 ClusterState: added node n1
+2026-09-01T12:34:11.877854587Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:11.880313489Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-09-01T12:34:11.889638219Z Node SEED1 sending Update message to Shard
+2026-09-01T12:34:11.889844204Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:34:11.891392997Z Node SEED2 sending Update message to Shard
+2026-09-01T12:34:11.891438424Z Node SEED0 sending Update message to Shard
+2026-09-01T12:34:11.891594061Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:34:11.891665319Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:34:11.891962968Z Node n1 sending Update message to Shard
+2026-09-01T12:34:11.892557356Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-09-01T12:34:12.925994967Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:12.927457395Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:12.927938849Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:12.928798618Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:12.929705988Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:15.313678033Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:15.314043233Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-09-01T12:34:15.337329208Z Node SEED1 ClusterState: added node n2
+2026-09-01T12:34:15.338388167Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:15.339593406Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:34:15.342018710Z Node SEED2 ClusterState: added node n2
+2026-09-01T12:34:15.342826702Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:15.343734869Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:34:15.345248078Z Node n1 ClusterState: added node n2
+2026-09-01T12:34:15.345788986Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:15.346431719Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:34:15.352370023Z Node SEED0 ClusterState: added node n2
+2026-09-01T12:34:15.352853749Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:15.353413591Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:34:16.420963899Z Node n2 ClusterState: added node n1
+2026-09-01T12:34:16.421154577Z Node n2 ClusterState: added node n2
+2026-09-01T12:34:16.422582796Z Node n2 sending update message to raft cluster
+2026-09-01T12:34:16.424606618Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-09-01T12:34:16.424798544Z Node n2 sending Update message to Shard
+2026-09-01T12:34:16.425029756Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:34:16.434290137Z Node SEED1 sending Update message to Shard
+2026-09-01T12:34:16.434503871Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:34:16.435708155Z Node SEED2 sending Update message to Shard
+2026-09-01T12:34:16.435814536Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:34:16.436440649Z Node n1 sending Update message to Shard
+2026-09-01T12:34:16.436595337Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:34:16.438047044Z Node SEED0 sending Update message to Shard
+2026-09-01T12:34:16.438213925Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-09-01T12:34:17.448894307Z Node n2 ClusterState: new config finalised
+2026-09-01T12:34:17.459387486Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:17.461108196Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:17.461776397Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:17.462145215Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:17.462414894Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:19.720117914Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:19.720453629Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5}},"currShardId":1,"numShards":1},"type":"Config","version":2}
+2026-09-01T12:34:19.730719099Z Node SEED1 ClusterState: added node n3
+2026-09-01T12:34:19.731015900Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:19.731375048Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:19.732219947Z Node SEED2 ClusterState: added node n3
+2026-09-01T12:34:19.732383076Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:19.732561272Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:19.733116457Z Node n1 ClusterState: added node n3
+2026-09-01T12:34:19.733445976Z Node SEED0 ClusterState: added node n3
+2026-09-01T12:34:19.733630822Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:19.733567838Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:19.733858698Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:19.733960651Z Node n2 ClusterState: added node n3
+2026-09-01T12:34:19.734708261Z Node n2 sending update message to raft cluster
+2026-09-01T12:34:19.734674931Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:19.735372608Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:19.735891621Z Node n2 sending SplitShard message to Shard
+2026-09-01T12:34:19.736106570Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:19.736232971Z Node n2 ClusterState: new config finalised
+2026-09-01T12:34:20.790370765Z Node n3 ClusterState: added node n1
+2026-09-01T12:34:20.790586039Z Node n3 ClusterState: added node n2
+2026-09-01T12:34:20.791343254Z Node n3 ClusterState: added node n3
+2026-09-01T12:34:20.792897755Z Node n3 sending update message to raft cluster
+2026-09-01T12:34:20.795287540Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-09-01T12:34:20.795640440Z Node n3 sending SplitShard message to Shard
+2026-09-01T12:34:20.795946728Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:20.806119953Z Node SEED1 sending SplitShard message to Shard
+2026-09-01T12:34:20.806252008Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:20.807894164Z Node SEED2 sending SplitShard message to Shard
+2026-09-01T12:34:20.808097023Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:20.808712032Z Node n1 sending SplitShard message to Shard
+2026-09-01T12:34:20.808854114Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:20.809900293Z Node SEED0 sending SplitShard message to Shard
+2026-09-01T12:34:20.810043640Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-09-01T12:34:21.822074906Z Node n3 ClusterState: new config finalised
+2026-09-01T12:34:21.844633965Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:21.847456908Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:21.847697312Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:21.847864583Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:21.848166893Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:25.167604644Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:25.168027607Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":3}
+2026-09-01T12:34:25.186820749Z Node SEED1 ClusterState: added node n4
+2026-09-01T12:34:25.187177169Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:25.187642999Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.189328812Z Node SEED2 ClusterState: added node n4
+2026-09-01T12:34:25.190473620Z Node n1 ClusterState: added node n4
+2026-09-01T12:34:25.190586281Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:25.190950030Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:25.191193671Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.191270542Z Node SEED0 ClusterState: added node n4
+2026-09-01T12:34:25.191310992Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.191629400Z Node n3 ClusterState: added node n4
+2026-09-01T12:34:25.191092089Z Node n2 ClusterState: added node n4
+2026-09-01T12:34:25.191948109Z Node n3 sending update message to raft cluster
+2026-09-01T12:34:25.191945467Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:25.192004326Z Node n2 sending update message to raft cluster
+2026-09-01T12:34:25.192336295Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.192444311Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.192488730Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:25.192685872Z Node n2 sending Update message to Shard
+2026-09-01T12:34:25.192945843Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:34:25.194471481Z Node n3 sending Update message to Shard
+2026-09-01T12:34:25.193175967Z Node n2 ClusterState: new config finalised
+2026-09-01T12:34:25.194955647Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:34:25.195596073Z Node n3 ClusterState: new config finalised
+2026-09-01T12:34:26.251704631Z Node n4 ClusterState: added node n1
+2026-09-01T12:34:26.251906636Z Node n4 ClusterState: added node n2
+2026-09-01T12:34:26.252275996Z Node n4 ClusterState: added node n3
+2026-09-01T12:34:26.252449689Z Node n4 ClusterState: added node n4
+2026-09-01T12:34:26.254052196Z Node n4 sending update message to raft cluster
+2026-09-01T12:34:26.255699612Z Node n4 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-09-01T12:34:26.255895368Z Node n4 sending Update message to Shard
+2026-09-01T12:34:26.256059527Z Node n4 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:34:26.265124661Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:26.265398449Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:26.266921061Z Node n1 sending Update message to Shard
+2026-09-01T12:34:26.267078954Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-09-01T12:34:26.268523197Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:26.269708428Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:27.914526751Z Node n4 ClusterState: new config finalised
+2026-09-01T12:34:27.925972413Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:30.134579481Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:30.134805668Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"n4","ip":"localhost","port":4573}],"minShardSize":3,"id":"shard1","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":4}
+2026-09-01T12:34:30.149120100Z Node SEED2 ClusterState: removed node n4
+2026-09-01T12:34:30.149332848Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:30.149518196Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.150011959Z Node SEED1 ClusterState: removed node n4
+2026-09-01T12:34:30.150181133Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:30.150246086Z Node n1 ClusterState: removed node n4
+2026-09-01T12:34:30.150427224Z Node n3 ClusterState: removed node n4
+2026-09-01T12:34:30.150549199Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:30.150676123Z Node n3 sending update message to raft cluster
+2026-09-01T12:34:30.150791323Z Node n2 ClusterState: removed node n4
+2026-09-01T12:34:30.150922719Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.150983648Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.151106169Z Node n2 sending update message to raft cluster
+2026-09-01T12:34:30.151194982Z Node n3 sending Update message to Shard
+2026-09-01T12:34:30.151397553Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.151510016Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:34:30.151634468Z Node n2 sending Update message to Shard
+2026-09-01T12:34:30.151911071Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:34:30.152182711Z Node n2 ClusterState: new config finalised
+2026-09-01T12:34:30.152311229Z Node SEED0 ClusterState: removed node n4
+2026-09-01T12:34:30.152554112Z Node n3 ClusterState: new config finalised
+2026-09-01T12:34:30.152775653Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:30.153021605Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.153124142Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 5
+2026-09-01T12:34:30.168900689Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:30.169143499Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:30.170491731Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:30.170986997Z Node n1 sending Update message to Shard
+2026-09-01T12:34:30.171218878Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 5
+2026-09-01T12:34:30.172969915Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:31.163082078Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:36.460961265Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:36.461269628Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":5}
+2026-09-01T12:34:36.472459863Z Node SEED1 ClusterState: removed node n3
+2026-09-01T12:34:36.472557706Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:36.472621651Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:34:36.474444462Z Node n1 ClusterState: removed node n3
+2026-09-01T12:34:36.474739505Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:36.475052783Z Node SEED2 ClusterState: removed node n3
+2026-09-01T12:34:36.475023728Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:34:36.475281399Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:36.475506245Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:34:36.477312690Z Node n2 ClusterState: removed node n3
+2026-09-01T12:34:36.477757685Z Node n2 sending update message to raft cluster
+2026-09-01T12:34:36.477981737Z Node SEED0 ClusterState: removed node n3
+2026-09-01T12:34:36.478084770Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:34:36.478286119Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:36.478567328Z Node n2 sending Update message to Shard
+2026-09-01T12:34:36.478898330Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:36.478935342Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 6
+2026-09-01T12:34:36.479126183Z Node n2 ClusterState: new config finalised
+2026-09-01T12:34:36.485818271Z Node SEED1 sending Update message to Shard
+2026-09-01T12:34:36.485988138Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:36.487168037Z Node SEED2 sending Update message to Shard
+2026-09-01T12:34:36.487328332Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:36.488082596Z Node n1 sending Update message to Shard
+2026-09-01T12:34:36.488578259Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:36.490866736Z Node SEED0 sending Update message to Shard
+2026-09-01T12:34:36.491071015Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 6
+2026-09-01T12:34:37.502968425Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:37.503816524Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:37.503884130Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:37.504144640Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:37.505354231Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:45.368999331Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:45.369142178Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5}},"currShardId":2,"numShards":1},"type":"Config","version":6}
+2026-09-01T12:34:45.374369383Z Node SEED1 ClusterState: removed node n2
+2026-09-01T12:34:45.374535544Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:45.374605050Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 7
+2026-09-01T12:34:45.375465216Z Node SEED2 ClusterState: removed node n2
+2026-09-01T12:34:45.375559759Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:45.375624865Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 7
+2026-09-01T12:34:45.375808349Z Node n1 ClusterState: removed node n2
+2026-09-01T12:34:45.376100078Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:45.376491464Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 7
+2026-09-01T12:34:45.376586683Z Node SEED0 ClusterState: removed node n2
+2026-09-01T12:34:45.376727791Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:45.376821517Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 7
+2026-09-01T12:34:45.381245283Z Node SEED1 sending Update message to Shard
+2026-09-01T12:34:45.381316683Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 7
+2026-09-01T12:34:45.382009975Z Node SEED2 sending Update message to Shard
+2026-09-01T12:34:45.382141385Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 7
+2026-09-01T12:34:45.382410357Z Node n1 sending Update message to Shard
+2026-09-01T12:34:45.382586093Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 7
+2026-09-01T12:34:45.382827908Z Node SEED0 sending Update message to Shard
+2026-09-01T12:34:45.383048663Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 7
+2026-09-01T12:34:46.389158089Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:46.389893469Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:46.389968452Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:46.390093400Z Node n1 ClusterState: new config finalised
+2026-09-01T12:34:46.390600280Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:54.922238579Z Node SEED1 ClusterState: replying with cluster config
+2026-09-01T12:34:54.922411695Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":2,"numShards":1},"type":"Config","version":7}
+2026-09-01T12:34:54.930708132Z Node SEED1 ClusterState: added node n9
+2026-09-01T12:34:54.930812399Z Node SEED1 sending update message to raft cluster
+2026-09-01T12:34:54.930879970Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 8
+2026-09-01T12:34:54.933048218Z Node SEED2 ClusterState: added node n9
+2026-09-01T12:34:54.933173371Z Node SEED2 sending update message to raft cluster
+2026-09-01T12:34:54.933344920Z Node n1 ClusterState: added node n9
+2026-09-01T12:34:54.933516369Z Node n1 sending update message to raft cluster
+2026-09-01T12:34:54.933781918Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 8
+2026-09-01T12:34:54.933986432Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 8
+2026-09-01T12:34:54.934605348Z Node SEED0 ClusterState: added node n9
+2026-09-01T12:34:54.934707127Z Node SEED0 sending update message to raft cluster
+2026-09-01T12:34:54.934815915Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 8
+2026-09-01T12:34:55.998471167Z Node n9 ClusterState: added node n1
+2026-09-01T12:34:55.998692618Z Node n9 ClusterState: added node n2
+2026-09-01T12:34:55.999299741Z Node n9 ClusterState: added node n3
+2026-09-01T12:34:55.999492129Z Node n9 ClusterState: added node n4
+2026-09-01T12:34:55.999704409Z Node n9 ClusterState: removed node n4
+2026-09-01T12:34:56.001948930Z Node n9 ClusterState: removed node n3
+2026-09-01T12:34:56.002072611Z Node n9 ClusterState: removed node n2
+2026-09-01T12:34:56.002275271Z Node n9 ClusterState: added node n9
+2026-09-01T12:34:56.003567067Z Node n9 sending update message to raft cluster
+2026-09-01T12:34:56.003790779Z Node n9 ClusterState: waiting for acknowledgement from cluster for version: 8
+2026-09-01T12:34:56.004191015Z Node n9 sending Update message to Shard
+2026-09-01T12:34:56.004447107Z Node n9 ClusterState: waiting for acknowledgement from Shard for version: 8
+2026-09-01T12:34:56.008284974Z Node SEED1 sending Update message to Shard
+2026-09-01T12:34:56.008429009Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 8
+2026-09-01T12:34:56.009268863Z Node SEED2 sending Update message to Shard
+2026-09-01T12:34:56.009376163Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 8
+2026-09-01T12:34:56.009683576Z Node SEED0 sending Update message to Shard
+2026-09-01T12:34:56.009800686Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 8
+2026-09-01T12:34:56.009636991Z Node n1 sending Update message to Shard
+2026-09-01T12:34:56.009901528Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 8
+2026-09-01T12:34:57.025518598Z Node n9 ClusterState: new config finalised
+2026-09-01T12:34:57.033341534Z Node SEED2 ClusterState: new config finalised
+2026-09-01T12:34:57.034235701Z Node SEED1 ClusterState: new config finalised
+2026-09-01T12:34:57.034991391Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-09-01T12:34:57.036220894Z Node SEED0 ClusterState: new config finalised
+2026-09-01T12:34:57.036514575Z Node n1 ClusterState: new config finalised
