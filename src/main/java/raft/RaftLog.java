@@ -7,6 +7,7 @@ import message.Ack;
 import message.Message;
 import message.RaftConfig;
 import message.Reply;
+import message.SplitRaftConfig;
 
 /**
  * Local Raft log container that separates committed and uncommitted entries.
@@ -93,7 +94,7 @@ public class RaftLog {
                 outPipe.put(msg);
             // If the committed entry is a RaftConfig, let the caller know so it can
             // update its local configuration state.
-            } else if (entryToCommit.msg.type.equals("RaftConfig")) {
+            } else if (entryToCommit.msg.type.equals("RaftConfig") || entryToCommit.msg.type.equals("SplitRaftConfig")) {
                 RaftConfig raftConfig = (RaftConfig) entryToCommit.msg;
                 // Let RaftState handle joint vs final config application.
                 raftState.proccessNewConfig(raftConfig);

@@ -15,9 +15,6 @@ public class AppendEntries extends RaftMsg {
     /** The current Raft term of the leader sending this RPC. */
     public int term;
 
-    /** Identifier of the leader sending the append request. */
-    public String leaderId;
-
     /** Index of the log entry immediately before the new batch. */
     public int prevLogIndex;
 
@@ -40,11 +37,12 @@ public class AppendEntries extends RaftMsg {
      * @param prevLogTerm term of the preceding log entry
      * @param leaderCommit latest committed log index known to the leader
      * @param entries list of log entries to append, or an empty list for heartbeat
+     * @param version the version of the cluster configuration that this message belongs too
      */
-    public AppendEntries(String level, int term, String leaderId, int prevLogIndex, int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries) {
-        super("AppendEntries", level);
+    public AppendEntries(String level, int term, String leaderId, int prevLogIndex, 
+                         int prevLogTerm, int leaderCommit, ArrayList<LogEntry> entries, int version) {
+        super("AppendEntries", level, leaderId, version);
         this.term = term;
-        this.leaderId = leaderId;
         this.prevLogIndex = prevLogIndex;
         this.prevLogTerm = prevLogTerm;
         this.leaderCommit = leaderCommit;

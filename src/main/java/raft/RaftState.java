@@ -6,6 +6,7 @@ import cluster.Node;
 import communication.Pipe;
 import communication.HandOff;
 import message.RaftConfig;
+import message.SplitRaftConfig;
 import com.google.gson.Gson;
 
 /**
@@ -30,8 +31,8 @@ public class RaftState {
     /** Previous voter set used during joint configuration transitions. */
     public Map<String, Node> oldNodes;
 
-    /** Current known nodes in the group. */
-    public Map<String, Node> allNodes;
+    /** every node that is active in current configuration */
+    public Map<String, Node> activeNodes;
 
     /** Learner nodes tracked as part of the Raft membership model. */
     public Map<String,Node> learners;
@@ -39,8 +40,17 @@ public class RaftState {
     /** Current voter set for this Raft group. */
     public Map<String, Node> voters;
 
+    /** during a shard spliting event this is the nodes that will be in the inital shard after the event */
+    public Map<String, Node> inNodes;
+
+    /** during a shard splitting event this is the nodes that will be in the new split shard */
+    public Map<String, Node> finNodes;
+
     /** Whether the node is currently operating in a joint-config transition. */
     public boolean jointConfig;
+
+    /** Wheather the pending config change is for a shard splitting operation */
+    public String splitConfig;
 
     /** Whether a configuration change is waiting to be applied. */
     public boolean configChangePending;
@@ -113,10 +123,13 @@ public class RaftState {
         this.term = 0;
         this.nextNodes = new HashMap<>(configData);
         this.oldNodes = new HashMap<>(configData);
-        this.allNodes = new HashMap<>(configData);
+        this.activeNodes = new HashMap<>(configData);
         this.learners = new HashMap<>();
         this.voters = new HashMap<>(configData);
+        this.inNodes = new HashMap<>();
+        this.finNodes = new HashMap<>();
         this.jointConfig = false;
+        this.splitConfig = "false";
         this.configChangePending = false;
         this.log = new RaftLog(outPipe,this);
         this.leader = null;
@@ -146,7 +159,7 @@ public class RaftState {
         this.matchIndex = new HashMap<>();
         this.nextIndex = new HashMap<>();
 
-        for (String nodeId : this.allNodes.keySet()) {
+        for (String nodeId : this.activeNodes.keySet()) {
             this.matchIndex.put(nodeId, -1);
             this.nextIndex.put(nodeId, this.log.getLastIdx() + 1);
         }
@@ -159,8 +172,8 @@ public class RaftState {
      */
     public void checkConfigChange() {
         if (configChangePending && !jointConfig && !this.log.uncommitedJointConfig &&
-            nextNodes.size() < allNodes.size()) {
-            appendNewConfig(nextNodes, true, true);
+            nextNodes.size() < activeNodes.size()) {
+            appendNewConfig(true, true);
         }
 
     }
@@ -192,33 +205,24 @@ public class RaftState {
     }
 
     /**
-     * Accepts a new configuration snapshot and updates the pending version and
-     * learner membership state.
-     *
-     * When the new node set is larger, newly discovered nodes are added to the
-     * tracked membership and learner lists. When the set is smaller, a config
-     * change is recorded as pending so the node can later append the new
-     * configuration entry.
+     * Updates values assisated with a Config change request
      *
      * @param nodes incoming node map for the next configuration
      * @param nextVersion version number associated with the incoming config
      */
-    public void readNewConfig(Map<String, Node> nodes, int nextVersion) {
+    public boolean readNewConfigHelp(Map<String, Node> nodes, int nextVersion) {
         this.nextVersion = nextVersion;
 
         // If the incoming configuration is empty, do nothing
         if (nodes == null || nodes.isEmpty()) {
-            return;
+            return false;
         }
 
         // If the incoming configuration is larger, add new nodes to the tracked membership and learner lists
-        if (this.allNodes == null) {
-            this.allNodes = new HashMap<>();
-        }
-        if (nodes.size() > this.allNodes.size()) {
+        if (nodes.size() > this.activeNodes.size()) {
             Map<String, Node> addedNodes = new HashMap<>(nodes);
-            addedNodes.keySet().removeAll(this.allNodes.keySet());
-            this.allNodes.putAll(addedNodes);
+            addedNodes.keySet().removeAll(this.activeNodes.keySet());
+            this.activeNodes.putAll(addedNodes);
             this.learners.putAll(addedNodes);
             this.newLearners.putAll(addedNodes);
 
@@ -229,15 +233,46 @@ public class RaftState {
                 }
             }
         // If the incoming configuration is smaller, record a pending config change
-        } else if (nodes.size() < this.allNodes.size()) {
+        } else if (nodes.size() < this.activeNodes.size()) {
             boolean configChanged = this.voters == null || !this.voters.equals(nodes);
             if (configChanged && !this.configChangePending) {
                 configChangePending = true;
                 nextNodes = nodes;
 
                 if (this.type.equals("leader"))
-                    appendNewConfig(nodes, true, true);
+                    return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * updates raft state for a pending cluster configuration change split event
+     * 
+     * @param nodes incoming node map for the next configuration
+     * @param nextVersion version number associated with the incoming config
+     */
+    public void readNewConfig(Map<String, Node> nodes, int nextVersion) {
+        this.splitConfig = "false";
+        if (readNewConfigHelp(nodes, nextVersion)) {
+            appendNewConfig(nodes, true, true);
+        }
+    }
+
+    /**
+     * updates raft state for a pending Shard split event
+     * 
+     * @param nodes incoming node map for the next configuration
+     * @param inNodes all nodes in the inital shard or shard that has split
+     * @param finNodes all nodes in the new shard that was split from inital shard
+     * @param nextVersion version number associated with the incoming config
+     */
+    public void readNewConfig(Map<String, Node> nodes, Map<String,Node> inNodes, Map<String,Node> finNodes, int nextVersion) {
+        this.splitConfig = "pending";
+        this.inNodes = inNodes;
+        this.finNodes = finNodes;
+        if (readNewConfigHelp(nodes, nextVersion)) {
+            appendNewConfig(nodes, inNodes, finNodes, true, true);
         }
     }
 
@@ -260,11 +295,38 @@ public class RaftState {
         }
         if (newConfig.size() > 0 && !configChangePending) {
             newConfig.putAll(this.voters);
-            this.appendNewConfig(newConfig, true, true);
+            nextNodes = newConfig;
+            this.appendNewConfig(true, true);
             this.configChangePending = true;
             return;
         }
         return;
+    }
+
+    /**
+     * if a node is in leader role step down to follower
+     */
+    public void stepDown() {
+        if (this.type != "learner") {
+            this.type = "follower";
+        }
+    }
+
+    /**
+     * append a config change entry to the replicated log
+     * 
+     * @param entry to commit to log
+     * @param pendingLog whether the appended configuration should trigger a
+     *     follow-up broadcast of the current log state
+     */
+    public void appendNewConfigHelp(RaftConfig entry, boolean pendingLog) {
+        HandOff.writeToFile(
+            "Node " + this.id + " " + this.level + ": appending new config: " + this.gson.toJson(entry),
+            this.getLogFilePath()
+        );
+        this.log.appendEntry(entry, term);
+        matchIndex.put(id, log.getLastIdx());
+        this.pendingLog = pendingLog;
     }
 
     /**
@@ -277,19 +339,51 @@ public class RaftState {
      *     follow-up broadcast of the current log state
      */
     public void appendNewConfig(Map<String,Node> newConfig, boolean jointConfig, boolean pendingLog) {
-        HandOff.writeToFile(
-            "Node " + this.id + " " + this.level + ": appending new config: " + this.gson.toJson(newConfig),
-            this.getLogFilePath()
-        );
         if (jointConfig) {
             // Append a joint-config entry: oldNodes should be the current voter set
-            this.log.appendEntry(new RaftConfig(newConfig, this.voters, true, nextVersion), term);
+            appendNewConfigHelp(new RaftConfig(newConfig, this.voters, true, nextVersion), pendingLog);
         } else {
             // Append a final, non-joint config. oldNodes is null for the stable config.
-            this.log.appendEntry(new RaftConfig(newConfig, null, false, nextVersion), term);
+            appendNewConfigHelp(new RaftConfig(newConfig, null, false, nextVersion), pendingLog);
         }
-        matchIndex.put(id, log.getLastIdx());
-        this.pendingLog = pendingLog;
+    }
+
+    /**
+     * Appends a Shard split configuration change into the local raft log
+     * 
+     * @param allNodes every node in both the intial shard and the new shard after splitting
+     * @param inNodes all nodes in the inital shard or shard that has split
+     * @param finNodes all nodes in the new shard that was split from inital shard
+     * @param jointConfig whether the config append should preserve both old and
+     *     new voter sets during the transition
+     * @param pendingLog whether the appended configuration should trigger a
+     *     follow-up broadcast of the current log state
+     */
+    public void appendNewConfig(Map<String,Node> allNodes, Map<String,Node> inNodes, Map<String,Node> finNodes, 
+                                boolean jointConfig, boolean pendingLog) {
+        if (jointConfig) {
+            // Append a joint-config entry: oldNodes should be the current voter set
+            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, this.voters, true, nextVersion), pendingLog);
+        } else {
+            // Append a final, non-joint config. oldNodes is null for the stable config.
+            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, null, false, nextVersion), pendingLog);
+        }
+    }
+
+    /**
+     * Appends a cluster configuration entry to the local log
+     * 
+     * @param jointConfig whether the config append should preserve both old and
+     *     new voter sets during the transition
+     * @param pendingLog whether the appended configuration should trigger a
+     *     follow-up broadcast of the current log state
+     */
+    public void appendNewConfig(boolean jointConfig, boolean pendingLog) {
+        if (this.splitConfig.equals("pending")) {
+            appendNewConfig(nextNodes, inNodes, finNodes, jointConfig, pendingLog);
+        } else {
+            appendNewConfig(nextNodes,jointConfig, pendingLog);
+        }
     }
 
     /**
@@ -326,35 +420,42 @@ public class RaftState {
                 this.learners.remove(n.id);
             }
 
-            if (this.allNodes == null) {
-                this.allNodes = new HashMap<>();
-            }
-            this.allNodes.putAll(this.oldNodes);
-            this.allNodes.putAll(this.nextNodes);
+            this.activeNodes.putAll(this.oldNodes);
+            this.activeNodes.putAll(this.nextNodes);
         // Apply final-config state: set the stable voter set and remove any nodes that are no longer part of the group.
         } else {
-            this.oldNodes = null;
-            this.nextNodes = null;
-            this.voters = msg.nodes == null ? new HashMap<>() : new HashMap<>(msg.nodes);
+            // determine the nodes present in the final config
+            Map<String, Node> newNodes;
+            if (msg.type.equals("SplitRaftConfig")) {
+                SplitRaftConfig castMsg = (SplitRaftConfig) msg;
+                if (castMsg.inNodes.containsKey(this.id)) {
+                    newNodes = castMsg.inNodes;
+                } else {
+                    newNodes = castMsg.newNodes;
+                }
+            } else {
+                newNodes = msg.nodes;
+            }
+
+            this.voters = newNodes == null ? new HashMap<>() : new HashMap<>(newNodes);
             this.jointConfig = false;
             this.version = msg.version;
             this.configChangePending = false;
 
             // Remove any nodes that are no longer part of the active group from the tracked membership and replication state.
-            if (this.allNodes == null) {
-                this.allNodes = new HashMap<>();
-            }
-            this.allNodes.putAll(this.voters);
-            Map<String, Node> removed = new HashMap<>(this.allNodes);
+            this.activeNodes.putAll(this.voters);
+            this.oldNodes = new HashMap<>(this.activeNodes);
+            Map<String, Node> removed = new HashMap<>(this.activeNodes);
             removed.keySet().removeAll(this.voters.keySet());
             for (Node n : removed.values()) {
+                /*
                 if (this.matchIndex != null) {
                     this.matchIndex.remove(n.id);
                 }
                 if (this.nextIndex != null) {
                     this.nextIndex.remove(n.id);
-                }
-                this.allNodes.remove(n.id);
+                } */
+                this.activeNodes.remove(n.id);
             
                 if (this.id.equals(n.id)) {
                     this.type = "learner";
@@ -366,6 +467,12 @@ public class RaftState {
                 this.type = "follower";
             } else if (this.type.equals("follower") && this.voters.get(this.id) == null) {
                 this.type = "learner";
+            }
+
+            if (this.splitConfig.equals("pending") && this.type.equals("leader")) {
+                this.splitConfig = "finalized";
+            } else if (this.splitConfig.equals("pending")) {
+                this.splitConfig = "false";
             }
         }
     }

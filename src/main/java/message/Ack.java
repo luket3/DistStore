@@ -23,7 +23,7 @@ public class Ack extends Message {
      * Creates a default acknowledgement with a successful outcome.
      */
     public Ack() {
-        super("Ack");
+        super("Ack", -1);
         success = true;
         node = null;
     }
@@ -35,7 +35,7 @@ public class Ack extends Message {
      * @param message human-readable acknowledgement text
      */
     public Ack(boolean success, String message) {
-        super("Ack");
+        super("Ack", -1);
         this.success = success;
         this.message = message;
         this.node = null;
@@ -50,7 +50,7 @@ public class Ack extends Message {
      * @param n node returned as part of the acknowledgement payload
      */
     public Ack(boolean success, String message, Node n) {
-        super("Ack");
+        super("Ack", -1);
         this.success = success;
         this.message = message;
         this.node = n;

@@ -3,6 +3,7 @@ package raft;
 import communication.HandOff;
 import communication.Pipe;
 import message.Message;
+import message.RaftMsg;
 import message.Update;
 import message.Reply;
 import message.Response;
@@ -10,6 +11,9 @@ import message.AppendEntries;
 import message.RequestVote;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
+import message.SplitShard;
+import message.RaftMsg;
+import java.util.HashMap;
 import java.util.Map;
 import cluster.Node;
 
@@ -77,16 +81,41 @@ public class RaftNode {
         );
 
         // Handle membership update messages
-        if (message.type.equals("Update")) {
+        if (message.type.equals("Update") && message.version > raftState.version) {
+            // Process a membership update that should be replicated through Raft.
             Update castMsg = (Update) message;
-            if ((castMsg.action.equals("Update") || castMsg.action.equals("Distribute")) && castMsg.version == raftState.version + 1) {
-                // Process a membership update that should be replicated through Raft.
-                    HandOff.writeToFile(
-                    "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request",
-                    raftState.getLogFilePath()
-                );
-                raftState.readNewConfig(castMsg.nodes, castMsg.version);
-            }
+            HandOff.writeToFile(
+                "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request",
+                raftState.getLogFilePath()
+            );
+            raftState.readNewConfig(castMsg.nodes, castMsg.version);
+            return;
+        } else if (message.type.equals("SplitShard") && message.version > raftState.version) {
+            // proccess a ShardSplit message for cluster configuration change during split event
+            SplitShard castMsg = (SplitShard) message;
+            HandOff.writeToFile(
+                "Node " + raftState.id + " " + raftState.level + " level raft recieved split Shard update request",
+                raftState.getLogFilePath()
+            );
+            Map<String, Node> allNodes = new HashMap<>();
+            allNodes.putAll(castMsg.nodes);
+            allNodes.putAll(castMsg.newNodes);
+            raftState.readNewConfig(allNodes, castMsg.nodes, castMsg.newNodes, castMsg.version);
+            HandOff.writeToFile(
+                "Node " + raftState.id + " " + raftState.level + " Made it",
+                raftState.getLogFilePath()
+            );
+            return;
+        }
+
+        // Validate the message to ensure it is from a known node
+        if (!checkvalidMessage(message)) {
+            return;
+        }
+
+        // step down as leader if message belongs to a higher version
+        if (message.version > raftState.version) {
+            raftState.stepDown();
         }
 
         // handle request vote, append entries, DictMsg and NodeMsg messages
@@ -163,6 +192,25 @@ public class RaftNode {
      */
     public boolean learner() {
         return (raftState.type.equals("learner"));
+    }
+
+    /**
+     * checks if the message is valid or from outside of config
+     * @return if the message is valid
+     */
+    public boolean checkvalidMessage(Message message) {
+        if ((message.type.equals("AppendEntries") || message.type.equals("RequestVote") 
+            || message.type.equals("AppendEntriesReply") || message.type.equals("RequestVoteReply")) && !raftState.type.equals("learner")) {
+            RaftMsg castMsg = (RaftMsg) message;
+            if (!raftState.activeNodes.containsKey(castMsg.senderId)) {
+                HandOff.writeToFile(
+                    "Node " + raftState.id + " " + raftState.level + " level raft discarding Raft message as from outside configuration",
+                    raftState.getLogFilePath()
+                );
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

@@ -17,15 +17,20 @@ public class RaftMsg extends Message {
      */
     public String level;
 
+    /** the id of the node that sent the message */
+    public String senderId;
+
     /**
      * Creates a Raft message with a concrete message type and routing level.
      *
-     * @param type concrete Raft message discriminator such as AppendEntries or
-     *     RequestVote
+     * @param type concrete Raft message discriminator such as AppendEntries or RequestVote
      * @param level pipeline routing label used by the server dispatcher
+     * @param senderId the ID of the node sending this response
+     * @param version the version of the cluster configuration that this message belongs too
      */
-    public RaftMsg(String type, String level) {
-        super(type);
+    public RaftMsg(String type, String level, String senderId, int version) {
+        super(type, version);
         this.level = level;
+        this.senderId = senderId;
     }
 }

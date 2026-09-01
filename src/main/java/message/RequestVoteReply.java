@@ -7,9 +7,6 @@ package message;
 public class RequestVoteReply extends RaftMsg {
     /** The term of the responding node. */
     public int term;
-
-    /** The ID of the node sending this vote response. */
-    public String senderId;
     
     /** True if the voter granted its vote to the candidate. */
     public boolean voteGranted;
@@ -21,11 +18,11 @@ public class RequestVoteReply extends RaftMsg {
      * @param term the current term of the responding node
      * @param senderId the ID of the node sending this response
      * @param voteGranted true if the vote was granted to the candidate
+     * @param version the version of the cluster configuration that this message belongs too
      */
-    public RequestVoteReply(String level, int term, String senderId, boolean voteGranted) {
-        super("RequestVoteReply", level);
+    public RequestVoteReply(String level, int term, String senderId, boolean voteGranted, int version) {
+        super("RequestVoteReply", level, senderId, version);
         this.term = term;
-        this.senderId = senderId;
         this.voteGranted = voteGranted;
     }
 

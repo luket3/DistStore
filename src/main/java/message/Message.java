@@ -10,13 +10,18 @@ public class Message {
     /** Discriminator used by the message deserializer and protocol handlers. */
     public String type;
 
+    /** cluster version the given message belongs too */
+    public int version;
+
     /**
      * Creates a message with the supplied protocol discriminator.
      *
      * @param type concrete message type identifier
+     * @param version the cluster version the given message belongs too
      */
-    protected Message(String type) {
+    protected Message(String type, int version) {
         this.type = type;
+        this.version = version;
     }
 
     /**

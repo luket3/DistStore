@@ -13,7 +13,7 @@ public class Response extends Message {
      * @param message the response content to send to the client
      */
     public Response(String message) {
-        super("Response");
+        super("Response", -1);
         this.msg = message;
     }
 }

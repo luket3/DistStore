@@ -87,13 +87,19 @@ public class ConsistentHashMap {
      *
      * @param n node to add
      * @throws Exception on errors during shard splitting or modification
+     * @return if a shard is split, return the new shard created
      */
-    public void addNode(Node n) throws Exception {
+    public Map<String, Shard> addNode(Node n) throws Exception {
         Shard shard = getShard(n.id);
         shard.addNode(n);
 
-        if (shard.length >= minShardSize*2)
-            addShard(shard.split("shard"+currShardId));
+        Map<String, Shard> result = new HashMap<>();
+        result.put("old", shard);
+        if (shard.length >= minShardSize*2) {
+            result.put("new", shard.split("shard"+currShardId));
+            addShard(result.get("new"));
+        }
+        return result;
     }
 
     /**
@@ -103,11 +109,12 @@ public class ConsistentHashMap {
      * @throws Exception on errors during shard merging or modification
      */
     public void removeNode(String id) throws Exception {
-        Shard shard = getShard(id);
-        shard.removeNode(id);
-
-        if (shard.length < minShardSize && ring.size() > 1)
-            removeShard(shard);
+        Shard shard = getShardWithNode(id);
+        if (shard != null) {
+            shard.removeNode(id);
+            if (shard.length < minShardSize && ring.size() > 1)
+                removeShard(shard);
+        }
     }
 
     /**
@@ -139,6 +146,20 @@ public class ConsistentHashMap {
     public Shard getShardWithNode(String id) {
         for (Shard shard : ring.values())
             if (shard.contains(id))
+                return shard;
+
+        return null;
+    }
+
+    /**
+     * Find the shard with the specified shard id.
+     *
+     * @param shardId the shard id to search for
+     * @return the shard with the given id, or null if not found
+     */
+    public Shard getShardWithId(String shardId) {
+        for (Shard shard : ring.values())
+            if (shard.id.equals(shardId))
                 return shard;
 
         return null;

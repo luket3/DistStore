@@ -17,9 +17,22 @@ public class RaftConfig extends Message {
 
     /** Whether this is a joint-config transition. */
     public boolean jointConfig;
-    
-    /** Raft message version. */
-    public int version;
+
+    /**
+     * used for initalising child classes with their type
+     *
+     * @param type the type of message being created
+     * @param nodes the node configuration to replicate
+     * @param oldNodes the previous configuration for joint consensus (may be null for initial configuration)
+     * @param jointConfig whether this represents a joint-config transition
+     * @param version the raft message version
+     */
+    protected RaftConfig(String type, Map<String, Node> nodes, Map<String, Node> oldNodes, boolean jointConfig, int version) {
+        super(type, version);
+        this.nodes = nodes;
+        this.oldNodes = oldNodes;
+        this.jointConfig = jointConfig;
+    }
 
     /**
      * Constructs a new Raft configuration message.
@@ -30,10 +43,6 @@ public class RaftConfig extends Message {
      * @param version the raft message version
      */
     public RaftConfig(Map<String, Node> nodes, Map<String, Node> oldNodes, boolean jointConfig, int version) {
-        super("RaftConfig");
-        this.nodes = nodes;
-        this.oldNodes = oldNodes;
-        this.jointConfig = jointConfig;
-        this.version = version;
+        this("RaftConfig", nodes, oldNodes, jointConfig, version);
     }
 }

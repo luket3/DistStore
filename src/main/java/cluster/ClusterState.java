@@ -4,6 +4,7 @@ import communication.HandOff;
 import communication.Pipe;
 import message.Message;
 import java.util.Map;
+import java.util.HashMap;
 import message.NodeMsg;
 import message.Config;
 import message.Response;
@@ -24,12 +25,6 @@ public class ClusterState implements Runnable {
 
     /** local consistent-hash model of the cluster membership state */
     private ConsistentHashMap cluster;
-
-    /** cached shard identity of the local node */
-    private String currShardID;
-
-    /** cached shard size of the local node */
-    private int currShardSize;
 
     /** version number of the current cluster membership state */
     private int version;
@@ -83,11 +78,6 @@ public class ClusterState implements Runnable {
         for (Node n : nodes.values()) {
             cluster.addNode(n);
         }
-
-        // Cache the node's initial shard identity and shard size for later comparisons.
-        Shard currShard = cluster.getShard(nodeID);
-        this.currShardID = currShard.id;
-        this.currShardSize = currShard.size();
     }
 
     /**
@@ -121,21 +111,27 @@ public class ClusterState implements Runnable {
 
         // Handle a membership change request.
         NodeMsg nodeMsg = (NodeMsg) message;
-        Shard updated = updateCluster(nodeMsg);
-        if (updated != null)
-            updateShard(updated);
+        Map<String, Shard> result = updateCluster(nodeMsg);
 
-        // wait for acknowledgements from the cluster and shard Raft pipelines before reporting success to the client.
-        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster", this.logPath);
-        this.clusterRaftOut.take();
-        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from Shard", this.logPath);
-        this.shardRaftOut.take();
+        if (cluster.getShardWithNode(nodeID) != null) {
+            // send update message to cluster Raft pipe
+            HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
+            clusterRaftIn.put(new message.Update(cluster.getAllNodes(), version));
 
-        // send response to client if one is attached to the NodeMsg request.
-        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
-        if (nodeMsg.client != null) {
-            Response response = new Response("Cluster successfully updated");
-            HandOff.sendToNode(nodeMsg.client, gson.toJson(response), this.logPath);
+            // Update shard if necessary, and wait for acknowledgements from both the cluster and shard Raft pipelines.
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster for version: " + this.version, this.logPath);
+            this.clusterRaftOut.take();
+            if (updateShard(result)) {
+                HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from Shard for version: " + this.version, this.logPath);
+                this.shardRaftOut.take();
+            }
+
+            // send response to client if one is attached to the NodeMsg request.
+            HandOff.writeToFile("Node " + this.nodeID + " ClusterState: new config finalised", this.logPath);
+            if (nodeMsg.client != null) {
+                Response response = new Response("Cluster successfully updated");
+                HandOff.sendToNode(nodeMsg.client, gson.toJson(response), this.logPath);
+            }
         }
     }
 
@@ -164,27 +160,24 @@ public class ClusterState implements Runnable {
      * and publishes the new cluster snapshot to the same Raft pipe.
      *
      * @param nodeMsg membership change request to apply
-     * @return the shard affected by the operation, or null when the action is
-     *     unsupported or cannot be processed
+     * @return returns the result of the membership change, which may contain a new shard if a split occurred
      * @throws Exception if a pipe write or cluster access operation fails
      */
-    private Shard updateCluster(NodeMsg nodeMsg) throws Exception {
+    private Map<String, Shard> updateCluster(NodeMsg nodeMsg) throws Exception {
         String action = nodeMsg.action;
 
-        // Tracks the shard impacted by the latest node operation.
-        Shard updatedShard = null;
-
         // Add a node only when the supplied address information is valid.
+        Map<String, Shard> result = null;
         if (action.equals("Add") && nodeMsg.node.ip != null && nodeMsg.node.port != -1) {
             Node node = new Node(nodeMsg.node.id, nodeMsg.node.ip, nodeMsg.node.port);
-            cluster.addNode(node);
-            updatedShard = cluster.getShard(nodeMsg.node.id);
+            result = cluster.addNode(node);
             version++;
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: added node " + nodeMsg.node.id, this.logPath);
         } else if (action.equals("Remove")) {
             // Remove a node from the cluster and publish the new stable membership view.
-            updatedShard = cluster.getShard(nodeMsg.node.id);
             cluster.removeNode(nodeMsg.node.id);
+            result = new HashMap<>();
+            result.put("old", cluster.getShardWithNode(nodeID));
             version++;
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: removed node " + nodeMsg.node.id, this.logPath);
         } else {
@@ -192,12 +185,7 @@ public class ClusterState implements Runnable {
             return null;
         }
 
-        // update cluster
-        HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
-        clusterRaftIn.put(new message.Update("Update", cluster.getAllNodes(), version));
-
-        // Dispatch shard-specific notifications after the cluster update completes.
-        return updatedShard;
+        return result;
     }
 
     /**
@@ -209,37 +197,28 @@ public class ClusterState implements Runnable {
      * shard is the same as the one the local node already belongs to, this
      * method sends the affected shard's node list to the shard Raft input pipe.
      *
-     * @param updatedShard shard affected by the most recent node add or remove action
+     * @param result the result of the last membership change, which may contain a new shard
+     * @return true if a shard-level redistribution is needed, otherwise false
      * @throws Exception if writing to the shard Raft pipe fails
      */
-    private void updateShard(Shard updatedShard) throws Exception {
-        if (updatedShard == null) {
-            return;
-        }
+    private boolean updateShard(Map<String, Shard> result) throws Exception {
+        Shard shard = cluster.getShardWithNode(nodeID);
 
-        Shard shard = cluster.getShard(nodeID);
-
-        // If the local node migrated to a different shard, or the current shard became
-        // unexpectedly too small relative to its tracked size, publish the full distributed
-        // data snapshot and the updated node list for the shard.
-        if (!shard.id.equals(currShardID) || currShardSize > shard.size() + 1) {
-            HandOff.writeToFile("Node " + this.nodeID + " sending Distribute message to Shard", this.logPath);
-            /*
-            this.pendingShardAckPipe = new Pipe();
-            ShardRaft.put(new message.Update("Distribute", shard.getAllNodes(), this.pendingShardAckPipe, version));
-            Message shardAck = this.pendingShardAckPipe.take();
-            if (shardAck != null) {
-                this.pendingShardAckPipe = null;
-            }
-            currShardID = shard.id;
-            currShardSize = shard.size();
-            */
-        } else if (currShardID.equals(updatedShard.id)) {
+        // If the local node migrated to a different shard prepare it to recieve new data
+        boolean shardChanged = false;
+        if (result != null && result.containsKey("new") && (result.get("new").id.equals(shard.id) || result.get("old").id.equals(shard.id))) {
+            HandOff.writeToFile("Node " + this.nodeID + " sending SplitShard message to Shard", this.logPath);
+            shardRaftIn.put(new message.SplitShard(result.get("old").getAllNodes(), result.get("new").getAllNodes(), version));
+            shardChanged = true;
+        } else if (result.get("old").contains(nodeID)) {
             // When the local node remains in the same shard, only the affected shard's
             // node list needs to be propagated.
             HandOff.writeToFile("Node " + this.nodeID + " sending Update message to Shard", this.logPath);
-            shardRaftIn.put(new message.Update("Update", updatedShard.getAllNodes(), version));
+            shardRaftIn.put(new message.Update(shard.getAllNodes(), version));
+            shardChanged = true;
         }
+
+        return shardChanged;
     }
 
     /**
@@ -254,7 +233,7 @@ public class ClusterState implements Runnable {
             try {
                 takeAndHandle();
             } catch (Exception e) {
-                HandOff.writeToFile("ClusterState: error updating cluster: " + e.getMessage(), this.logPath);
+                HandOff.writeToFile("ClusterState: " + nodeID + " error updating cluster: " + e.getMessage(), this.logPath);
             }
         }
     }

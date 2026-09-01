@@ -55,7 +55,7 @@ public class ClientImp {
     private Node spawner;
 
     /* Timeout for waiting for responses in milliseconds */
-    private final static int timeOut = 3000;
+    private final static int timeOut = 100000000;
 
     /* Set of unresponsive nodes */
     private HashSet<String> dead;

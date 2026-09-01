@@ -10,9 +10,6 @@ public class Reply extends Message {
     /** Client node that should receive the response for this message. */
     public Node client;
 
-    /** Logical cluster configuration version associated with this message. */
-    public int version;
-
     /**
      * Creates a reply-capable message with an explicit client response target.
      *
@@ -21,9 +18,8 @@ public class Reply extends Message {
      * @param client receiving client node
      */
     public Reply(String type, int version, Node client) {
-        super(type);
+        super(type, version);
         this.client = client;
-        this.version = version;
     }
 
     /**
@@ -33,9 +29,8 @@ public class Reply extends Message {
      * @param version configuration version associated with the operation
      */
     public Reply(String type, int version) {
-        super(type);
+        super(type, version);
         this.client = null;
-        this.version = version;
     }
     
 }

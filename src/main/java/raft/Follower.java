@@ -57,16 +57,16 @@ public class Follower extends Role {
         // Vote for candidate if we haven't voted or already voted for this
         // candidate, and the candidate's log is up-to-date
         boolean voteGranted = logUpToDate && (
-            raftState.votedFor == null || raftState.votedFor.equals(RVmsg.candidateId)
+            raftState.votedFor == null || raftState.votedFor.equals(RVmsg.senderId)
         );
         if (voteGranted) {
-            raftState.votedFor = RVmsg.candidateId;
+            raftState.votedFor = RVmsg.senderId;
         }
 
         // Send vote grant status back to the candidate
-        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted);
+        RequestVoteReply RVReply = new RequestVoteReply(raftState.level, raftState.term, raftState.id, voteGranted, raftState.version);
         sendToNode(
-            raftState.allNodes.get(RVmsg.candidateId),
+            raftState.activeNodes.get(RVmsg.senderId),
             raftState.gson.toJson(RVReply)
         );
 
@@ -99,8 +99,8 @@ public class Follower extends Role {
 
 
         // Update leader information if this is a new leader
-        if (raftState.leader == null || !raftState.leader.id.equals(AEmsg.leaderId)) {
-            raftState.leader = raftState.allNodes.get(AEmsg.leaderId);
+        if (raftState.leader == null || !raftState.leader.id.equals(AEmsg.senderId)) {
+            raftState.leader = raftState.activeNodes.get(AEmsg.senderId);
             raftState.log.clearUncommitted();
         }
 
@@ -145,7 +145,7 @@ public class Follower extends Role {
         }
 
         // Send AppendEntriesReply back to the leader
-        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx());
+        AppendEntriesReply AEReply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, logMatch, raftState.log.getLastIdx(), raftState.version);
         sendToNode(
             raftState.leader,
             raftState.gson.toJson(AEReply)

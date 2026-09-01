@@ -8,9 +8,6 @@ public class RequestVote extends RaftMsg {
     /** The term of the candidate requesting votes. */
     public int term;
 
-    /** The candidate requesting votes. */
-    public String candidateId;
-
     /** Index of the candidate's last log entry (for log consistency check). */
     public int lastLogIndex;
     
@@ -25,11 +22,11 @@ public class RequestVote extends RaftMsg {
      * @param candidateId the candidate requesting votes
      * @param lastLogIndex index of the candidate's last log entry
      * @param lastLogTerm term of the candidate's last log entry
+     * @param version the version of the cluster configuration that this message belongs too
      */
-    public RequestVote(String level, int term, String candidateId, int lastLogIndex, int lastLogTerm) {
-        super("RequestVote", level);
+    public RequestVote(String level, int term, String candidateId, int lastLogIndex, int lastLogTerm, int version) {
+        super("RequestVote", level, candidateId, version);
         this.term = term;
-        this.candidateId = candidateId;
         this.lastLogIndex = lastLogIndex;
         this.lastLogTerm = lastLogTerm;
     }

@@ -9,6 +9,7 @@ import message.Message;
 import message.AppendEntriesReply;
 import message.AppendEntries;
 import message.RaftConfig;
+import message.SplitRaftConfig;
 
 /**
  * Raft role handler responsible for leading the replicated log.
@@ -107,8 +108,14 @@ public class Leader extends Role {
                 if (majority && raftState.log.get(i).term == raftState.term) {
                     RaftConfig raftConfig = raftState.log.commitEntries(i);
                     if (raftConfig != null) {
+                        if (raftState.type.equals("SplitRaftConfig")) {
+                            SplitRaftConfig castMsg = (SplitRaftConfig) raftConfig;
+                            raftState.inNodes = castMsg.inNodes;
+                            raftState.finNodes = castMsg.newNodes;
+                        }
+                        raftState.nextNodes = raftConfig.nodes;
                         if (raftConfig.jointConfig) {
-                            raftState.appendNewConfig(raftConfig.nodes, false, false);
+                            raftState.appendNewConfig(false, false);
                         }
                     }
                     broadcastAppendEntries();
@@ -132,7 +139,7 @@ public class Leader extends Role {
                 nextIndices.add(v);
             Collections.sort(nextIndices);
 
-            int majorityPos = raftState.allNodes.size() / 2; // 0-based
+            int majorityPos = raftState.activeNodes.size() / 2; // 0-based
             if (majorityPos < nextIndices.size()) {
                 int K = nextIndices.get(majorityPos);
                 int truncateTo = K - 1;
@@ -156,7 +163,7 @@ public class Leader extends Role {
                     }
                 }
             }
-            sendAppendEntries(raftState.allNodes.get(AEReply.senderId));
+            sendAppendEntries(raftState.activeNodes.get(AEReply.senderId));
         }
     }
 
@@ -169,9 +176,22 @@ public class Leader extends Role {
             raftState.getLogFilePath()
         );
 
-        for (Node node : raftState.allNodes.values()) {
+        for (Node node : raftState.activeNodes.values()) {
             if (!node.id.equals(raftState.id))
                 sendAppendEntries(node);
+        }
+
+        if (this.raftState.splitConfig.equals("finalized")) {
+            this.raftState.splitConfig = "false";
+            this.raftState.oldNodes.keySet().removeAll(raftState.activeNodes.keySet());
+            System.out.println("Leader " + raftState.id + " broadcasting append entries to old nodes: " + this.raftState.oldNodes.keySet());
+            for (Node n : this.raftState.oldNodes.values()) {
+                if (!n.id.equals(raftState.id)) {
+                    sendAppendEntries(n);
+                }
+            }
+            this.raftState.oldNodes.clear();
+            //TODO remove match and next index for old nodes
         }
     }
 
@@ -198,7 +218,8 @@ public class Leader extends Role {
             prevLogTerm,
             raftState.log.getCommitIdx(),
             raftState.log.get(raftState.nextIndex.get(node.id),
-                                            raftState.log.getLastIdx())
+                                            raftState.log.getLastIdx()),
+            raftState.version
         );
 
         sendToNode(node,
