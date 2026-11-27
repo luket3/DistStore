@@ -38,6 +38,8 @@ public class MessageDeserializer implements JsonDeserializer<Message> {
             case "Response" -> ctx.deserialize(json, Response.class);
             case "InstallSnapshot" -> ctx.deserialize(json, InstallSnapshot.class);
             case "Snapshot" -> ctx.deserialize(json, Snapshot.class);
+            case "MigrateData" -> ctx.deserialize(json, MigrateData.class);
+            case "MigrateAck" -> ctx.deserialize(json, MigrateAck.class);
             default -> throw new JsonParseException("Unknown message type: " + type);
         };
     }

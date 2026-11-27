@@ -187,7 +187,7 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
 
             Shard shard = cluster.getShardWithNode(nodeID);
             if (shard != null) {
-                Message shardUpdate = shardUpdateFor(result, shard);
+                Message shardUpdate = shardUpdateFor(result, shard, nodeMsg.action.equals("Remove"));
                 inPipe.put(new PendingUpdate(cluster.getAllNodes(), shardUpdate, nodeMsg.client, version));
             }
             refreshCurrShard();
@@ -318,8 +318,18 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: added node " + nodeMsg.node.id, this.logPath);
         } else if (action.equals("Remove")) {
             // Remove a node from the cluster and publish the new stable membership view.
+            // Re-homing a removed shard's leftover nodes can split the shard they
+            // join; report the split involving this node's shard, if any
             result = new HashMap<>();
-            result.put("old", cluster.removeNode(nodeMsg.node.id));
+            List<Shard[]> splits = new ArrayList<>();
+            result.put("old", cluster.removeNode(nodeMsg.node.id, splits));
+            Shard mine = cluster.getShardWithNode(nodeID);
+            for (Shard[] split : splits) {
+                if (mine != null && (split[0].id.equals(mine.id) || split[1].id.equals(mine.id))) {
+                    result.put("splitIn", split[0]);
+                    result.put("splitNew", split[1]);
+                }
+            }
             membershipOps.add(new Snapshot.MembershipOp("Remove", new Node(nodeMsg.node.id, null, -1)));
             version++;
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: removed node " + nodeMsg.node.id, this.logPath);
@@ -335,24 +345,57 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
      * Works out which message, if any, the shard Raft needs after a membership
      * change.
      *
-     * If the local node's shard split, a SplitShard message is produced. If
-     * the local node moved to a different shard, or its shard changed size, an
-     * Update message carrying the shard's node list is produced.
+     * <ul>
+     *   <li>If the local node's old shard was removed, it gets a shard removal
+     *       Update. If its new shard split while the removed shard's nodes were
+     *       being re-homed, the Update lists both halves, because the node
+     *       joins the group that is splitting and must be able to reach its
+     *       leader until the split completes.</li>
+     *   <li>If the local node's shard split, whether from an Add or from a
+     *       removed shard's nodes being re-homed into it, a SplitShard message
+     *       is produced.</li>
+     *   <li>If the local node's shard otherwise changed size, an Update
+     *       carrying the shard's node list is produced.</li>
+     * </ul>
      *
-     * @param result the result of the last membership change, which may contain a new shard
+     * @param result the result of the last membership change; holds "old"
+     *     and "new" for an Add that split, "old" plus optionally "splitIn" and
+     *     "splitNew" for a Remove
      * @param shard the shard the local node belongs to after the change
+     * @param removal whether the change was a Remove
      * @return the shard Raft message, or null if the shard is unaffected
      */
-    private Message shardUpdateFor(Map<String, Shard> result, Shard shard) {
-        // If the local node's shard split, prepare it to receive new data
-        if (result.containsKey("new") && (result.get("new").id.equals(shard.id) || result.get("old").id.equals(shard.id))) {
-            HandOff.writeToFile("Node " + this.nodeID + " queueing SplitShard message for Shard", this.logPath);
-            return new SplitShard(result.get("old").getAllNodes(), result.get("new").getAllNodes(), version);
+    private Message shardUpdateFor(Map<String, Shard> result, Shard shard, boolean removal) {
+        // the split, if any, that this change caused
+        Shard splitIn = removal ? result.get("splitIn") : result.get("old");
+        Shard splitNew = removal ? result.get("splitNew") : result.get("new");
+        boolean inSplit = splitIn != null && splitNew != null
+            && (splitIn.id.equals(shard.id) || splitNew.id.equals(shard.id));
+
+        // the node's previous shard was removed and it has been re-homed
+        Shard removedFrom = result.get("old");
+        boolean rehomed = removal && currShardID != null && removedFrom != null
+            && currShardID.equals(removedFrom.id) && !currShardID.equals(shard.id);
+
+        if (rehomed) {
+            HandOff.writeToFile("Node " + this.nodeID + " queueing shard removal Update message for Shard", this.logPath);
+            Map<String, Node> joining = shard.getAllNodes();
+            if (inSplit) {
+                joining = new HashMap<>(splitIn.getAllNodes());
+                joining.putAll(splitNew.getAllNodes());
+            }
+            return new Update(joining, version, cluster.ringOwners(), cluster.shardMembers());
         }
-        // check if node has moved to a different shard
+        // the node's shard split, prepare it to divide its data
+        if (inSplit) {
+            HandOff.writeToFile("Node " + this.nodeID + " queueing SplitShard message for Shard", this.logPath);
+            return new SplitShard(splitIn.getAllNodes(), splitNew.getAllNodes(), version,
+                cluster.ringOwners(), splitIn.id, splitNew.id);
+        }
+        // check if node has moved to a different shard for any other reason
         if (currShardID != null && !this.currShardID.equals(shard.id)) {
-            HandOff.writeToFile("Node " + this.nodeID + " queueing Update message for Shard", this.logPath);
-            return new Update(shard.getAllNodes(), version, true);
+            HandOff.writeToFile("Node " + this.nodeID + " queueing shard removal Update message for Shard", this.logPath);
+            return new Update(shard.getAllNodes(), version, cluster.ringOwners(), cluster.shardMembers());
         }
         // check if shard has shrunk or grown beyond the previous tracked size
         if (currShardID == null || shard.getAllNodes().size() != this.currShardSize) {

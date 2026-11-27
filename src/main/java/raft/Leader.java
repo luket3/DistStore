@@ -110,10 +110,13 @@ public class Leader extends Role {
                 if (majority && raftState.log.get(i).term == raftState.term) {
                     RaftConfig raftConfig = raftState.log.commitEntries(i);
                     if (raftConfig != null) {
-                        if (raftState.type.equals("SplitRaftConfig")) {
+                        if (raftConfig.type.equals("SplitRaftConfig")) {
                             SplitRaftConfig castMsg = (SplitRaftConfig) raftConfig;
                             raftState.inNodes = castMsg.inNodes;
                             raftState.finNodes = castMsg.newNodes;
+                            raftState.splitRing = castMsg.ring;
+                            raftState.inShardId = castMsg.inShardId;
+                            raftState.newShardId = castMsg.newShardId;
                         }
                         raftState.nextNodes = raftConfig.nodes;
                         if (raftConfig.jointConfig) {

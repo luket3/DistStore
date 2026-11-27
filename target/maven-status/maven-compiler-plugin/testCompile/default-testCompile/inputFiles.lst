@@ -1,3 +1,6 @@
+/home/croissant/projects/DistStore/src/test/java/cluster/RemovalSplitTest.java
+/home/croissant/projects/DistStore/src/test/java/endpoints/StateMachineTest.java
 /home/croissant/projects/DistStore/src/test/java/luket3/AppTest.java
+/home/croissant/projects/DistStore/src/test/java/raft/ShardDataTest.java
 /home/croissant/projects/DistStore/src/test/java/raft/SnapshotTest.java
 /home/croissant/projects/DistStore/src/test/java/runnable/SpawnerTest.java

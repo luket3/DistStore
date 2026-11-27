@@ -1,0 +1,16 @@
+2026-11-27T05:42:17.581111541Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:42:17.581600753Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T05:42:17.581727314Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T05:42:17.583846771Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T05:48:09.395657547Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:48:09.396098056Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T05:48:09.396238387Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T05:48:09.399259592Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T05:48:41.097553186Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:48:41.097898637Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T05:48:41.098064111Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T05:48:41.099711635Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T05:48:42.490442105Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:48:42.490809219Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T05:48:42.490975498Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T05:48:42.492631975Z Node:smTest StateMachine: kept 1 of 2 keys

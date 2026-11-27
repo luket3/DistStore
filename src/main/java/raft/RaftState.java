@@ -1,12 +1,20 @@
 package raft;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import cluster.ConsistentHashMap;
 import cluster.Node;
 import communication.Pipe;
 import communication.HandOff;
+import message.MigrateData;
 import message.RaftConfig;
 import message.SplitRaftConfig;
+import message.Update;
 import message.Snapshot;
 import com.google.gson.Gson;
 
@@ -52,6 +60,18 @@ public class RaftState {
 
     /** Wheather the pending config change is for a shard splitting operation */
     public String splitConfig;
+
+    /** during a shard splitting event, the ring after the split (position to shard id) */
+    public TreeMap<Long, String> splitRing;
+
+    /** during a shard splitting event, the id of the shard that is splitting */
+    public String inShardId;
+
+    /** during a shard splitting event, the id of the shard being created */
+    public String newShardId;
+
+    /** ids of shard data hand-overs sent by this node that are still waiting for an acknowledgement */
+    public final Set<String> pendingMigrations = ConcurrentHashMap.newKeySet();
 
     /** Whether a configuration change is waiting to be applied. */
     public boolean configChangePending;
@@ -320,12 +340,20 @@ public class RaftState {
     }
 
     /**
-     * Resets the Raft state for a shard removal event, clearing the log and
-     * returning the node to a learner role.
-     * @param nodes the new set of nodes that will be active after the shard removaling config
+     * Resets the Raft state for a shard removal event.
+     *
+     * The node first hands its keys to the shards that now own them, then
+     * clears its log and key/value data and becomes a learner of its new
+     * shard. The new shard's leader then brings it up to date, by snapshot
+     * or by replaying the log, so it ends up with that shard's state.
+     *
+     * @param update shard removal update; its nodes are the new shard's members
      */
-    public void shardRemoval(Map<String, Node> nodes) {
-        distributeData();
+    public void shardRemoval(Update update) {
+        Map<String, Node> nodes = update.nodes;
+        handOverKeys(update);
+        this.log.getStateMachine().retainKeys(key -> false);
+        this.leader = null;
         this.version = 0;
         this.term = 0;
         this.activeNodes = new HashMap<>(nodes);
@@ -424,10 +452,12 @@ public class RaftState {
                                 boolean jointConfig, boolean pendingLog) {
         if (jointConfig) {
             // Append a joint-config entry: oldNodes should be the current voter set
-            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, this.voters, true, nextVersion), pendingLog);
+            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, this.voters, true, nextVersion,
+                splitRing, inShardId, newShardId), pendingLog);
         } else {
             // Append a final, non-joint config. oldNodes is null for the stable config.
-            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, null, false, nextVersion), pendingLog);
+            appendNewConfigHelp(new SplitRaftConfig(allNodes, inNodes, finNodes, null, false, nextVersion,
+                splitRing, inShardId, newShardId), pendingLog);
         }
     }
 
@@ -476,6 +506,17 @@ public class RaftState {
             this.jointConfig = true;
             this.nextVersion = msg.version;
 
+            // Remember the split details from the log, so a node that becomes
+            // leader mid-split appends the same final config
+            if (msg.type.equals("SplitRaftConfig")) {
+                SplitRaftConfig castMsg = (SplitRaftConfig) msg;
+                this.inNodes = castMsg.inNodes;
+                this.finNodes = castMsg.newNodes;
+                this.splitRing = castMsg.ring;
+                this.inShardId = castMsg.inShardId;
+                this.newShardId = castMsg.newShardId;
+            }
+
             // New nodes in nextNodes should be tracked as learners until final-config commits.
             for (Node n : this.nextNodes.values()) {
                 this.learners.remove(n.id);
@@ -489,12 +530,15 @@ public class RaftState {
             Map<String, Node> newNodes;
             if (msg.type.equals("SplitRaftConfig")) {
                 SplitRaftConfig castMsg = (SplitRaftConfig) msg;
+                String myShard;
                 if (castMsg.inNodes.containsKey(this.id)) {
                     newNodes = castMsg.inNodes;
-                    distributeData();
+                    myShard = castMsg.inShardId;
                 } else {
                     newNodes = castMsg.newNodes;
+                    myShard = castMsg.newShardId;
                 }
+                keepOwnedKeys(castMsg.ring, myShard);
             } else {
                 newNodes = msg.nodes;
             }
@@ -532,6 +576,87 @@ public class RaftState {
         }
     }
 
-    // TODO: implement data redistribution for shard split events
-    public void distributeData() {}
+    /**
+     * After a split, drops every key that the local node's shard no longer
+     * owns. Both halves held all of the shard's keys before the split, so each
+     * half just keeps its own. This runs while the final split config is
+     * committed, at the same log index on every replica, so all replicas
+     * (and any snapshot taken afterwards) end up with the same keys.
+     *
+     * @param ring ring after the split, as ring position to shard id
+     * @param myShard id of the shard the local node belongs to after the split
+     */
+    private void keepOwnedKeys(TreeMap<Long, String> ring, String myShard) {
+        if (ring == null || myShard == null) {
+            HandOff.writeToFile(
+                "Node " + this.id + " " + this.level + ": split config has no ring, keeping all keys",
+                this.getLogFilePath()
+            );
+            return;
+        }
+
+        HandOff.writeToFile(
+            "Node " + this.id + " " + this.level + ": split finalised, keeping keys owned by " + myShard,
+            this.getLogFilePath()
+        );
+        this.log.getStateMachine().retainKeys(key -> {
+            try {
+                return myShard.equals(ConsistentHashMap.ownerOf(ring, key));
+            } catch (Exception e) {
+                return true; // cannot hash: keep rather than lose data
+            }
+        });
+    }
+
+    /**
+     * Hands the local node's keys to the shards that now own them after its
+     * shard was removed.
+     *
+     * Keys are grouped by owning shard on the new ring and each group is sent
+     * to that shard in the background, retrying until the shard's leader
+     * acknowledges it has committed the data.
+     *
+     * @param update shard removal update carrying the new ring and shard members
+     */
+    private void handOverKeys(Update update) {
+        Map<String, String> data = this.log.getStateMachine().exportKeys();
+        if (data.isEmpty())
+            return;
+        if (update.ring == null || update.shardMembers == null) {
+            HandOff.writeToFile(
+                "Node " + this.id + " " + this.level + ": shard removed but no ring supplied, " + data.size() + " keys not handed over",
+                this.getLogFilePath()
+            );
+            return;
+        }
+
+        // Group the keys by the shard that owns them on the new ring
+        Map<String, Map<String, String>> byShard = new HashMap<>();
+        for (Map.Entry<String, String> e : data.entrySet()) {
+            try {
+                String owner = ConsistentHashMap.ownerOf(update.ring, e.getKey());
+                byShard.computeIfAbsent(owner, k -> new HashMap<>()).put(e.getKey(), e.getValue());
+            } catch (Exception ex) {
+                HandOff.writeToFile("Node " + this.id + ": cannot hash key " + e.getKey() + ": " + ex, this.getLogFilePath());
+            }
+        }
+
+        // The acknowledgement comes back to this node's address
+        Node self = update.nodes != null ? update.nodes.get(this.id) : null;
+        if (self == null)
+            self = this.activeNodes.get(this.id);
+
+        for (Map.Entry<String, Map<String, String>> group : byShard.entrySet()) {
+            String shardId = group.getKey();
+            Map<String, Node> shardNodes = update.shardMembers.getOrDefault(shardId, new HashMap<>());
+            List<Node> targets = ShardMigrator.orderTargets(shardNodes, this.activeNodes, this.id);
+
+            MigrateData migration = new MigrateData(UUID.randomUUID().toString(), shardId, group.getValue(), self);
+            HandOff.writeToFile(
+                "Node " + this.id + " " + this.level + ": handing " + group.getValue().size() + " keys to " + shardId,
+                this.getLogFilePath()
+            );
+            ShardMigrator.start(migration, targets, this.pendingMigrations, this.getLogFilePath());
+        }
+    }
 }

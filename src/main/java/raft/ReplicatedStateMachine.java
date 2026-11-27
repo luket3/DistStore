@@ -1,5 +1,7 @@
 package raft;
 
+import java.util.Map;
+import java.util.function.Predicate;
 import message.Message;
 import message.Snapshot;
 
@@ -34,4 +36,25 @@ public interface ReplicatedStateMachine {
      * @param snapshot snapshot restored from disk or installed from the leader
      */
     void restore(Snapshot snapshot);
+
+    /**
+     * Returns a copy of every key/value pair held, so it can be handed to
+     * other shards. State machines that hold no key/value data return an
+     * empty map.
+     *
+     * @return copy of the key/value data
+     */
+    default Map<String, String> exportKeys() {
+        return Map.of();
+    }
+
+    /**
+     * Drops every key the predicate rejects. Used when a shard splits (each
+     * half keeps only the keys it owns) and when a node leaves a removed shard
+     * (it drops everything before catching up with its new shard).
+     *
+     * @param keep returns true for keys to keep
+     */
+    default void retainKeys(Predicate<String> keep) {
+    }
 }

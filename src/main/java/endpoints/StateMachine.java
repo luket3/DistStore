@@ -1,11 +1,15 @@
 package endpoints;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import communication.HandOff;
 import message.Message;
 import message.DictMsg;
+import message.MigrateAck;
+import message.MigrateData;
 import message.Response;
 import message.Snapshot;
 import raft.ReplicatedStateMachine;
@@ -64,11 +68,19 @@ public class StateMachine implements ReplicatedStateMachine {
     private void sendResponse(String response, DictMsg dictMsg) {
         if (dictMsg.client == null)
             return;
+        send(dictMsg.client, gson.toJson(new Response(response)));
+    }
 
-        String json = gson.toJson(new Response(response));
+    /**
+     * Delivers a serialized message on the responder thread.
+     *
+     * @param target node to deliver to
+     * @param json serialized message
+     */
+    private void send(cluster.Node target, String json) {
         responder.submit(() -> {
             try {
-                HandOff.sendToNode(dictMsg.client, json, this.logPath);
+                HandOff.sendToNode(target, json, this.logPath);
             } catch (Exception e) {
                 HandOff.writeToFile("Node:" + nodeId + " StateMachine: failed to send response: " + e.getMessage(), this.logPath);
             }
@@ -109,6 +121,10 @@ public class StateMachine implements ReplicatedStateMachine {
      */
     @Override
     public void apply(Message msg) {
+        if (msg.type.equals("MigrateData")) {
+            applyMigration((MigrateData) msg);
+            return;
+        }
         if (!msg.type.equals("DictMsg")) {
             HandOff.writeToFile("store operation failed: unsupported message type " + msg.type, this.logPath);
             return;
@@ -117,6 +133,51 @@ public class StateMachine implements ReplicatedStateMachine {
 
         DictMsg dictMsg = (DictMsg) msg;
         sendResponse(parseQuery(dictMsg), dictMsg);
+    }
+
+    /**
+     * Stores the key/value pairs handed over from a removed shard. A key that
+     * already exists is left alone: its value was written to this shard after
+     * the hand-over started, so it is newer. Acknowledges the sender when this
+     * node is the leader (followers have the sender cleared by the Raft log).
+     *
+     * @param migration committed hand-over from a removed shard
+     */
+    private void applyMigration(MigrateData migration) {
+        int added = 0;
+        if (migration.entries != null) {
+            for (Map.Entry<String, String> e : migration.entries.entrySet()) {
+                if (store.putIfAbsent(e.getKey(), e.getValue()) == null)
+                    added++;
+            }
+        }
+        HandOff.writeToFile("Node:" + nodeId + " StateMachine: applied migration " + migration.id
+            + ", added " + added + " of " + (migration.entries == null ? 0 : migration.entries.size()) + " keys", this.logPath);
+
+        if (migration.client != null)
+            send(migration.client, gson.toJson(new MigrateAck(migration.id)));
+    }
+
+    /**
+     * Returns a copy of the store.
+     *
+     * @return copy of every key/value pair
+     */
+    @Override
+    public Map<String, String> exportKeys() {
+        return new HashMap<>(store);
+    }
+
+    /**
+     * Drops every key the predicate rejects.
+     *
+     * @param keep returns true for keys to keep
+     */
+    @Override
+    public void retainKeys(Predicate<String> keep) {
+        int before = store.size();
+        store.keySet().removeIf(key -> !keep.test(key));
+        HandOff.writeToFile("Node:" + nodeId + " StateMachine: kept " + store.size() + " of " + before + " keys", this.logPath);
     }
 
     /**

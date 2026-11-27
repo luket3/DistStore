@@ -18,6 +18,8 @@
 /home/croissant/projects/DistStore/src/main/java/message/InstallSnapshot.java
 /home/croissant/projects/DistStore/src/main/java/message/Message.java
 /home/croissant/projects/DistStore/src/main/java/message/MessageDeserializer.java
+/home/croissant/projects/DistStore/src/main/java/message/MigrateAck.java
+/home/croissant/projects/DistStore/src/main/java/message/MigrateData.java
 /home/croissant/projects/DistStore/src/main/java/message/NodeMsg.java
 /home/croissant/projects/DistStore/src/main/java/message/RaftConfig.java
 /home/croissant/projects/DistStore/src/main/java/message/RaftMsg.java
@@ -39,5 +41,6 @@
 /home/croissant/projects/DistStore/src/main/java/raft/RaftState.java
 /home/croissant/projects/DistStore/src/main/java/raft/ReplicatedStateMachine.java
 /home/croissant/projects/DistStore/src/main/java/raft/Role.java
+/home/croissant/projects/DistStore/src/main/java/raft/ShardMigrator.java
 /home/croissant/projects/DistStore/src/main/java/runnable/Client.java
 /home/croissant/projects/DistStore/src/main/java/runnable/Spawner.java

@@ -13,6 +13,7 @@ import message.RequestVoteReply;
 import message.AppendEntriesReply;
 import message.SplitShard;
 import message.InstallSnapshot;
+import message.MigrateAck;
 import java.util.HashMap;
 import java.util.Map;
 import cluster.Node;
@@ -93,7 +94,7 @@ public class RaftNode {
                     "Node " + raftState.id + " " + raftState.level + " level raft recieved config update request with shard removed",
                     raftState.getLogFilePath()
                 );
-                raftState.shardRemoval(castMsg.nodes);
+                raftState.shardRemoval(castMsg);
             } else {
                 raftState.readNewConfig(castMsg.nodes, castMsg.version);
             }
@@ -106,10 +107,20 @@ public class RaftNode {
                 raftState.getLogFilePath()
             );
             
+            raftState.splitRing = castMsg.ring;
+            raftState.inShardId = castMsg.inShardId;
+            raftState.newShardId = castMsg.newShardId;
+
             Map<String, Node> allNodes = new HashMap<>();
             allNodes.putAll(castMsg.nodes);
             allNodes.putAll(castMsg.newNodes);
             raftState.readNewConfig(allNodes, castMsg.nodes, castMsg.newNodes, castMsg.version);
+            return;
+        }
+
+        // A shard leader has committed data this node handed over, stop resending it
+        if (message.type.equals("MigrateAck")) {
+            raftState.pendingMigrations.remove(((MigrateAck) message).id);
             return;
         }
 
@@ -130,9 +141,11 @@ public class RaftNode {
             followerRole.installSnapshot((InstallSnapshot) message);
         else if (message.type.equals("RequestVote") && !raftState.type.equals("learner"))
             followerRole.requestVote((RequestVote) message);
-        else if ((message.type.equals("DictMsg") || message.type.equals("NodeMsg"))) {
+        else if (message.type.equals("DictMsg") || message.type.equals("NodeMsg")
+                || message.type.equals("MigrateData")) {
             Reply msg = (Reply) message;
-            if (msg.version < raftState.version) {
+            // shard hand-overs are not tied to a client's view of the cluster, so skip the version check
+            if (!message.type.equals("MigrateData") && msg.version < raftState.version) {
                 HandOff.sendToNode(msg.client, raftState.gson.toJson(new Response("Invalid config")), raftState.getLogFilePath());
                 return;
             }

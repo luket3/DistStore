@@ -25,3 +25,88 @@
 2026-11-27T05:33:00.405957492Z Node snapTestB Shard: installed snapshot from leader up to index 99
 2026-11-27T05:33:00.407868144Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
 2026-11-27T05:33:00.409202600Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:42:17.517837288Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:42:17.522260004Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:42:17.533883671Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:42:17.535298279Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:42:17.537304432Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:42:17.538327650Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:42:17.539305328Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:42:17.540890223Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:42:17.542088122Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:42:17.548903992Z Node N0 Shard: commiting upto index 200
+2026-11-27T05:42:17.549561264Z Node N0 Shard: split finalised, keeping keys owned by shard0
+2026-11-27T05:42:17.553564206Z Node N0 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:42:17.557273300Z Node N3 Shard: commiting upto index 200
+2026-11-27T05:42:17.557740616Z Node N3 Shard: split finalised, keeping keys owned by shard1
+2026-11-27T05:42:17.559754231Z Node N3 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:42:17.563274934Z Node gone Shard: commiting upto index 49
+2026-11-27T05:42:17.567176206Z Node gone Shard: handing 25 keys to shard0
+2026-11-27T05:42:17.567637315Z Node gone Shard: handing 25 keys to shard1
+2026-11-27T05:42:17.568512669Z Sending message to node M0: {"id":"0b934225-7ddb-46c1-869c-97b315c4bc77","shardId":"shard0","entries":{"key2":"v2","key5":"v5","key6":"v6","key3":"v3","key9":"v9","key8":"v8","key44":"v44","key22":"v22","key43":"v43","key21":"v21","key42":"v42","key20":"v20","key37":"v37","key15":"v15","key14":"v14","key19":"v19","key17":"v17","key38":"v38","key48":"v48","key47":"v47","key25":"v25","key46":"v46","key45":"v45","key29":"v29","key49":"v49"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:42:17.568518835Z Sending message to node M3: {"id":"1cf81c0e-b351-4727-b124-09e254e39766","shardId":"shard1","entries":{"key1":"v1","key0":"v0","key4":"v4","key40":"v40","key7":"v7","key41":"v41","key36":"v36","key35":"v35","key13":"v13","key34":"v34","key12":"v12","key18":"v18","key39":"v39","key16":"v16","key11":"v11","key33":"v33","key10":"v10","key32":"v32","key31":"v31","key30":"v30","key26":"v26","key24":"v24","key23":"v23","key28":"v28","key27":"v27"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:42:17.576801221Z Migration 0b934225-7ddb-46c1-869c-97b315c4bc77: failed to send message to node M0
+2026-11-27T05:42:17.576801291Z Migration 1cf81c0e-b351-4727-b124-09e254e39766: failed to send message to node M3
+2026-11-27T05:48:09.336585255Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:48:09.340612168Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:48:09.347377157Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:09.348616203Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:09.350917627Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:48:09.352038331Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:48:09.353140382Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:48:09.354551177Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:48:09.355698725Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:48:09.361591729Z Node N0 Shard: restored snapshot from snapshots/N0-Shard.json up to index 200
+2026-11-27T05:48:09.362873153Z Node N0 Shard: commiting upto index 401
+2026-11-27T05:48:09.363821295Z Node N0 Shard: took snapshot up to index 401 (term 1)
+2026-11-27T05:48:09.371589006Z Node gone Shard: commiting upto index 49
+2026-11-27T05:48:09.375666300Z Node gone Shard: handing 25 keys to shard0
+2026-11-27T05:48:09.376138626Z Node gone Shard: handing 25 keys to shard1
+2026-11-27T05:48:09.376934735Z Sending message to node M3: {"id":"4aa09189-0977-4398-9d71-ca2ae75c2ac1","shardId":"shard1","entries":{"key1":"v1","key0":"v0","key4":"v4","key40":"v40","key7":"v7","key41":"v41","key36":"v36","key35":"v35","key13":"v13","key34":"v34","key12":"v12","key18":"v18","key39":"v39","key16":"v16","key11":"v11","key33":"v33","key10":"v10","key32":"v32","key31":"v31","key30":"v30","key26":"v26","key24":"v24","key23":"v23","key28":"v28","key27":"v27"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:09.377213881Z Sending message to node M0: {"id":"c75c2d12-52c8-41c6-a4f5-b51bb710020e","shardId":"shard0","entries":{"key2":"v2","key5":"v5","key6":"v6","key3":"v3","key9":"v9","key8":"v8","key44":"v44","key22":"v22","key43":"v43","key21":"v21","key42":"v42","key20":"v20","key37":"v37","key15":"v15","key14":"v14","key19":"v19","key17":"v17","key38":"v38","key48":"v48","key47":"v47","key25":"v25","key46":"v46","key45":"v45","key29":"v29","key49":"v49"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:09.383022914Z Migration c75c2d12-52c8-41c6-a4f5-b51bb710020e: failed to send message to node M0
+2026-11-27T05:48:09.383074095Z Migration 4aa09189-0977-4398-9d71-ca2ae75c2ac1: failed to send message to node M3
+2026-11-27T05:48:41.048073604Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:48:41.052045227Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:48:41.057679038Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:41.058587553Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:41.059971045Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:48:41.060993658Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:48:41.061831857Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:48:41.063186926Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:48:41.064100111Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:48:41.067939386Z Node N0 Shard: commiting upto index 200
+2026-11-27T05:48:41.068250732Z Node N0 Shard: split finalised, keeping keys owned by shard0
+2026-11-27T05:48:41.074566301Z Node N0 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:48:41.076168003Z Node N3 Shard: commiting upto index 200
+2026-11-27T05:48:41.076408746Z Node N3 Shard: split finalised, keeping keys owned by shard1
+2026-11-27T05:48:41.078389377Z Node N3 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:48:41.081748336Z Node gone Shard: commiting upto index 49
+2026-11-27T05:48:41.086083367Z Node gone Shard: handing 25 keys to shard0
+2026-11-27T05:48:41.086624999Z Node gone Shard: handing 25 keys to shard1
+2026-11-27T05:48:41.087446267Z Sending message to node M0: {"id":"bcae3032-d482-4a70-b865-49c790f75f6d","shardId":"shard0","entries":{"key2":"v2","key5":"v5","key6":"v6","key3":"v3","key9":"v9","key8":"v8","key44":"v44","key22":"v22","key43":"v43","key21":"v21","key42":"v42","key20":"v20","key37":"v37","key15":"v15","key14":"v14","key19":"v19","key17":"v17","key38":"v38","key48":"v48","key47":"v47","key25":"v25","key46":"v46","key45":"v45","key29":"v29","key49":"v49"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:41.087635789Z Sending message to node M3: {"id":"e58bf280-6a16-4d4a-b0ea-fb754917a040","shardId":"shard1","entries":{"key1":"v1","key0":"v0","key4":"v4","key40":"v40","key7":"v7","key41":"v41","key36":"v36","key35":"v35","key13":"v13","key34":"v34","key12":"v12","key18":"v18","key39":"v39","key16":"v16","key11":"v11","key33":"v33","key10":"v10","key32":"v32","key31":"v31","key30":"v30","key26":"v26","key24":"v24","key23":"v23","key28":"v28","key27":"v27"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:41.093129763Z Migration bcae3032-d482-4a70-b865-49c790f75f6d: failed to send message to node M0
+2026-11-27T05:48:41.093480189Z Migration e58bf280-6a16-4d4a-b0ea-fb754917a040: failed to send message to node M3
+2026-11-27T05:48:42.433831906Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:48:42.438054555Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:48:42.443702214Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:42.444594545Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:48:42.445959086Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:48:42.446957651Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:48:42.447975800Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:48:42.449673297Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:48:42.450826193Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:48:42.458442213Z Node N0 Shard: commiting upto index 200
+2026-11-27T05:48:42.458828544Z Node N0 Shard: split finalised, keeping keys owned by shard0
+2026-11-27T05:48:42.461599228Z Node N0 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:48:42.464801321Z Node N3 Shard: commiting upto index 200
+2026-11-27T05:48:42.465268736Z Node N3 Shard: split finalised, keeping keys owned by shard1
+2026-11-27T05:48:42.467942608Z Node N3 Shard: took snapshot up to index 200 (term 1)
+2026-11-27T05:48:42.473526270Z Node gone Shard: commiting upto index 49
+2026-11-27T05:48:42.478402190Z Node gone Shard: handing 25 keys to shard0
+2026-11-27T05:48:42.478884541Z Node gone Shard: handing 25 keys to shard1
+2026-11-27T05:48:42.479453436Z Sending message to node M0: {"id":"92e466d8-260d-4d6b-b749-f26c3b6aaec5","shardId":"shard0","entries":{"key2":"v2","key5":"v5","key6":"v6","key3":"v3","key9":"v9","key8":"v8","key44":"v44","key22":"v22","key43":"v43","key21":"v21","key42":"v42","key20":"v20","key37":"v37","key15":"v15","key14":"v14","key19":"v19","key17":"v17","key38":"v38","key48":"v48","key47":"v47","key25":"v25","key46":"v46","key45":"v45","key29":"v29","key49":"v49"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:42.479522399Z Sending message to node M3: {"id":"4ee58e2b-be4a-485e-8faa-76e4fe085a32","shardId":"shard1","entries":{"key1":"v1","key0":"v0","key4":"v4","key40":"v40","key7":"v7","key41":"v41","key36":"v36","key35":"v35","key13":"v13","key34":"v34","key12":"v12","key18":"v18","key39":"v39","key16":"v16","key11":"v11","key33":"v33","key10":"v10","key32":"v32","key31":"v31","key30":"v30","key26":"v26","key24":"v24","key23":"v23","key28":"v28","key27":"v27"},"client":{"id":"gone","ip":"localhost","port":7999},"type":"MigrateData","version":-1}
+2026-11-27T05:48:42.485025627Z Migration 4ee58e2b-be4a-485e-8faa-76e4fe085a32: failed to send message to node M3
+2026-11-27T05:48:42.485017869Z Migration 92e466d8-260d-4d6b-b749-f26c3b6aaec5: failed to send message to node M0

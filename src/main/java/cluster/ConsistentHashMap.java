@@ -3,6 +3,7 @@ package cluster;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.TreeMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -62,14 +63,24 @@ public class ConsistentHashMap {
 
     /**
      * Remove a shard from the ring and redistribute its leftover nodes.
+     *
+     * Re-adding a leftover node can make the receiving shard big enough to
+     * split; each such split is recorded in {@code splits}.
+     *
+     * @param shard shard to remove
+     * @param splits receives one {old shard, new shard} pair per split caused
+     *     by re-adding the leftover nodes
      */
-    private void removeShard(Shard shard) throws Exception {
+    private void removeShard(Shard shard, List<Shard[]> splits) throws Exception {
         for (int i = 0; i < virtualShards; i++)
             ring.remove(Hash(shard.id+i));
 
-        List<Node> leftOver = shard.getLeft();
+        List<Node> leftOver = new ArrayList<>(shard.getLeft());
+        leftOver.addAll(shard.getRight());
         for (Node n : leftOver) {
-            addNode(n);
+            Map<String, Shard> result = addNode(n);
+            if (result.containsKey("new"))
+                splits.add(new Shard[] {result.get("old"), result.get("new")});
         }
         numShards--;
     }
@@ -110,11 +121,25 @@ public class ConsistentHashMap {
      * @return the shard which the node was removed from
      */
     public Shard removeNode(String id) throws Exception {
+        return removeNode(id, new ArrayList<>());
+    }
+
+    /**
+     * Remove a node from the ring by id and redistribute any leftover nodes,
+     * reporting any shard splits the redistribution causes.
+     *
+     * @param id identifier of the node to remove
+     * @param splits receives one {old shard, new shard} pair per split caused
+     *     by redistributing a removed shard's leftover nodes
+     * @throws Exception on errors during shard merging or modification
+     * @return the shard which the node was removed from
+     */
+    public Shard removeNode(String id, List<Shard[]> splits) throws Exception {
         Shard shard = getShardWithNode(id);
         if (shard != null) {
             shard.removeNode(id);
             if (shard.length < minShardSize && ring.size() > 1)
-                removeShard(shard);
+                removeShard(shard, splits);
         }
         return shard;
     }
@@ -195,6 +220,17 @@ public class ConsistentHashMap {
      * @throws Exception if the MD5 MessageDigest cannot be obtained
      */
     public long Hash(String s) throws Exception {
+        return hashOf(s);
+    }
+
+    /**
+     * Compute a 64-bit value from the MD5 digest of the provided string.
+     *
+     * @param s input string
+     * @return 64-bit hash derived from MD5(s)
+     * @throws Exception if the MD5 MessageDigest cannot be obtained
+     */
+    public static long hashOf(String s) throws Exception {
         long hash = 0;
         MessageDigest md = MessageDigest.getInstance("MD5");
 
@@ -204,6 +240,48 @@ public class ConsistentHashMap {
         for (int i = 0; i < 8; i++)
             hash = (hash << 8) | (long) ((digest[i] & 0xff));
         return hash;
+    }
+
+    /**
+     * Returns the ring as a map from each virtual position to the id of the
+     * shard that owns it. This is enough to work out which shard owns any key
+     * with {@link #ownerOf}, and unlike the full ring it serializes cleanly.
+     *
+     * @return ring position to shard id
+     */
+    public TreeMap<Long, String> ringOwners() {
+        TreeMap<Long, String> owners = new TreeMap<>();
+        for (Map.Entry<Long, Shard> e : ring.entrySet())
+            owners.put(e.getKey(), e.getValue().id);
+        return owners;
+    }
+
+    /**
+     * Returns the members of every shard, keyed by shard id.
+     *
+     * @return shard id to that shard's nodes
+     */
+    public Map<String, Map<String, Node>> shardMembers() {
+        Map<String, Map<String, Node>> members = new HashMap<>();
+        for (Shard shard : ring.values())
+            members.put(shard.id, shard.getAllNodes());
+        return members;
+    }
+
+    /**
+     * Returns the id of the shard that owns a key, using a ring produced by
+     * {@link #ringOwners}. Matches {@link #getShard} on the original ring.
+     *
+     * @param ring ring position to shard id
+     * @param key key to look up
+     * @return owning shard id, or null if the ring is empty
+     * @throws Exception on hashing errors
+     */
+    public static String ownerOf(NavigableMap<Long, String> ring, String key) throws Exception {
+        if (ring == null || ring.isEmpty())
+            return null;
+        Map.Entry<Long, String> e = ring.ceilingEntry(hashOf(key));
+        return e != null ? e.getValue() : ring.firstEntry().getValue();
     }
 
     /**

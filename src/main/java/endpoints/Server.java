@@ -124,8 +124,8 @@ public class Server {
         Message msg = gson.fromJson(request, Message.class);
         comm.closeSocket();
 
-        if (msg.type.equals("DictMsg")) {
-            // handle client data operations by forwarding to the shard Raft input
+        if (msg.type.equals("DictMsg") || msg.type.equals("MigrateData") || msg.type.equals("MigrateAck")) {
+            // handle client data operations and shard data hand-overs by forwarding to the shard Raft input
             shardRaftIn.put(msg);
         } else if (msg.type.equals("Config")) {
             // handle cluster configuration requests by forwarding to the cluster state input

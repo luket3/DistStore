@@ -125,7 +125,8 @@ public class RaftLog {
             committedLog.add(entryToCommit);
 
             // Apply committed client or membership messages to the state machine
-            if (entryToCommit.msg.type.equals("DictMsg") || entryToCommit.msg.type.equals("NodeMsg")) {
+            if (entryToCommit.msg.type.equals("DictMsg") || entryToCommit.msg.type.equals("NodeMsg")
+                    || entryToCommit.msg.type.equals("MigrateData")) {
                 Reply msg = (Reply) entryToCommit.msg;
                 if (this.raftState.type != "leader") {
                     msg.client = null;
@@ -293,6 +294,15 @@ public class RaftLog {
                 raftState.getLogFilePath()
             );
         }
+    }
+
+    /**
+     * Returns the state machine this log applies committed entries to.
+     *
+     * @return the state machine
+     */
+    public ReplicatedStateMachine getStateMachine() {
+        return stateMachine;
     }
 
     /**
