@@ -1,84 +1,479 @@
-2026-11-27T05:30:08.436324736Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:30:08.443547174Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:30:08.443794229Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:30:08.443900030Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:30:08.444035673Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:30:08.444118092Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:30:08.444612627Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:30:08.444913472Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:30:08.445092586Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:30:08.445332043Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:30:08.445623571Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:30:08.449463495Z Node snapTestA ClusterState: restored from snapshot, version 7
-2026-11-27T05:32:57.421197528Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:32:57.428155663Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:32:57.428447235Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:32:57.428590267Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:32:57.428738496Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:32:57.428825063Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:32:57.429262332Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:32:57.429447078Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:32:57.429634401Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:32:57.429835885Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:32:57.430090411Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:32:57.433830478Z Node snapTestA ClusterState: restored from snapshot, version 7
-2026-11-27T05:42:17.479849217Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:42:17.488459172Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:42:17.488765279Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:42:17.488888157Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:42:17.489031927Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:42:17.489174840Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:42:17.489565156Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:42:17.489920838Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:42:17.490316868Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:42:17.490591748Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:42:17.490911345Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:42:17.495267154Z Node snapTestA ClusterState: restored from snapshot, version 7
-2026-11-27T05:48:09.300707061Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:48:09.307442123Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:09.307683419Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:48:09.307787110Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:09.307922499Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:48:09.308054813Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:09.308385902Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:48:09.308568636Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:48:09.308829053Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:48:09.309056629Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:48:09.309307340Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:48:09.312786540Z Node snapTestA ClusterState: restored from snapshot, version 7
-2026-11-27T05:48:41.002457375Z Node N3 ClusterState: restored from snapshot, version 4
-2026-11-27T05:48:41.009988543Z Node N3 ClusterState: removed node N0
-2026-11-27T05:48:41.011096974Z Node N3 queueing SplitShard message for Shard
-2026-11-27T05:48:41.013287205Z Node N2 ClusterState: restored from snapshot, version 4
-2026-11-27T05:48:41.013548354Z Node N2 ClusterState: removed node N0
-2026-11-27T05:48:41.013736214Z Node N2 queueing shard removal Update message for Shard
-2026-11-27T05:48:41.026514926Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:48:41.026780678Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:41.027273702Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:48:41.027699158Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:41.028065324Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:48:41.028227163Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:41.028581802Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:48:41.028831077Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:48:41.028965888Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:48:41.029115300Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:48:41.029225762Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:48:41.029774009Z Node snapTestA ClusterState: restored from snapshot, version 7
-2026-11-27T05:48:42.387559280Z Node N3 ClusterState: restored from snapshot, version 4
-2026-11-27T05:48:42.395773444Z Node N3 ClusterState: removed node N0
-2026-11-27T05:48:42.396807150Z Node N3 queueing SplitShard message for Shard
-2026-11-27T05:48:42.399830090Z Node N2 ClusterState: restored from snapshot, version 4
-2026-11-27T05:48:42.400107144Z Node N2 ClusterState: removed node N0
-2026-11-27T05:48:42.400392602Z Node N2 queueing shard removal Update message for Shard
-2026-11-27T05:48:42.410627537Z Node snapTestA ClusterState: added node extra0
-2026-11-27T05:48:42.410969096Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:42.411198421Z Node snapTestA ClusterState: added node extra1
-2026-11-27T05:48:42.411465129Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:42.411616009Z Node snapTestA ClusterState: added node extra2
-2026-11-27T05:48:42.411723351Z Node snapTestA queueing Update message for Shard
-2026-11-27T05:48:42.412049647Z Node snapTestA ClusterState: added node extra3
-2026-11-27T05:48:42.412164540Z Node snapTestA queueing SplitShard message for Shard
-2026-11-27T05:48:42.412289201Z Node snapTestA ClusterState: added node extra4
-2026-11-27T05:48:42.412409293Z Node snapTestA ClusterState: added node extra5
-2026-11-27T05:48:42.412517856Z Node snapTestA ClusterState: removed node extra2
-2026-11-27T05:48:42.414735298Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T05:56:58.992990628Z Node snapTestA ClusterState: added node extra0
+2026-11-27T05:56:58.993262461Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:56:58.993548150Z Node snapTestA ClusterState: added node extra1
+2026-11-27T05:56:58.993710081Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:56:58.993908046Z Node snapTestA ClusterState: added node extra2
+2026-11-27T05:56:58.994047677Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:56:58.994242090Z Node snapTestA ClusterState: added node extra3
+2026-11-27T05:56:58.994367911Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T05:56:58.994607176Z Node snapTestA ClusterState: added node extra4
+2026-11-27T05:56:58.994936596Z Node snapTestA ClusterState: added node extra5
+2026-11-27T05:56:58.995116666Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T05:56:58.995586227Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T05:57:06.350167177Z Node SEED1 ClusterState: replying with cluster config
+2026-11-27T05:57:06.351815031Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":1,"numShards":1},"type":"Config","version":0}
+2026-11-27T05:57:37.962081772Z Node SEED2 ClusterState: added node n1
+2026-11-27T05:57:37.963503190Z Node SEED0 ClusterState: added node n1
+2026-11-27T05:57:37.963727278Z Node SEED1 ClusterState: added node n1
+2026-11-27T05:57:37.963971476Z Node SEED1 sending update message to raft cluster
+2026-11-27T05:57:37.964078040Z Node SEED2 sending update message to raft cluster
+2026-11-27T05:57:37.966367052Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T05:57:37.966585311Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T05:57:37.967121712Z Node SEED0 sending update message to raft cluster
+2026-11-27T05:57:37.970315082Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T05:57:39.006650440Z Node n1 ClusterState: added node n1
+2026-11-27T05:57:39.008030362Z Node n1 sending update message to raft cluster
+2026-11-27T05:57:39.009542763Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T05:57:39.018278019Z Node SEED2 sending Update message to Shard
+2026-11-27T05:57:39.018472358Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T05:57:39.020114600Z Node SEED1 sending Update message to Shard
+2026-11-27T05:57:39.020559503Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T05:57:39.020903167Z Node SEED0 sending Update message to Shard
+2026-11-27T05:57:39.021263278Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T05:57:39.022514453Z Node n1 sending Update message to Shard
+2026-11-27T05:57:39.022722346Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T05:57:40.049899113Z Node SEED1 ClusterState: new config finalised
+2026-11-27T05:57:40.050369851Z Node SEED2 ClusterState: new config finalised
+2026-11-27T05:57:40.050419145Z Node SEED0 ClusterState: new config finalised
+2026-11-27T05:57:40.050885237Z Node n1 ClusterState: new config finalised
+2026-11-27T05:57:40.051228173Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T05:57:43.874679169Z Node SEED1 ClusterState: replying with cluster config
+2026-11-27T05:57:43.875987768Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T05:57:43.884351124Z Node SEED2 ClusterState: added node n2
+2026-11-27T05:57:43.884489329Z Node SEED2 sending update message to raft cluster
+2026-11-27T05:57:43.884626863Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-11-27T05:57:43.885554518Z Node SEED1 ClusterState: added node n2
+2026-11-27T05:57:43.885686191Z Node SEED1 sending update message to raft cluster
+2026-11-27T05:57:43.885812922Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-11-27T05:57:43.886128032Z Node n1 ClusterState: added node n2
+2026-11-27T05:57:43.886366975Z Node n1 sending update message to raft cluster
+2026-11-27T05:57:43.886571029Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-11-27T05:57:43.886944759Z Node SEED0 ClusterState: added node n2
+2026-11-27T05:57:43.887127737Z Node SEED0 sending update message to raft cluster
+2026-11-27T05:57:43.887267104Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-11-27T05:57:44.936700509Z Node n2 ClusterState: added node n1
+2026-11-27T05:57:44.936888056Z Node n2 ClusterState: added node n2
+2026-11-27T05:57:44.938282322Z Node n2 sending update message to raft cluster
+2026-11-27T05:57:44.939820272Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 2
+2026-11-27T05:57:44.940006145Z Node n2 sending Update message to Shard
+2026-11-27T05:57:44.940185871Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-11-27T05:57:44.947167041Z Node SEED2 sending Update message to Shard
+2026-11-27T05:57:44.947257058Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-11-27T05:57:44.948403691Z Node SEED1 sending Update message to Shard
+2026-11-27T05:57:44.948566778Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-11-27T05:57:44.948592131Z Node n1 sending Update message to Shard
+2026-11-27T05:57:44.948936540Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-11-27T05:57:44.950134992Z Node SEED0 sending Update message to Shard
+2026-11-27T05:57:44.950246113Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 2
+2026-11-27T05:57:45.963701306Z Node n2 ClusterState: new config finalised
+2026-11-27T05:57:45.978574747Z Node SEED1 ClusterState: new config finalised
+2026-11-27T05:57:45.981903795Z Node SEED2 ClusterState: new config finalised
+2026-11-27T05:57:45.982387113Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T05:57:45.982927778Z Node n1 ClusterState: new config finalised
+2026-11-27T05:57:45.985009351Z Node SEED0 ClusterState: new config finalised
+2026-11-27T05:57:49.947210827Z Node SEED1 ClusterState: replying with cluster config
+2026-11-27T05:57:49.947390897Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571}],"minShardSize":3,"id":"shard0","length":5}},"currShardId":1,"numShards":1},"type":"Config","version":2}
+2026-11-27T05:57:49.956794708Z Node SEED2 ClusterState: added node n3
+2026-11-27T05:57:49.956949534Z Node SEED2 sending update message to raft cluster
+2026-11-27T05:57:49.957051971Z Node SEED2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:49.959679974Z Node SEED1 ClusterState: added node n3
+2026-11-27T05:57:49.959839813Z Node SEED1 sending update message to raft cluster
+2026-11-27T05:57:49.959820539Z Node n1 ClusterState: added node n3
+2026-11-27T05:57:49.959937309Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:49.960055628Z Node n1 sending update message to raft cluster
+2026-11-27T05:57:49.960200355Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:49.960512797Z Node SEED0 ClusterState: added node n3
+2026-11-27T05:57:49.960742599Z Node SEED0 sending update message to raft cluster
+2026-11-27T05:57:49.961008293Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:49.962129817Z Node n2 ClusterState: added node n3
+2026-11-27T05:57:49.962320601Z Node n2 sending update message to raft cluster
+2026-11-27T05:57:49.962442312Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:49.962612396Z Node n2 sending SplitShard message to Shard
+2026-11-27T05:57:49.962746946Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:49.962812194Z Node n2 ClusterState: new config finalised
+2026-11-27T05:57:51.006093774Z Node n3 ClusterState: added node n1
+2026-11-27T05:57:51.006363418Z Node n3 ClusterState: added node n2
+2026-11-27T05:57:51.006690741Z Node n3 ClusterState: added node n3
+2026-11-27T05:57:51.007870793Z Node n3 sending update message to raft cluster
+2026-11-27T05:57:51.009497362Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 3
+2026-11-27T05:57:51.009683108Z Node n3 sending SplitShard message to Shard
+2026-11-27T05:57:51.009885895Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:51.018826055Z Node SEED2 sending SplitShard message to Shard
+2026-11-27T05:57:51.018997241Z Node SEED2 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:51.019780441Z Node SEED1 sending SplitShard message to Shard
+2026-11-27T05:57:51.020115133Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:51.020433977Z Node n1 sending SplitShard message to Shard
+2026-11-27T05:57:51.020578666Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:51.022015082Z Node SEED0 sending SplitShard message to Shard
+2026-11-27T05:57:51.022166109Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 3
+2026-11-27T05:57:52.033224718Z Node n3 ClusterState: new config finalised
+2026-11-27T05:57:52.048162536Z Node SEED1 ClusterState: new config finalised
+2026-11-27T05:57:52.049005634Z Node SEED2 ClusterState: new config finalised
+2026-11-27T05:57:52.049060118Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T05:57:52.049708125Z Node SEED0 ClusterState: new config finalised
+2026-11-27T05:57:52.051638609Z Node n1 ClusterState: new config finalised
+2026-11-27T05:58:02.181982520Z Node SEED1 ClusterState: replying with cluster config
+2026-11-27T05:58:02.182390868Z Sending message to node Client0: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"1838985119965542371":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[],"minShardSize":3,"id":"shard1","length":3},"7307130793460680199":{"left":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED2","ip":"localhost","port":4569},{"id":"SEED0","ip":"localhost","port":4567}],"right":[],"minShardSize":3,"id":"shard0","length":3}},"currShardId":2,"numShards":2},"type":"Config","version":3}
+2026-11-27T05:58:30.509330765Z Node SEED0 ClusterState: removed node SEED2
+2026-11-27T05:58:30.509384121Z Node SEED0 sending update message to raft cluster
+2026-11-27T05:58:30.509416602Z Node SEED0 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-11-27T05:58:30.510019270Z Node SEED1 ClusterState: removed node SEED2
+2026-11-27T05:58:30.510065015Z Node SEED1 sending update message to raft cluster
+2026-11-27T05:58:30.510094435Z Node SEED1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-11-27T05:58:30.511295324Z Node n1 ClusterState: removed node SEED2
+2026-11-27T05:58:30.511421245Z Node n1 sending update message to raft cluster
+2026-11-27T05:58:30.511540265Z Node n1 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-11-27T05:58:30.511698976Z Node n3 ClusterState: removed node SEED2
+2026-11-27T05:58:30.511838610Z Node n3 sending update message to raft cluster
+2026-11-27T05:58:30.511984169Z Node n3 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-11-27T05:58:30.512192714Z Node n3 sending Update message to Shard
+2026-11-27T05:58:30.512309423Z Node n3 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-11-27T05:58:30.512386133Z Node n3 ClusterState: new config finalised
+2026-11-27T05:58:30.512715719Z Node n2 ClusterState: removed node SEED2
+2026-11-27T05:58:30.512844208Z Node n2 sending update message to raft cluster
+2026-11-27T05:58:30.512969472Z Node n2 ClusterState: waiting for acknowledgement from cluster for version: 4
+2026-11-27T05:58:30.513075605Z Node n2 sending Update message to Shard
+2026-11-27T05:58:30.513178748Z Node n2 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-11-27T05:58:30.513256790Z Node n2 ClusterState: new config finalised
+2026-11-27T05:58:30.518817267Z Node SEED0 sending Update message to Shard
+2026-11-27T05:58:30.519019282Z Node SEED0 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-11-27T05:58:30.519714757Z Node SEED1 sending Update message to Shard
+2026-11-27T05:58:30.519777845Z Node SEED1 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-11-27T05:58:30.520801460Z Node n1 sending Update message to Shard
+2026-11-27T05:58:30.520977387Z Node n1 ClusterState: waiting for acknowledgement from Shard for version: 4
+2026-11-27T05:58:31.520721571Z Node SEED1 ClusterState: new config finalised
+2026-11-27T05:58:31.522741912Z Node SEED0 ClusterState: new config finalised
+2026-11-27T05:58:31.525304776Z Sending message to node Client0: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T05:58:31.532838486Z Node n1 ClusterState: new config finalised
+2026-11-27T05:59:03.283163005Z Node SEED1 ClusterState: replying with cluster config
+2026-11-27T05:59:03.283456624Z Sending message to node Client0: {"config":{"ring":{"-1284327420199765508":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED0","ip":"localhost","port":4567}],"minShardSize":3,"id":"shard1","length":5},"275509780387176636":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED0","ip":"localhost","port":4567}],"minShardSize":3,"id":"shard1","length":5},"3570506286383550063":{"left":[{"id":"n1","ip":"localhost","port":4570},{"id":"n2","ip":"localhost","port":4571},{"id":"n3","ip":"localhost","port":4572}],"right":[{"id":"SEED1","ip":"localhost","port":4568},{"id":"SEED0","ip":"localhost","port":4567}],"minShardSize":3,"id":"shard1","length":5}},"currShardId":2,"numShards":1},"type":"Config","version":4}
+2026-11-27T06:08:01.610341136Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:08:01.610585718Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:08:01.610757579Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:08:01.714413994Z Node S0 ClusterState: added node N0
+2026-11-27T06:08:01.715770158Z Node S0 queueing Update message for Shard
+2026-11-27T06:08:01.716044056Z Node S0 sending update message to raft cluster
+2026-11-27T06:08:01.716219561Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:08:01.716411918Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:08:01.716538205Z Node S0 ClusterState: new config finalised
+2026-11-27T06:08:01.716866096Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:08:01.718313721Z Node S0 ClusterState: added node N0
+2026-11-27T06:08:01.718456781Z Node S0 queueing Update message for Shard
+2026-11-27T06:08:01.718616995Z Node S0 ClusterState: removed node N0
+2026-11-27T06:08:01.718740169Z Node S0 queueing Update message for Shard
+2026-11-27T06:08:01.719847979Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:08:01.721096375Z Node S0 ClusterState: added node N0
+2026-11-27T06:08:01.721347871Z Node S0 queueing Update message for Shard
+2026-11-27T06:08:01.721698325Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:08:01.724796024Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:08:01.728583635Z Node S0 ClusterState: added node N0
+2026-11-27T06:08:01.728901780Z Node S0 queueing Update message for Shard
+2026-11-27T06:08:01.732427595Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:08:01.732654488Z Node N3 ClusterState: removed node N0
+2026-11-27T06:08:01.732827588Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:08:01.733356410Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:08:01.733577598Z Node N2 ClusterState: removed node N0
+2026-11-27T06:08:01.733773866Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:08:13.526950340Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:08:13.527287168Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:08:13.527567492Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:08:13.527851947Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:08:13.528080553Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:08:13.528215057Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:08:13.528410702Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:08:13.528601716Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:08:13.528930096Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:08:13.529330353Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:08:13.529610191Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:08:13.530208984Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:09:07.862592135Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:09:07.862920405Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:09:07.863079714Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:09:07.967711765Z Node S0 ClusterState: added node N0
+2026-11-27T06:09:07.969957784Z Node S0 queueing Update message for Shard
+2026-11-27T06:09:07.970280956Z Node S0 sending update message to raft cluster
+2026-11-27T06:09:07.970499371Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:09:07.970701740Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:09:07.970869424Z Node S0 ClusterState: new config finalised
+2026-11-27T06:09:07.971273045Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:09:07.973055767Z Node S0 ClusterState: added node N0
+2026-11-27T06:09:07.973279494Z Node S0 queueing Update message for Shard
+2026-11-27T06:09:07.973473871Z Node S0 ClusterState: removed node N0
+2026-11-27T06:09:07.973631185Z Node S0 queueing Update message for Shard
+2026-11-27T06:09:07.975127309Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:09:07.976586733Z Node S0 ClusterState: added node N0
+2026-11-27T06:09:07.976739867Z Node S0 queueing Update message for Shard
+2026-11-27T06:09:07.976987289Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:09:07.980282268Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:09:07.983519528Z Node S0 ClusterState: added node N0
+2026-11-27T06:09:07.983680367Z Node S0 queueing Update message for Shard
+2026-11-27T06:09:07.986702159Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:09:07.986844080Z Node N3 ClusterState: removed node N0
+2026-11-27T06:09:07.986968681Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:09:07.987526134Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:09:07.987759580Z Node N2 ClusterState: removed node N0
+2026-11-27T06:09:07.987942238Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:09:19.835161193Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:09:19.835462783Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:09:19.835836405Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:09:19.836097575Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:09:19.836308271Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:09:19.836496926Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:09:19.836770241Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:09:19.836955934Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:09:19.837265679Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:09:19.837853668Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:09:19.838039218Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:09:19.838536519Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:20:03.095632Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:20:03.095803654Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:20:03.095952678Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:20:03.201723669Z Node S0 ClusterState: added node N0
+2026-11-27T06:20:03.204025304Z Node S0 queueing Update message for Shard
+2026-11-27T06:20:03.204444104Z Node S0 sending update message to raft cluster
+2026-11-27T06:20:03.204710167Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:20:03.204991594Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:20:03.205188194Z Node S0 ClusterState: new config finalised
+2026-11-27T06:20:03.205602276Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:20:03.207883690Z Node S0 ClusterState: added node N0
+2026-11-27T06:20:03.208060146Z Node S0 queueing Update message for Shard
+2026-11-27T06:20:03.208249387Z Node S0 ClusterState: removed node N0
+2026-11-27T06:20:03.208385648Z Node S0 queueing Update message for Shard
+2026-11-27T06:20:03.209644080Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:20:03.210978211Z Node S0 ClusterState: added node N0
+2026-11-27T06:20:03.211125359Z Node S0 queueing Update message for Shard
+2026-11-27T06:20:03.211388199Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:20:03.214163157Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:20:03.217649496Z Node S0 ClusterState: added node N0
+2026-11-27T06:20:03.217860044Z Node S0 queueing Update message for Shard
+2026-11-27T06:20:03.220781669Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:20:03.220931914Z Node N3 ClusterState: removed node N0
+2026-11-27T06:20:03.221040934Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:20:03.221727896Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:20:03.221874050Z Node N2 ClusterState: removed node N0
+2026-11-27T06:20:03.222077974Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:20:12.069908574Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:20:12.070219880Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:20:12.070578611Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:20:12.070799903Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:20:12.071040916Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:20:12.071253465Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:20:12.071546627Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:20:12.071747881Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:20:12.072161698Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:20:12.072508005Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:20:12.072885327Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:20:12.073479203Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:21:18.110227936Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:21:18.110595412Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:21:18.110765840Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:21:18.218795288Z Node S0 ClusterState: added node N0
+2026-11-27T06:21:18.222369393Z Node S0 queueing Update message for Shard
+2026-11-27T06:21:18.223179043Z Node S0 sending update message to raft cluster
+2026-11-27T06:21:18.223498546Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:21:18.223751203Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:21:18.223989039Z Node S0 ClusterState: new config finalised
+2026-11-27T06:21:18.224488036Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:21:18.227929797Z Node S0 ClusterState: added node N0
+2026-11-27T06:21:18.228119847Z Node S0 queueing Update message for Shard
+2026-11-27T06:21:18.228299929Z Node S0 ClusterState: removed node N0
+2026-11-27T06:21:18.228407408Z Node S0 queueing Update message for Shard
+2026-11-27T06:21:18.229666858Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:21:18.233021601Z Node S0 ClusterState: added node N0
+2026-11-27T06:21:18.233408964Z Node S0 queueing Update message for Shard
+2026-11-27T06:21:18.234032852Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:21:18.238953680Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:21:18.242686980Z Node S0 ClusterState: added node N0
+2026-11-27T06:21:18.242897511Z Node S0 queueing Update message for Shard
+2026-11-27T06:21:18.247389283Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:21:18.247580323Z Node N3 ClusterState: removed node N0
+2026-11-27T06:21:18.247789387Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:21:18.248416040Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:21:18.248625976Z Node N2 ClusterState: removed node N0
+2026-11-27T06:21:18.248880133Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:21:27.099632561Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:21:27.099833903Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:21:27.099967525Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:21:27.100062420Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:21:27.100163604Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:21:27.100240539Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:21:27.100361165Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:21:27.100442470Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:21:27.100603384Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:21:27.100765730Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:21:27.100876064Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:21:27.101157630Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:27:39.587975775Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:27:39.588223540Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:27:39.588394625Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:27:39.692503318Z Node S0 ClusterState: added node N0
+2026-11-27T06:27:39.693905194Z Node S0 queueing Update message for Shard
+2026-11-27T06:27:39.694399205Z Node S0 sending update message to raft cluster
+2026-11-27T06:27:39.694589356Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:27:39.694791026Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:27:39.694928285Z Node S0 ClusterState: new config finalised
+2026-11-27T06:27:39.695277833Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:27:39.696874593Z Node S0 ClusterState: added node N0
+2026-11-27T06:27:39.697034996Z Node S0 queueing Update message for Shard
+2026-11-27T06:27:39.697205539Z Node S0 ClusterState: removed node N0
+2026-11-27T06:27:39.697374316Z Node S0 queueing Update message for Shard
+2026-11-27T06:27:39.699108863Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:27:39.701075932Z Node S0 ClusterState: added node N0
+2026-11-27T06:27:39.701328039Z Node S0 queueing Update message for Shard
+2026-11-27T06:27:39.701544432Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:27:39.704426670Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:27:39.707544602Z Node S0 ClusterState: added node N0
+2026-11-27T06:27:39.707693042Z Node S0 queueing Update message for Shard
+2026-11-27T06:27:39.710316588Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:27:39.710496069Z Node N3 ClusterState: removed node N0
+2026-11-27T06:27:39.710636304Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:27:39.711054158Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:27:39.711181123Z Node N2 ClusterState: removed node N0
+2026-11-27T06:27:39.711303823Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:27:48.891722033Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:27:48.892171270Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:27:48.892489664Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:27:48.892651385Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:27:48.892822798Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:27:48.892981793Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:27:48.893263925Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:27:48.893513406Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:27:48.893876930Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:27:48.894106441Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:27:48.894300195Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:27:48.894987352Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:31:20.235157244Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:31:20.235649116Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:31:20.235821151Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:31:20.341175239Z Node S0 ClusterState: added node N0
+2026-11-27T06:31:20.343861166Z Node S0 queueing Update message for Shard
+2026-11-27T06:31:20.344294062Z Node S0 sending update message to raft cluster
+2026-11-27T06:31:20.344641422Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:31:20.344915797Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:31:20.345148944Z Node S0 ClusterState: new config finalised
+2026-11-27T06:31:20.345909354Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:31:20.348389623Z Node S0 ClusterState: added node N0
+2026-11-27T06:31:20.349020565Z Node S0 queueing Update message for Shard
+2026-11-27T06:31:20.349404396Z Node S0 ClusterState: removed node N0
+2026-11-27T06:31:20.349682019Z Node S0 queueing Update message for Shard
+2026-11-27T06:31:20.352664757Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:31:20.353939165Z Node S0 ClusterState: added node N0
+2026-11-27T06:31:20.354246573Z Node S0 queueing Update message for Shard
+2026-11-27T06:31:20.354484140Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:31:20.357326460Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:31:20.360202911Z Node S0 ClusterState: added node N0
+2026-11-27T06:31:20.361290282Z Node S0 queueing Update message for Shard
+2026-11-27T06:31:20.366949489Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:31:20.367161395Z Node N3 ClusterState: removed node N0
+2026-11-27T06:31:20.367500358Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:31:20.368253709Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:31:20.368484877Z Node N2 ClusterState: removed node N0
+2026-11-27T06:31:20.368707964Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:31:29.556562730Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:31:29.556906710Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:31:29.557141745Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:31:29.557384656Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:31:29.557587661Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:31:29.557769733Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:31:29.558039884Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:31:29.558235961Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:31:29.558890351Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:31:29.559083681Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:31:29.559432027Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:31:29.560854072Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:39:44.094971366Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:39:44.095187290Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:39:44.095355036Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:39:44.198973137Z Node S0 ClusterState: added node N0
+2026-11-27T06:39:44.200565529Z Node S0 queueing Update message for Shard
+2026-11-27T06:39:44.200844968Z Node S0 sending update message to raft cluster
+2026-11-27T06:39:44.201025050Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:39:44.201198856Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:39:44.201353320Z Node S0 ClusterState: new config finalised
+2026-11-27T06:39:44.201757098Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:39:44.203349335Z Node S0 ClusterState: added node N0
+2026-11-27T06:39:44.203540187Z Node S0 queueing Update message for Shard
+2026-11-27T06:39:44.203732124Z Node S0 ClusterState: removed node N0
+2026-11-27T06:39:44.203888908Z Node S0 queueing Update message for Shard
+2026-11-27T06:39:44.205527849Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:39:44.207186136Z Node S0 ClusterState: added node N0
+2026-11-27T06:39:44.207407193Z Node S0 queueing Update message for Shard
+2026-11-27T06:39:44.207672490Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:39:44.210954310Z Sending message to node client: {"config":{"ring":{"-4951888930613120910":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"1838985119965542371":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4},"7307130793460680199":{"left":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002}],"right":[{"id":"N0","ip":"localhost","port":5000}],"minShardSize":3,"id":"shard0","length":4}},"currShardId":1,"numShards":1},"type":"Config","version":1}
+2026-11-27T06:39:44.214095532Z Node S0 ClusterState: added node N0
+2026-11-27T06:39:44.214373694Z Node S0 queueing Update message for Shard
+2026-11-27T06:39:44.217690300Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:39:44.217864705Z Node N3 ClusterState: removed node N0
+2026-11-27T06:39:44.218014980Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:39:44.218520622Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:39:44.218672846Z Node N2 ClusterState: removed node N0
+2026-11-27T06:39:44.218913611Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:39:53.406823976Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:39:53.407004970Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:39:53.407143984Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:39:53.407249713Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:39:53.407343762Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:39:53.407452568Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:39:53.407588815Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:39:53.407687825Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:39:53.407814933Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:39:53.407935485Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:39:53.408084924Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:39:53.408469988Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:45:22.400865855Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:45:22.401224015Z Node N3 ClusterState: removed node N0
+2026-11-27T06:45:22.402475649Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:45:22.403249786Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:45:22.403407646Z Node N2 ClusterState: removed node N0
+2026-11-27T06:45:22.403546115Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:45:31.576840584Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:45:31.577281202Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:45:31.577521241Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:45:31.577638453Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:45:31.577765188Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:45:31.577905857Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:45:31.578078236Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:45:31.578174146Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:45:31.578314718Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:45:31.578420477Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:45:31.578529842Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:45:31.578852703Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T06:45:50.449925346Z Node S0 ClusterState: unknown NodeMsg action Add
+2026-11-27T06:45:50.450207877Z Node S0 ClusterState: unknown NodeMsg action Rename
+2026-11-27T06:45:50.450519505Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:45:50.556081474Z Node S0 ClusterState: added node N0
+2026-11-27T06:45:50.558497100Z Node S0 queueing Update message for Shard
+2026-11-27T06:45:50.559098347Z Node S0 sending update message to raft cluster
+2026-11-27T06:45:50.559399478Z Node S0 ClusterState: waiting for acknowledgement from cluster for version: 1
+2026-11-27T06:45:50.559732271Z Node S0 ClusterState: waiting for acknowledgement from Shard for version: 1
+2026-11-27T06:45:50.559939785Z Node S0 ClusterState: new config finalised
+2026-11-27T06:45:50.560692665Z Sending message to node client: {"msg":"Cluster successfully updated","type":"Response","version":-1}
+2026-11-27T06:45:50.563839457Z Node S0 ClusterState: added node N0
+2026-11-27T06:45:50.564219305Z Node S0 queueing Update message for Shard
+2026-11-27T06:45:50.564660546Z Node S0 ClusterState: removed node N0
+2026-11-27T06:45:50.564839431Z Node S0 queueing Update message for Shard
+2026-11-27T06:45:50.566573933Z Node S0 ClusterState: unsupported message type Response
+2026-11-27T06:45:50.571084676Z Node S0 ClusterState: added node N0
+2026-11-27T06:45:50.571246197Z Node S0 queueing Update message for Shard
+2026-11-27T06:45:50.571482008Z Node S0 ClusterState: replying with cluster config
+2026-11-27T06:45:50.572346994Z Sending message to node client: {"config":{"nodes":[{"id":"S0","ip":"localhost","port":4000},{"id":"S1","ip":"localhost","port":4001},{"id":"S2","ip":"localhost","port":4002},{"id":"N0","ip":"localhost","port":5000}],"shards":[{"id":"shard0","left":["S0","S1","S2"],"right":["N0"]}],"currShardId":1},"type":"Config","version":1}
+2026-11-27T06:45:50.575156634Z Node S0 ClusterState: added node N0
+2026-11-27T06:45:50.575308791Z Node S0 queueing Update message for Shard
+2026-11-27T06:45:50.577676758Z Node N3 ClusterState: restored from snapshot, version 4
+2026-11-27T06:45:50.577826828Z Node N3 ClusterState: removed node N0
+2026-11-27T06:45:50.577954482Z Node N3 queueing SplitShard message for Shard
+2026-11-27T06:45:50.578272775Z Node N2 ClusterState: restored from snapshot, version 4
+2026-11-27T06:45:50.578379472Z Node N2 ClusterState: removed node N0
+2026-11-27T06:45:50.578495682Z Node N2 queueing shard removal Update message for Shard
+2026-11-27T06:46:02.726088866Z Node snapTestA ClusterState: added node extra0
+2026-11-27T06:46:02.726324666Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:46:02.726492961Z Node snapTestA ClusterState: added node extra1
+2026-11-27T06:46:02.726641173Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:46:02.726771336Z Node snapTestA ClusterState: added node extra2
+2026-11-27T06:46:02.726872534Z Node snapTestA queueing Update message for Shard
+2026-11-27T06:46:02.727001754Z Node snapTestA ClusterState: added node extra3
+2026-11-27T06:46:02.727084849Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T06:46:02.727198249Z Node snapTestA ClusterState: added node extra4
+2026-11-27T06:46:02.727344015Z Node snapTestA ClusterState: added node extra5
+2026-11-27T06:46:02.727441760Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T06:46:02.727679672Z Node snapTestA ClusterState: restored from snapshot, version 7

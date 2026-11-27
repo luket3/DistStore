@@ -170,8 +170,8 @@ public class RaftState {
         if (restored != null) {
             this.term = restored.term;
             this.votedFor = restored.votedFor;
-            if (restored.activeNodes != null && !restored.activeNodes.isEmpty())
-                this.activeNodes = new HashMap<>(restored.activeNodes);
+            if (restored.activeNodes() != null && !restored.activeNodes().isEmpty())
+                this.activeNodes = new HashMap<>(restored.activeNodes());
             applySnapshotConfig(restored);
         }
     }
@@ -190,14 +190,14 @@ public class RaftState {
             return;
 
         this.version = snapshot.version;
-        if (snapshot.voters == null || snapshot.voters.isEmpty())
+        if (snapshot.voters() == null || snapshot.voters().isEmpty())
             return;
 
-        this.voters = new HashMap<>(snapshot.voters);
-        this.oldNodes = new HashMap<>(snapshot.voters);
-        this.nextNodes = new HashMap<>(snapshot.voters);
-        if (snapshot.activeNodes != null)
-            this.activeNodes.putAll(snapshot.activeNodes);
+        this.voters = new HashMap<>(snapshot.voters());
+        this.oldNodes = new HashMap<>(snapshot.voters());
+        this.nextNodes = new HashMap<>(snapshot.voters());
+        if (snapshot.activeNodes() != null)
+            this.activeNodes.putAll(snapshot.activeNodes());
         this.activeNodes.putAll(this.voters);
         for (String nodeId : this.voters.keySet())
             this.learners.remove(nodeId);
@@ -350,7 +350,7 @@ public class RaftState {
      * @param update shard removal update; its nodes are the new shard's members
      */
     public void shardRemoval(Update update) {
-        Map<String, Node> nodes = update.nodes;
+        Map<String, Node> nodes = update.nodes();
         handOverKeys(update);
         this.log.getStateMachine().retainKeys(key -> false);
         this.leader = null;
@@ -495,8 +495,8 @@ public class RaftState {
 
         // Apply joint-config state: set old and next node sets and mark joint mode.
         if (msg.jointConfig) {
-            this.oldNodes = msg.oldNodes == null ? new HashMap<>() : new HashMap<>(msg.oldNodes);
-            this.nextNodes = msg.nodes == null ? new HashMap<>() : new HashMap<>(msg.nodes);
+            this.oldNodes = msg.oldNodes() == null ? new HashMap<>() : new HashMap<>(msg.oldNodes());
+            this.nextNodes = msg.nodes() == null ? new HashMap<>() : new HashMap<>(msg.nodes());
             if (this.voters == null) {
                 this.voters = new HashMap<>();
             }
@@ -510,8 +510,8 @@ public class RaftState {
             // leader mid-split appends the same final config
             if (msg.type.equals("SplitRaftConfig")) {
                 SplitRaftConfig castMsg = (SplitRaftConfig) msg;
-                this.inNodes = castMsg.inNodes;
-                this.finNodes = castMsg.newNodes;
+                this.inNodes = castMsg.inNodes();
+                this.finNodes = castMsg.newNodes();
                 this.splitRing = castMsg.ring;
                 this.inShardId = castMsg.inShardId;
                 this.newShardId = castMsg.newShardId;
@@ -531,16 +531,16 @@ public class RaftState {
             if (msg.type.equals("SplitRaftConfig")) {
                 SplitRaftConfig castMsg = (SplitRaftConfig) msg;
                 String myShard;
-                if (castMsg.inNodes.containsKey(this.id)) {
-                    newNodes = castMsg.inNodes;
+                if (castMsg.inNodes().containsKey(this.id)) {
+                    newNodes = castMsg.inNodes();
                     myShard = castMsg.inShardId;
                 } else {
-                    newNodes = castMsg.newNodes;
+                    newNodes = castMsg.newNodes();
                     myShard = castMsg.newShardId;
                 }
                 keepOwnedKeys(castMsg.ring, myShard);
             } else {
-                newNodes = msg.nodes;
+                newNodes = msg.nodes();
             }
 
             this.voters = newNodes == null ? new HashMap<>() : new HashMap<>(newNodes);
@@ -559,6 +559,12 @@ public class RaftState {
                 if (this.id.equals(n.id)) {
                     this.type = "learner";
                 }
+            }
+
+            // Forget a leader that is not part of the new configuration (e.g. the
+            // other half of a split), so requests are not forwarded to another group
+            if (this.leader != null && !this.voters.containsKey(this.leader.id)) {
+                this.leader = null;
             }
 
             // Update the node's role based on whether it is still a voter or has become a learner.
@@ -622,7 +628,7 @@ public class RaftState {
         Map<String, String> data = this.log.getStateMachine().exportKeys();
         if (data.isEmpty())
             return;
-        if (update.ring == null || update.shardMembers == null) {
+        if (update.ring == null || update.shardMembers() == null) {
             HandOff.writeToFile(
                 "Node " + this.id + " " + this.level + ": shard removed but no ring supplied, " + data.size() + " keys not handed over",
                 this.getLogFilePath()
@@ -642,13 +648,13 @@ public class RaftState {
         }
 
         // The acknowledgement comes back to this node's address
-        Node self = update.nodes != null ? update.nodes.get(this.id) : null;
+        Node self = update.nodes() != null ? update.nodes().get(this.id) : null;
         if (self == null)
             self = this.activeNodes.get(this.id);
 
         for (Map.Entry<String, Map<String, String>> group : byShard.entrySet()) {
             String shardId = group.getKey();
-            Map<String, Node> shardNodes = update.shardMembers.getOrDefault(shardId, new HashMap<>());
+            Map<String, Node> shardNodes = update.shardMembers().getOrDefault(shardId, new HashMap<>());
             List<Node> targets = ShardMigrator.orderTargets(shardNodes, this.activeNodes, this.id);
 
             MigrateData migration = new MigrateData(UUID.randomUUID().toString(), shardId, group.getValue(), self);

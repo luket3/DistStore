@@ -1,16 +1,197 @@
-2026-11-27T05:42:17.581111541Z Node:smTest StateMachine: applying command: DictMsg
-2026-11-27T05:42:17.581600753Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
-2026-11-27T05:42:17.581727314Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
-2026-11-27T05:42:17.583846771Z Node:smTest StateMachine: kept 1 of 2 keys
-2026-11-27T05:48:09.395657547Z Node:smTest StateMachine: applying command: DictMsg
-2026-11-27T05:48:09.396098056Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
-2026-11-27T05:48:09.396238387Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
-2026-11-27T05:48:09.399259592Z Node:smTest StateMachine: kept 1 of 2 keys
-2026-11-27T05:48:41.097553186Z Node:smTest StateMachine: applying command: DictMsg
-2026-11-27T05:48:41.097898637Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
-2026-11-27T05:48:41.098064111Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
-2026-11-27T05:48:41.099711635Z Node:smTest StateMachine: kept 1 of 2 keys
-2026-11-27T05:48:42.490442105Z Node:smTest StateMachine: applying command: DictMsg
-2026-11-27T05:48:42.490809219Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
-2026-11-27T05:48:42.490975498Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
-2026-11-27T05:48:42.492631975Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T05:56:59.867519740Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:56:59.867833652Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T05:56:59.868824569Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T05:56:59.868961447Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T05:56:59.870697040Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:56:59.871135444Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:56:59.871222319Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T05:56:59.871592330Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T05:56:59.872855889Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:56:59.872990445Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:56:59.876087297Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T05:56:59.877362729Z store operation failed: unsupported message type NodeMsg
+2026-11-27T05:57:00.078829911Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:57:00.078989383Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:57:00.079179382Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T05:57:00.079260426Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T05:57:11.484165522Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:11.485374211Z Sending message to node Client0: {"msg":"null","type":"Response","version":-1}
+2026-11-27T05:57:11.485970425Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:11.487211562Z Node:SEED2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:16.788443850Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:16.788569271Z Sending message to node Client0: {"msg":"null","type":"Response","version":-1}
+2026-11-27T05:57:16.789694106Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:16.790267737Z Node:SEED2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:32.743224114Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:32.743536115Z Sending message to node Client0: {"msg":"null","type":"Response","version":-1}
+2026-11-27T05:57:32.744613729Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:32.745075110Z Node:SEED2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:40.037261782Z Node:n1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:40.037409979Z Node:n1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:40.037480979Z Node:n1 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:45.964048952Z Node:n2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:45.964184771Z Node:n2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:45.964307329Z Node:n2 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:52.033288230Z Node:n3 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:52.033449160Z Node:n3 StateMachine: recieved command: DictMsg
+2026-11-27T05:57:52.033596644Z Node:n3 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:02.190406190Z Node:n2 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:02.191062547Z Sending message to node Client0: {"msg":"null","type":"Response","version":-1}
+2026-11-27T05:58:02.191215092Z Node:n1 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:02.191787846Z Node:n3 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.520648432Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.520798880Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.520849374Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.520881588Z Node:SEED1 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.522487462Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.522709270Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.522818170Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:58:31.522885680Z Node:SEED0 StateMachine: recieved command: DictMsg
+2026-11-27T05:59:03.291087235Z Node:n2 StateMachine: recieved command: DictMsg
+2026-11-27T05:59:03.291252779Z Sending message to node Client0: {"msg":"12","type":"Response","version":-1}
+2026-11-27T05:59:03.292690031Z Node:n1 StateMachine: recieved command: DictMsg
+2026-11-27T05:59:03.293301677Z Node:n3 StateMachine: recieved command: DictMsg
+2026-11-27T06:08:14.411943791Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.412267971Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:08:14.413051578Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:08:14.413109066Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:08:14.414661201Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.415071223Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.415297958Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:08:14.415794194Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:08:14.417366510Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.417461397Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.419137055Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:08:14.420386189Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:08:14.624927398Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.625409387Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:08:14.625930754Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:08:14.626198386Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.726010482Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.726301750Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:09:20.726967964Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:09:20.727056423Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:09:20.728959385Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.729372447Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.729458255Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:09:20.729768747Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:09:20.730999476Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.731098142Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.732672320Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:09:20.733832597Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:09:20.938954769Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.939448563Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:09:20.940177259Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:09:20.940476185Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.955597659Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.955835374Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:20:12.956394247Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:20:12.956443572Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:20:12.957693717Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.958061419Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.958115890Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:20:12.958434003Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:20:12.959506600Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.959594480Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:12.960964730Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:20:12.961767524Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:20:13.165158287Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:13.165624816Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:20:13.166088530Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:20:13.166555457Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.982780094Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.983070025Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:21:27.983724045Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:21:27.983775099Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:21:27.985358820Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.985779786Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.985860466Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:21:27.986275736Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:21:27.987444598Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.987555551Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:27.989875984Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:21:27.991327674Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:21:28.196332667Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:28.196843008Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:21:28.197406409Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:21:28.197732637Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.773107250Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.773489474Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:27:49.774103800Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:27:49.774218254Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:27:49.776443384Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.776895147Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.776983420Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:27:49.777398279Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:27:49.778710244Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.778807420Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.781140562Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:27:49.782564019Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:27:49.988484475Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.988928231Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:27:49.989440748Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:27:49.989682453Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.434760308Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.435114675Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:31:30.435938740Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:31:30.436073570Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:31:30.437690632Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.438000367Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.438064312Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:31:30.438465042Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:31:30.439689881Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.439782601Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.441727085Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:31:30.442877541Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:31:30.646309397Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.646751126Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:31:30.647200591Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:31:30.647461334Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.283267327Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.283519394Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:39:54.284078795Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:39:54.284142259Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:39:54.285776886Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.286102227Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.286159784Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:39:54.286438701Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:39:54.287662418Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.287756570Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.289652427Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:39:54.290936112Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:39:54.494669213Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.494992017Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:39:54.495383594Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:39:54.495531628Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.461624508Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.461866815Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:45:32.462521571Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:45:32.462634685Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:45:32.464043964Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.464487100Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.464550397Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:45:32.464953517Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:45:32.466080898Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.466215194Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.467817448Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:45:32.468949776Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:45:32.673249939Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.673718852Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:45:32.674369112Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:45:32.674684425Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.602409040Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.602697708Z Node:smTest StateMachine: applied migration m1, added 1 of 2 keys
+2026-11-27T06:46:03.603371964Z Node:smTest StateMachine: applied migration m1, added 0 of 2 keys
+2026-11-27T06:46:03.603452595Z Sending message to node sender: {"id":"m1","type":"MigrateAck","version":-1}
+2026-11-27T06:46:03.605146473Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.605624191Z Sending message to node client: {"msg":"null","type":"Response","version":-1}
+2026-11-27T06:46:03.605574186Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.605907245Z Sending message to node client: {"msg":"1","type":"Response","version":-1}
+2026-11-27T06:46:03.607168980Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.607266676Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.609051072Z Node:smTest StateMachine: kept 1 of 2 keys
+2026-11-27T06:46:03.610072399Z store operation failed: unsupported message type NodeMsg
+2026-11-27T06:46:03.811963398Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.812166089Z Node:smTest StateMachine: applying command: DictMsg
+2026-11-27T06:46:03.812434830Z Node:smTest StateMachine: loaded snapshot up to index 0 with 1 keys
+2026-11-27T06:46:03.812527203Z Node:smTest StateMachine: applying command: DictMsg

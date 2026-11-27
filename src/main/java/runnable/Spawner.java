@@ -31,10 +31,28 @@ import com.google.gson.GsonBuilder;
  * on disk if one exists), starts one JVM process per member, and listens for node-management requests that add or remove
  * cluster members. Each request is acknowledged with an Ack message carrying the
  * operation result and the affected Node reference when needed.
+ *
+ * Add and Remove are membership changes: after the spawner answers, the client
+ * asks the cluster to add or drop the node. Kill and Revive only stop or
+ * restart a member's process, leaving the membership unchanged, which
+ * simulates a crash and a recovery.
  */
 public class Spawner {
     /** Mapping of active node threads keyed by node identifier. */
     public static HashMap<String, Thread> nodes;
+
+    /**
+     * Every node this spawner has launched and not removed, running or
+     * killed, keyed by node identifier. Kept so a killed node can be revived
+     * on its original port.
+     */
+    public static HashMap<String, Node> members;
+
+    /** Identifiers of the seed nodes; these start as voters rather than learners. */
+    public static HashMap<String, Boolean> seedIds;
+
+    /** How long a Kill waits for the node's process to exit. */
+    public static final long KILL_WAIT_MS = 10000;
 
     /** Listener for accepting incoming connections */
     public static Listener listener;
@@ -64,6 +82,8 @@ public class Spawner {
      */
     public static void init(boolean fresh) throws IOException {
         nodes = new HashMap<>();
+        members = new HashMap<>();
+        seedIds = new HashMap<>();
         listener = new Listener();
         gson = new GsonBuilder()
                 .registerTypeAdapter(Message.class, new MessageDeserializer())
@@ -94,15 +114,12 @@ public class Spawner {
             deleteSnapshots();
 
         // Work out the membership to launch, then start every member on its recorded port
-        Map<String, Node> members = currentMembership(seeds);
-        Map<String, Boolean> isSeed = new HashMap<>();
+        Map<String, Node> membership = currentMembership(seeds);
         for (Node seed : seeds)
-            isSeed.put(seed.id, true);
+            seedIds.put(seed.id, true);
 
-        for (Node n : members.values()) {
-            // Non-seed nodes start as learners; a node restoring its own snapshot
-            // is promoted to voter if that snapshot lists it as one.
-            createThread(n, !isSeed.containsKey(n.id));
+        for (Node n : membership.values()) {
+            createThread(n, isLearner(n.id));
             nextPort = Math.max(nextPort, n.port + 1);
         }
     }
@@ -170,6 +187,21 @@ public class Spawner {
     }
 
     /**
+     * Whether a node should be launched in learner mode.
+     *
+     * Non-seed nodes start as learners. A node that is already a voter is
+     * promoted again once it restores its snapshot or replays the committed
+     * configuration entries listing it as one, so restarting it as a learner
+     * is safe.
+     *
+     * @param nodeID identifier of the node being launched
+     * @return true unless the node is a seed
+     */
+    public static boolean isLearner(String nodeID) {
+        return seedIds == null || !seedIds.containsKey(nodeID);
+    }
+
+    /**
      * Deletes every snapshot file so the nodes start with empty state.
      */
     public static void deleteSnapshots() {
@@ -194,10 +226,31 @@ public class Spawner {
      * @throws IOException if the process launch command cannot be assembled
      */
     public static Node createThread(String nodeID, boolean learner) throws IOException {
-        // launch the node on the next available port
+        // launch the node on the next port that is free and not held by a killed member
+        while (!portFree(nextPort))
+            nextPort++;
         Node n = new Node(nodeID, "localhost", nextPort);
         nextPort++;
         return createThread(n, learner);
+    }
+
+    /**
+     * Whether a port can be given to a new node: nothing on this machine is
+     * listening on it and no member (running or killed) has it.
+     *
+     * @param port candidate port
+     * @return true if the port is free
+     */
+    public static boolean portFree(int port) {
+        if (members != null)
+            for (Node m : members.values())
+                if (m.port == port)
+                    return false;
+        try (java.net.ServerSocket probe = new java.net.ServerSocket(port)) {
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**
@@ -216,6 +269,8 @@ public class Spawner {
         System.out.println("Creating new Node id:" + n.id + ", ip:" + n.ip + ", port:" + n.port);
         Thread t = new Thread(() -> runCommand(command));
         nodes.put(nodeID, t);
+        if (members != null)
+            members.put(nodeID, n);
         t.start();
         return n;
     }
@@ -230,7 +285,12 @@ public class Spawner {
      * @throws IOException if command construction fails
      */
     public static String createCommand(String nodeID, String port, boolean learner) throws IOException {
-        return "java -jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +  
+        // pass on Raft tuning set on the spawner (e.g. -Draft.heartbeatMs=50) to every node
+        StringBuilder props = new StringBuilder();
+        for (String name : new java.util.TreeSet<>(System.getProperties().stringPropertyNames()))
+            if (name.startsWith("raft.") && !System.getProperty(name).contains(" "))
+                props.append("-D").append(name).append("=").append(System.getProperty(name)).append(" ");
+        return "java " + props + "-jar target/DistStore-1.0-SNAPSHOT-jar-with-dependencies.jar " +
                                   nodeID + " " + port + " " + String.valueOf(learner);
     }
 
@@ -251,7 +311,13 @@ public class Spawner {
             p.waitFor();
         // If the process is interrupted, forcibly destroy it to clean up resources.
         } catch (InterruptedException e) {
-                p.destroyForcibly();
+            // kill the node and wait so its port is free before anything relaunches it
+            p.descendants().forEach(ProcessHandle::destroyForcibly);
+            p.destroyForcibly();
+            try {
+                p.waitFor();
+            } catch (InterruptedException ignored) {
+            }
         // Catch any other exceptions that occur during process launch and print the stack trace for debugging.
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,12 +339,12 @@ public class Spawner {
     }
 
     /**
-     * Accepts one node-management request and dispatches it to the appropriate
-     * Add or Remove workflow.
+     * Accepts one node-management request and dispatches it to the Add,
+     * Remove, Kill or Revive workflow.
      *
-     * The method validates the incoming NodeMsg payload, rejects malformed or
-     * duplicate requests, launches new nodes for Add operations, and interrupts
-     * existing threads for Remove operations.
+     * Add launches a new node and Remove kills one and forgets it; the client
+     * follows both with a membership change. Kill stops a member's process and
+     * Revive restarts it on its original port, without any membership change.
      *
      * @throws Exception if the incoming request cannot be read or answered
      */
@@ -293,6 +359,8 @@ public class Spawner {
         }
         NodeMsg nodeMsg = (NodeMsg) msg;
         Node n = nodeMsg.node;
+        if (members == null)
+            members = new HashMap<>();
 
         // Validate the incoming NodeMsg payload and reject malformed or duplicate requests.
         if (n == null || n.id == null) {
@@ -300,31 +368,137 @@ public class Spawner {
             return;
         }
 
-        // Dispatch the request to the appropriate Add or Remove workflow based on the action specified in the NodeMsg.
-        if (nodeMsg.action.equals("Add")) {
-            // Reject requests for duplicate node IDs or IDs starting with "SEED".
-            if (nodes.get(n.id) != null) {
-                reply(nodeMsg.client, false, "Illegal nodeID: nodeID already exists", null);
-                return;
-            }
-            // Create a new thread to launch the server process for the specified node ID 
-            // and return an acknowledgement with the new Node reference.
-            Node newNode = createThread(n.id, true);
-            reply(nodeMsg.client, true, "Successfully created Node: " + n.id, newNode);
-        } else if (nodeMsg.action.equals("Remove")) {
-            // Reject requests for non-existent node IDs and return an acknowledgement indicating failure.
-            Thread targetNode = nodes.get(n.id);
-            if (targetNode == null) {
-                reply(nodeMsg.client, false, "removal failed: nodeID " + n.id + " not found", null);
-                return;
-            }
-            // Interrupt the thread for the specified node ID to terminate the server process
-            // and return an acknowledgement indicating success.
-            System.out.println("Killing node id:" + n.id);
-            targetNode.interrupt();
-            nodes.remove(n.id);
-            reply(nodeMsg.client, true, "Successfully killed Node: " + n.id, new Node(n.id, n.ip, n.port));
+        switch (nodeMsg.action) {
+            case "Add":
+                handleAdd(nodeMsg, n);
+                break;
+            case "Remove":
+                handleRemove(nodeMsg, n);
+                break;
+            case "Kill":
+                handleKill(nodeMsg, n);
+                break;
+            case "Revive":
+                handleRevive(nodeMsg, n);
+                break;
+            default:
+                reply(nodeMsg.client, false, "Invalid request: unknown action " + nodeMsg.action, null);
         }
+    }
+
+    /**
+     * Launches a new node. The client then asks the cluster to add it.
+     *
+     * @param nodeMsg the request, used to reply to the client
+     * @param n the requested node; only its id is used
+     * @throws Exception if the node cannot be launched or the reply cannot be sent
+     */
+    private static void handleAdd(NodeMsg nodeMsg, Node n) throws Exception {
+        if (isRunning(n.id)) {
+            reply(nodeMsg.client, false, "Illegal nodeID: nodeID already exists", null);
+            return;
+        }
+        if (members.containsKey(n.id)) {
+            reply(nodeMsg.client, false, "Illegal nodeID: " + n.id + " is a killed member, use Revive", null);
+            return;
+        }
+        Node newNode = createThread(n.id, true);
+        reply(nodeMsg.client, true, "Successfully created Node: " + n.id, newNode);
+    }
+
+    /**
+     * Kills a node's process, if it is still running, and forgets it. The
+     * client then asks the cluster to remove it.
+     *
+     * @param nodeMsg the request, used to reply to the client
+     * @param n the node to remove
+     * @throws Exception if the reply cannot be sent
+     */
+    private static void handleRemove(NodeMsg nodeMsg, Node n) throws Exception {
+        if (!isRunning(n.id) && !members.containsKey(n.id)) {
+            reply(nodeMsg.client, false, "removal failed: nodeID " + n.id + " not found", null);
+            return;
+        }
+        if (isRunning(n.id)) {
+            System.out.println("Killing node id:" + n.id);
+            stopProcess(n.id);
+        }
+        members.remove(n.id);
+        reply(nodeMsg.client, true, "Successfully killed Node: " + n.id, new Node(n.id, n.ip, n.port));
+    }
+
+    /**
+     * Kills a node's process without changing the cluster membership, as if
+     * the node had crashed. The node can be restarted with Revive.
+     *
+     * @param nodeMsg the request, used to reply to the client
+     * @param n the node to kill
+     * @throws Exception if the reply cannot be sent
+     */
+    private static void handleKill(NodeMsg nodeMsg, Node n) throws Exception {
+        if (!isRunning(n.id)) {
+            String why = members.containsKey(n.id) ? " is already killed" : " not found";
+            reply(nodeMsg.client, false, "kill failed: nodeID " + n.id + why, null);
+            return;
+        }
+        System.out.println("Killing node id:" + n.id + " (membership unchanged)");
+        stopProcess(n.id);
+        reply(nodeMsg.client, true, "Killed Node: " + n.id + " (still a cluster member)", members.get(n.id));
+    }
+
+    /**
+     * Restarts a killed node on its original port without changing the cluster
+     * membership. The node restores its snapshots, if any, and the leaders
+     * bring it up to date.
+     *
+     * @param nodeMsg the request, used to reply to the client
+     * @param n the node to revive
+     * @throws Exception if the node cannot be launched or the reply cannot be sent
+     */
+    private static void handleRevive(NodeMsg nodeMsg, Node n) throws Exception {
+        if (isRunning(n.id)) {
+            reply(nodeMsg.client, false, "revive failed: nodeID " + n.id + " is already running", null);
+            return;
+        }
+        Node member = members.get(n.id);
+        if (member == null) {
+            reply(nodeMsg.client, false, "revive failed: nodeID " + n.id + " was never started or has been removed", null);
+            return;
+        }
+        System.out.println("Reviving node id:" + n.id);
+        createThread(member, isLearner(member.id));
+        reply(nodeMsg.client, true, "Revived Node: " + n.id, member);
+    }
+
+    /**
+     * Whether the spawner has a live process for a node. A node whose process
+     * exited by itself (e.g. it crashed) is forgotten here, so it counts as
+     * killed and can be revived.
+     *
+     * @param nodeID identifier of the node
+     * @return true if the node has a process thread that has not finished
+     */
+    private static boolean isRunning(String nodeID) {
+        Thread t = nodes.get(nodeID);
+        if (t != null && t.getState() == Thread.State.TERMINATED) {
+            nodes.remove(nodeID);
+            return false;
+        }
+        return t != null;
+    }
+
+    /**
+     * Stops a node's process and waits for it to exit, so its port is free.
+     *
+     * @param nodeID identifier of the node to stop
+     * @throws InterruptedException if interrupted while waiting
+     */
+    private static void stopProcess(String nodeID) throws InterruptedException {
+        Thread t = nodes.remove(nodeID);
+        if (t == null)
+            return;
+        t.interrupt();
+        t.join(KILL_WAIT_MS);
     }
 
     /**

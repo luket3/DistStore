@@ -51,14 +51,22 @@ public class Client {
             continue;
          }
          
-         // If the message is a NodeMsg, query the spawner to create/kill nodes 
-         // as needed before sending the message to the cluster.
+         // Drop late replies to earlier requests so they aren't read as this one's
+         client.drainResponses();
+
+         // If the message is a NodeMsg, query the spawner to create/kill/revive
+         // the node, then (for Add and Remove) send the membership change to the cluster.
          if (msg.type.equals("NodeMsg")) {
-            msg = client.querySpawner((NodeMsg) msg);
+            NodeMsg nodeMsg = (NodeMsg) msg;
+            msg = client.querySpawner(nodeMsg);
             if (msg == null) {
                System.out.println("Error querying spawner");
                continue;
             }
+            // Kill and Revive only stop or restart the process; the cluster
+            // membership is unchanged, so there is nothing to send the cluster.
+            if (ClientImp.spawnerOnly(nodeMsg))
+               continue;
          }
 
          // Send the message to the cluster and retry if the response is 

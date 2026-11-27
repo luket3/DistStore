@@ -54,8 +54,12 @@ public class ClientImp {
     /* Spawner node information */
     private Node spawner;
 
-    /* Timeout for waiting for responses in milliseconds */
-    private final static int timeOut = 100000000;
+    /*
+     * Timeout for waiting for responses in milliseconds. A request can be lost
+     * (e.g. forwarded to a leader that has just died), so the client must give
+     * up and retry rather than wait indefinitely.
+     */
+    private final static int timeOut = 10000;
 
     /* Set of unresponsive nodes */
     private HashSet<String> dead;
@@ -229,7 +233,7 @@ public class ClientImp {
      * distributed system.
      *
      * Supported input forms are Get key, Delete key, Put key value, Add node,
-     * and Remove node. Unsupported commands return null.
+     * Remove node, Kill node and Revive node. Unsupported commands return null.
      *
      * @param query user request expressed as a plain string
      * @return the corresponding DictMsg or NodeMsg instance, or null for an
@@ -245,13 +249,35 @@ public class ClientImp {
             DictMsg msg = new DictMsg(split[0], split[1], split.length == 3 ? split[2] : null, version, client);
             return msg;
         }
-        else if (split.length == 2 && (split[0].equals("Add") || split[0].equals("Remove"))) {
+        else if (split.length == 2 && isNodeAction(split[0])) {
             NodeMsg msg = new NodeMsg(split[0], new Node(split[1], "localhost", -1), version, client);
             return msg;
         }
         else {
             return null;
         }
+    }
+
+    /**
+     * Whether a command word names a node-management action.
+     *
+     * @param action first word of the user's command
+     * @return true for Add, Remove, Kill and Revive
+     */
+    private static boolean isNodeAction(String action) {
+        return action.equals("Add") || action.equals("Remove")
+            || action.equals("Kill") || action.equals("Revive");
+    }
+
+    /**
+     * Whether a node-management message is handled by the spawner alone,
+     * without a cluster membership change.
+     *
+     * @param msg node-management message
+     * @return true for Kill and Revive
+     */
+    public static boolean spawnerOnly(NodeMsg msg) {
+        return msg.action.equals("Kill") || msg.action.equals("Revive");
     }
 
     /**
@@ -293,7 +319,11 @@ public class ClientImp {
             return null;
         }
         Ack ack = (Ack) response;
-        dead.add(msg.node.id);
+        // stop routing to a node that is going down; route to a revived one again
+        if (ack.success && msg.action.equals("Revive"))
+            dead.remove(msg.node.id);
+        else if (!msg.action.equals("Add"))
+            dead.add(msg.node.id);
 
         System.out.println(ack.message);
         if (ack.success) {
@@ -302,6 +332,18 @@ public class ClientImp {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Discards any responses still queued from earlier requests, such as a
+     * late reply to a request that already timed out and was retried, so
+     * they are not mistaken for the reply to the next request.
+     *
+     * @throws Exception if the response pipe cannot be read safely
+     */
+    public void drainResponses() throws Exception {
+        while (responsePipe.size() > 0)
+            responsePipe.take(1);
     }
 
     /**
@@ -322,7 +364,8 @@ public class ClientImp {
             return null;
         else if (!msg.type.equals("Response")) {
             System.out.println("Invalid response");
-        } 
+            return "Invalid response";
+        }
         Response response = (Response) msg;
         return response.msg;
     }

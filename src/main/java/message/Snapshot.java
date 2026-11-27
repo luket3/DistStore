@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import cluster.Node;
 
 /**
@@ -30,11 +31,27 @@ public class Snapshot extends Message {
     /** Candidate the node had voted for in {@link #term}, or null. */
     public String votedFor;
 
-    /** Raft configuration voters at the time of the snapshot. */
-    public Map<String, Node> voters;
+    /**
+     * Ids of the Raft configuration voters at the time of the snapshot. The
+     * voters are a subset of the active nodes, so addresses are stored once in
+     * the message's node list.
+     */
+    private Set<String> voterIds;
 
-    /** Every node active in the Raft configuration at the time of the snapshot. */
-    public Map<String, Node> activeNodes;
+    /** Ids of every node active in the Raft configuration at the time of the snapshot. */
+    private Set<String> activeNodeIds;
+
+    /**
+     * Snapshot files written before node ids were introduced stored the full
+     * maps under these names. Only read, so those files still restore; never
+     * written (null fields are left out of the JSON).
+     */
+    @Deprecated
+    private Map<String, Node> voters;
+
+    /** See {@link #voters}. */
+    @Deprecated
+    private Map<String, Node> activeNodes;
 
     /** Key-value store contents produced by the committed DictMsg entries. */
     public Map<String, String> kvStore;
@@ -87,9 +104,33 @@ public class Snapshot extends Message {
         this.lastIncludedTerm = lastIncludedTerm;
         this.term = term;
         this.votedFor = votedFor;
-        this.voters = voters == null ? new HashMap<>() : new HashMap<>(voters);
-        this.activeNodes = activeNodes == null ? new HashMap<>() : new HashMap<>(activeNodes);
+        this.voterIds = ref(voters == null ? new HashMap<>() : voters);
+        this.activeNodeIds = ref(activeNodes == null ? new HashMap<>() : activeNodes);
         this.kvStore = new HashMap<>();
         this.membershipOps = new ArrayList<>();
+    }
+
+    /**
+     * Raft configuration voters at the time of the snapshot.
+     *
+     * @return a new map of the voters keyed by id (empty if none)
+     */
+    @SuppressWarnings("deprecation")
+    public Map<String, Node> voters() {
+        if (voterIds == null)
+            return voters == null ? new HashMap<>() : new HashMap<>(voters);
+        return deref(voterIds);
+    }
+
+    /**
+     * Every node active in the Raft configuration at the time of the snapshot.
+     *
+     * @return a new map of the nodes keyed by id (empty if none)
+     */
+    @SuppressWarnings("deprecation")
+    public Map<String, Node> activeNodes() {
+        if (activeNodeIds == null)
+            return activeNodes == null ? new HashMap<>() : new HashMap<>(activeNodes);
+        return deref(activeNodeIds);
     }
 }

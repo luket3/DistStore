@@ -34,6 +34,19 @@ public class Ack extends Message {
      * @param success whether the operation completed successfully
      * @param message human-readable acknowledgement text
      */
+    /**
+     * Creates the acknowledgement a Raft group sends once a configuration
+     * version is in effect.
+     *
+     * @param version configuration version now applied
+     * @return a successful Ack carrying that version
+     */
+    public static Ack forVersion(int version) {
+        Ack ack = new Ack();
+        ack.version = version;
+        return ack;
+    }
+
     public Ack(boolean success, String message) {
         super("Ack", -1);
         this.success = success;

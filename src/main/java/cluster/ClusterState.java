@@ -181,6 +181,17 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
 
         try {
             NodeMsg nodeMsg = (NodeMsg) msg;
+
+            // A client retries a request it got no reply to, so the same change can
+            // be committed twice. Treat a repeat as a no-op, but still answer the client.
+            if (alreadyApplied(nodeMsg)) {
+                HandOff.writeToFile("Node " + this.nodeID + " ClusterState: ignoring repeated "
+                    + nodeMsg.action + " of node " + nodeMsg.node.id, this.logPath);
+                if (nodeMsg.client != null)
+                    inPipe.put(new PendingUpdate(null, null, nodeMsg.client, version));
+                return;
+            }
+
             Map<String, Shard> result = updateCluster(nodeMsg);
             if (result == null)
                 return; // rejected change: nothing changed, so there is nothing to wait for
@@ -194,6 +205,26 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
         } catch (Exception e) {
             HandOff.writeToFile("ClusterState: " + nodeID + " error applying membership change: " + e.getMessage(), this.logPath);
         }
+    }
+
+    /**
+     * Reports whether a membership change is already reflected in the ring:
+     * an Add of a node that is already a member, or a Remove of a node that
+     * is not one.
+     *
+     * @param nodeMsg committed membership change
+     * @return true when applying the change again would be a repeat
+     * @throws Exception if the ring lookup fails
+     */
+    private boolean alreadyApplied(NodeMsg nodeMsg) throws Exception {
+        if (nodeMsg.node == null || nodeMsg.node.id == null)
+            return false;
+        boolean member = cluster.getShardWithNode(nodeMsg.node.id) != null;
+        if (nodeMsg.action.equals("Add"))
+            return member;
+        if (nodeMsg.action.equals("Remove"))
+            return !member;
+        return false;
     }
 
     /**
@@ -252,17 +283,24 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
 
         PendingUpdate update = (PendingUpdate) message;
 
+        // a repeated request: nothing changed, just confirm to the client
+        if (update.clusterNodes == null) {
+            if (update.client != null)
+                HandOff.sendToNode(update.client, gson.toJson(new Response("Cluster successfully updated")), this.logPath);
+            return;
+        }
+
         // send update message to cluster Raft pipe and wait for it to be applied
         HandOff.writeToFile("Node " + this.nodeID + " sending update message to raft cluster", this.logPath);
         clusterRaftIn.put(new Update(update.clusterNodes, update.version, false));
         HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from cluster for version: " + update.version, this.logPath);
-        this.clusterRaftOut.take();
+        awaitAck(this.clusterRaftOut, update.version);
 
         // update the shard if the change affected it and wait for it to be applied
         if (update.shardUpdate != null) {
             shardRaftIn.put(update.shardUpdate);
             HandOff.writeToFile("Node " + this.nodeID + " ClusterState: waiting for acknowledgement from Shard for version: " + update.version, this.logPath);
-            this.shardRaftOut.take();
+            awaitAck(this.shardRaftOut, update.version);
         }
 
         // send response to client if one is attached to the NodeMsg request.
@@ -270,6 +308,23 @@ public class ClusterState implements Runnable, ReplicatedStateMachine {
         if (update.client != null) {
             Response response = new Response("Cluster successfully updated");
             HandOff.sendToNode(update.client, gson.toJson(response), this.logPath);
+        }
+    }
+
+    /**
+     * Waits until a Raft group confirms that a configuration version (or a
+     * newer one) is in effect. Older confirmations, left over from changes
+     * this node did not wait on, are discarded.
+     *
+     * @param ackPipe pipe the Raft group posts its confirmations to
+     * @param version configuration version to wait for
+     * @throws InterruptedException if interrupted while waiting
+     */
+    private static void awaitAck(Pipe ackPipe, int version) throws InterruptedException {
+        while (true) {
+            Message ack = ackPipe.take();
+            if (ack != null && ack.version >= version)
+                return;
         }
     }
 

@@ -10,5 +10,12 @@ client:
 build:
 	mvn clean package
 
+test:
+	mvn test
+
+# end-to-end tests that boot real server processes; add IT_ARGS=-Dit.keep=true to keep their logs
+integration:
+	mvn test -Dgroups=integration -DexcludedGroups= $(IT_ARGS)
+
 clearlogs:
 	truncate -s 0 logs/*.log

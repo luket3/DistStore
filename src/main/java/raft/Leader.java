@@ -112,13 +112,13 @@ public class Leader extends Role {
                     if (raftConfig != null) {
                         if (raftConfig.type.equals("SplitRaftConfig")) {
                             SplitRaftConfig castMsg = (SplitRaftConfig) raftConfig;
-                            raftState.inNodes = castMsg.inNodes;
-                            raftState.finNodes = castMsg.newNodes;
+                            raftState.inNodes = castMsg.inNodes();
+                            raftState.finNodes = castMsg.newNodes();
                             raftState.splitRing = castMsg.ring;
                             raftState.inShardId = castMsg.inShardId;
                             raftState.newShardId = castMsg.newShardId;
                         }
-                        raftState.nextNodes = raftConfig.nodes;
+                        raftState.nextNodes = raftConfig.nodes();
                         if (raftConfig.jointConfig) {
                             raftState.appendNewConfig(false, false);
                         }
@@ -238,6 +238,7 @@ public class Leader extends Role {
                                             raftState.log.getLastIdx()),
             raftState.version
         );
+        AEmsg.sender = raftState.activeNodes.get(raftState.id);
 
         sendToNode(node,
             raftState.gson.toJson(AEmsg)
@@ -268,6 +269,7 @@ public class Leader extends Role {
             snapshot,
             raftState.version
         );
+        ISmsg.sender = raftState.activeNodes.get(raftState.id);
         sendToNode(node, raftState.gson.toJson(ISmsg));
     }
 }

@@ -1,28 +1,30 @@
 package message;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import cluster.Node;
 
 /**
  * SplitRaftConfig
- * this class holds a raft config log entry for a split configuration event
+ * this class holds a raft config log entry for a split configuration event.
+ * The two halves are stored as node ids into the message's node list.
  */
 public class SplitRaftConfig extends RaftConfig {
 
-    /** the nodes left in the inital shard after the split */
-    public Map<String, Node> inNodes;
+    /** ids of the nodes left in the inital shard after the split */
+    private Set<String> inNodeIds;
 
-    /** the nodes migrated to the new shard after the split */
-    public Map<String, Node> newNodes;
+    /** ids of the nodes migrated to the new shard after the split */
+    private Set<String> newNodeIds;
 
     /** ring after the split (position to shard id), used to decide which keys each half keeps */
     public TreeMap<Long, String> ring;
 
-    /** id of the shard that split; the nodes in {@link #inNodes} keep this id */
+    /** id of the shard that split; the nodes in {@link #inNodes()} keep this id */
     public String inShardId;
 
-    /** id of the shard created by the split; the nodes in {@link #newNodes} take this id */
+    /** id of the shard created by the split; the nodes in {@link #newNodes()} take this id */
     public String newShardId;
 
     /**
@@ -41,10 +43,28 @@ public class SplitRaftConfig extends RaftConfig {
                            Map<String, Node> oldNodes, boolean jointConfig, int version,
                            TreeMap<Long, String> ring, String inShardId, String newShardId) {
         super("SplitRaftConfig", nodes, oldNodes, jointConfig, version);
-        this.inNodes = inNodes;
-        this.newNodes = newNodes;
+        this.inNodeIds = ref(inNodes);
+        this.newNodeIds = ref(newNodes);
         this.ring = ring;
         this.inShardId = inShardId;
         this.newShardId = newShardId;
+    }
+
+    /**
+     * The nodes left in the initial shard after the split.
+     *
+     * @return a new map of the nodes keyed by id, or null if none were set
+     */
+    public Map<String, Node> inNodes() {
+        return deref(inNodeIds);
+    }
+
+    /**
+     * The nodes migrated to the new shard after the split.
+     *
+     * @return a new map of the nodes keyed by id, or null if none were set
+     */
+    public Map<String, Node> newNodes() {
+        return deref(newNodeIds);
     }
 }

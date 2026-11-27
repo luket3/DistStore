@@ -78,15 +78,15 @@ class RemovalSplitTest {
         SplitShard ss = (SplitShard) stayerMsg;
         assertEquals(split[0].id, ss.inShardId);
         assertEquals(split[1].id, ss.newShardId);
-        assertEquals(6, ss.nodes.size() + ss.newNodes.size());
-        assertTrue(ss.nodes.containsKey(rehomed) || ss.newNodes.containsKey(rehomed));
+        assertEquals(6, ss.nodes().size() + ss.newNodes().size());
+        assertTrue(ss.nodes().containsKey(rehomed) || ss.newNodes().containsKey(rehomed));
 
         Message movedMsg = applyRemoval(rehomed, ops, victim);
         assertTrue(movedMsg instanceof Update && !(movedMsg instanceof SplitShard),
             "re-homed node should get a shard removal Update, got " + movedMsg);
         Update u = (Update) movedMsg;
         assertTrue(u.shardRemoved);
-        assertEquals(6, u.nodes.size(), "re-homed node should know both halves of the splitting shard");
+        assertEquals(6, u.nodes().size(), "re-homed node should know both halves of the splitting shard");
         assertNotNull(u.ring);
     }
 

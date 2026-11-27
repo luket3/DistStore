@@ -14,6 +14,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
+    <!-- tests tagged "integration" are skipped unless overridden (see Makefile) -->
+    <excludedGroups>integration</excludedGroups>
   </properties>
 
   <dependencyManagement>
@@ -67,6 +69,10 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.3.0</version>
+        <configuration>
+          <!-- end-to-end cluster tests are slow; run them with `make integration` -->
+          <excludedGroups>${excludedGroups}</excludedGroups>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>

@@ -43,6 +43,22 @@ public class Shard {
     /**
      * Create an empty shard with the given id and minimum size threshold.
      */
+    /**
+     * Recreates a shard with the given node lists, keeping their order, e.g.
+     * when a ring is read back from JSON.
+     *
+     * @param id shard id
+     * @param minShardSize minimum number of nodes in a shard
+     * @param left nodes in the left list, in order
+     * @param right nodes in the right list, in order
+     */
+    Shard(String id, int minShardSize, List<Node> left, List<Node> right) {
+        this(id, minShardSize);
+        this.left.addAll(left);
+        this.right.addAll(right);
+        this.length = this.left.size() + this.right.size();
+    }
+
     public Shard(String id, int minShardSize) {
         this.id = id;
         this.length = 0;

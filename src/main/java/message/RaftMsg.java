@@ -1,5 +1,7 @@
 package message;
 
+import cluster.Node;
+
 /**
  * Base message type for Raft protocol traffic.
  *
@@ -19,6 +21,14 @@ public class RaftMsg extends Message {
 
     /** the id of the node that sent the message */
     public String senderId;
+
+    /**
+     * Address of the sending node, set by leaders on AppendEntries and
+     * InstallSnapshot. A node that restarted without knowing the current
+     * membership uses it to reply to a leader it has not heard of yet. Null
+     * when not set.
+     */
+    public Node sender;
 
     /**
      * Creates a Raft message with a concrete message type and routing level.

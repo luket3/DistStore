@@ -140,7 +140,7 @@ public class RaftLog {
                 raftState.proccessNewConfig(raftConfig);
                 rtnValue = raftConfig;
                 if (raftState.version == raftConfig.version) {
-                    raftState.callbackPipe.put(new Ack());
+                    raftState.callbackPipe.put(Ack.forVersion(raftConfig.version));
                 }
                 if (raftConfig.jointConfig)
                     this.uncommitedJointConfig = false;

@@ -2,6 +2,7 @@ package raft;
 
 import communication.HandOff;
 import communication.Pipe;
+import message.Ack;
 import message.Message;
 import message.RaftMsg;
 import message.Update;
@@ -81,6 +82,20 @@ public class RaftNode {
             raftState.getLogFilePath()
         );
 
+        // A membership update this group already has, e.g. a restarted node replaying
+        // committed changes after restoring a newer snapshot: confirm it straight away
+        // so the coordinator waiting on it is not blocked forever
+        if ((message.type.equals("Update") || message.type.equals("SplitShard"))
+                && message.version <= raftState.version) {
+            HandOff.writeToFile(
+                "Node " + raftState.id + " " + raftState.level + " level raft already at version "
+                    + raftState.version + ", acknowledging update for version " + message.version,
+                raftState.getLogFilePath()
+            );
+            raftState.callbackPipe.put(Ack.forVersion(raftState.version));
+            return;
+        }
+
         // Handle membership update messages
         if (message.type.equals("Update") && message.version > raftState.version) {
             // Process a membership update that should be replicated through Raft.
@@ -96,7 +111,7 @@ public class RaftNode {
                 );
                 raftState.shardRemoval(castMsg);
             } else {
-                raftState.readNewConfig(castMsg.nodes, castMsg.version);
+                raftState.readNewConfig(castMsg.nodes(), castMsg.version);
             }
             return;
         } else if (message.type.equals("SplitShard") && message.version > raftState.version) {
@@ -112,9 +127,9 @@ public class RaftNode {
             raftState.newShardId = castMsg.newShardId;
 
             Map<String, Node> allNodes = new HashMap<>();
-            allNodes.putAll(castMsg.nodes);
-            allNodes.putAll(castMsg.newNodes);
-            raftState.readNewConfig(allNodes, castMsg.nodes, castMsg.newNodes, castMsg.version);
+            allNodes.putAll(castMsg.nodes());
+            allNodes.putAll(castMsg.newNodes());
+            raftState.readNewConfig(allNodes, castMsg.nodes(), castMsg.newNodes(), castMsg.version);
             return;
         }
 
@@ -123,6 +138,10 @@ public class RaftNode {
             raftState.pendingMigrations.remove(((MigrateAck) message).id);
             return;
         }
+
+        // A leader this node has not heard of (e.g. it restarted with an outdated
+        // membership) is recorded so the node can reply and catch up
+        learnLeaderAddress(message);
 
         // Validate the message to ensure it is from a known node
         if (!checkvalidMessage(message)) {
@@ -212,6 +231,45 @@ public class RaftNode {
      */
     public boolean learner() {
         return (raftState.type.equals("learner"));
+    }
+
+    /**
+     * Records the address of a leader that is missing from this node's view of
+     * the membership.
+     *
+     * A node that restarts restores the membership from its snapshot, or from
+     * network.config if it has none, so it may not know nodes added since. If
+     * such a node is now the leader, its AppendEntries would be discarded and
+     * the restarted node could never catch up. Only AppendEntries and
+     * InstallSnapshot from a current term are trusted this way: they come
+     * from a leader that won an election among the current members. The
+     * committed configuration entries replayed afterwards replace this view.
+     * RequestVote from unknown nodes is still discarded, so a removed node
+     * cannot disrupt elections.
+     *
+     * @param message inbound message
+     */
+    public void learnLeaderAddress(Message message) {
+        int term;
+        if (message instanceof AppendEntries)
+            term = ((AppendEntries) message).term;
+        else if (message instanceof InstallSnapshot)
+            term = ((InstallSnapshot) message).term;
+        else
+            return;
+
+        RaftMsg msg = (RaftMsg) message;
+        Node sender = msg.sender;
+        if (sender == null || sender.id == null || !sender.id.equals(msg.senderId) || sender.port <= 0
+                || raftState.activeNodes.containsKey(msg.senderId) || term < raftState.term)
+            return;
+
+        raftState.activeNodes.put(sender.id, sender);
+        HandOff.writeToFile(
+            "Node " + raftState.id + " " + raftState.level + " level raft learned address of leader "
+                + sender.id + " (" + sender.ip + ":" + sender.port + ")",
+            raftState.getLogFilePath()
+        );
     }
 
     /**

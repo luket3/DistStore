@@ -22,10 +22,22 @@ public class Raft implements Runnable {
     /** Timestamp of the last heartbeat sent by the leader */
     private long lastHeartbeatTime = -1;
 
-    /** Constants for heartbeat and election timeout intervals */
-    private static final int HEARTBEAT_INTERVAL_MS = 1000; // 1 second heartbeat interval
-    private static final int ELECTION_TIMEOUT_MIN_MS = 2000; // 2 seconds
-    private static final int ELECTION_TIMEOUT_MAX_MS = 5000; // 5 seconds
+    /**
+     * Interval between leader heartbeats. Overridable with
+     * {@code -Draft.heartbeatMs=N}.
+     */
+    public static final int HEARTBEAT_INTERVAL_MS = Integer.getInteger("raft.heartbeatMs", 100);
+
+    /**
+     * Bounds of the randomized election timeout. The minimum is several
+     * heartbeats long so a delayed heartbeat or two does not trigger an
+     * election, and the range is wide so candidates rarely time out together.
+     * Overridable with {@code -Draft.electionMinMs=N} and
+     * {@code -Draft.electionMaxMs=N}.
+     */
+    public static final int ELECTION_TIMEOUT_MIN_MS = Integer.getInteger("raft.electionMinMs", 400);
+    public static final int ELECTION_TIMEOUT_MAX_MS = Math.max(
+        ELECTION_TIMEOUT_MIN_MS + 1, Integer.getInteger("raft.electionMaxMs", 800));
 
     /**
      * Creates a Raft runtime instance for one node.
@@ -76,8 +88,7 @@ public class Raft implements Runnable {
                     }
                     timeoutMs = HEARTBEAT_INTERVAL_MS;
                 } else {
-                    // Randomize election timeout between 2 and 5 seconds for
-                    // followers and candidates.
+                    // Randomize the election timeout for followers and candidates.
                     timeoutMs = ELECTION_TIMEOUT_MIN_MS
                             + (int) (Math.random()
                                     * (ELECTION_TIMEOUT_MAX_MS

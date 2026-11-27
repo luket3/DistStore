@@ -1,16 +1,21 @@
 package message;
 
 import cluster.Node;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * Internal topology-update message used to publish cluster membership changes
  * or shard redistribution state through the Raft pipeline.
+ *
+ * Node addresses are stored once in the message's node list; the membership
+ * and the per-shard member lists hold only node ids.
  */
 public class Update extends Message {
-    /** Node map representing the current cluster membership snapshot. */
-    public Map<String, Node> nodes;
+    /** Ids of the nodes in the current membership snapshot. */
+    private Set<String> nodeIds;
 
     public boolean shardRemoved;
 
@@ -20,8 +25,8 @@ public class Update extends Message {
      */
     public TreeMap<Long, String> ring;
 
-    /** For a shard removal: the members of every shard after the removal. Null otherwise. */
-    public Map<String, Map<String, Node>> shardMembers;
+    /** For a shard removal: the member ids of every shard after the removal. Null otherwise. */
+    private Map<String, Set<String>> shardMemberIds;
 
     /**
      * constructor for child classes to define their type
@@ -33,8 +38,31 @@ public class Update extends Message {
      */
     protected Update(String type, Map<String, Node> nodes, int version, boolean shardRemoved) {
         super(type, version);
-        this.nodes = nodes;
+        this.nodeIds = ref(nodes);
         this.shardRemoved = shardRemoved;
+    }
+
+    /**
+     * Nodes in the current membership snapshot.
+     *
+     * @return a new map of the nodes keyed by id, or null if none were set
+     */
+    public Map<String, Node> nodes() {
+        return deref(nodeIds);
+    }
+
+    /**
+     * For a shard removal: the members of every shard after the removal.
+     *
+     * @return shard id to that shard's nodes, or null if this is not a shard removal
+     */
+    public Map<String, Map<String, Node>> shardMembers() {
+        if (shardMemberIds == null)
+            return null;
+        Map<String, Map<String, Node>> members = new HashMap<>();
+        for (Map.Entry<String, Set<String>> e : shardMemberIds.entrySet())
+            members.put(e.getKey(), deref(e.getValue()));
+        return members;
     }
 
     /**
@@ -61,7 +89,11 @@ public class Update extends Message {
                   Map<String, Map<String, Node>> shardMembers) {
         this("Update", nodes, version, true);
         this.ring = ring;
-        this.shardMembers = shardMembers;
+        if (shardMembers != null) {
+            this.shardMemberIds = new HashMap<>();
+            for (Map.Entry<String, Map<String, Node>> e : shardMembers.entrySet())
+                this.shardMemberIds.put(e.getKey(), ref(e.getValue()));
+        }
     }
 }
 

@@ -1,6 +1,17 @@
 package cluster;
 
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.google.gson.annotations.JsonAdapter;
 import java.security.MessageDigest;
 import java.util.TreeMap;
 import java.util.ArrayList;
@@ -18,7 +29,13 @@ import java.util.HashSet;
  * cluster can rebalance membership without a full remap of the entire ring.
  * The class also implements the local split and merge policy used for shard
  * resizing in the prototype.
+ *
+ * In JSON (e.g. a Config reply) the ring is written compactly by
+ * {@link Json}: every node once, and each shard once as ordered lists of node
+ * ids. Ring positions are not written, since each shard's virtual positions
+ * are always derived from its id.
  */
+@JsonAdapter(ConsistentHashMap.Json.class)
 public class ConsistentHashMap {
     /**
      * Ring mapping a 64-bit hash value to the shard metadata instance that
@@ -83,6 +100,16 @@ public class ConsistentHashMap {
                 splits.add(new Shard[] {result.get("old"), result.get("new")});
         }
         numShards--;
+    }
+
+    /**
+     * Creates a ring with no shards, to be filled in by {@link Json}.
+     *
+     * @param currShardId the number to give the next shard created
+     */
+    private ConsistentHashMap(int currShardId) {
+        ring = new TreeMap<>();
+        this.currShardId = currShardId;
     }
 
     /**
@@ -303,6 +330,98 @@ public class ConsistentHashMap {
             }
 
             System.out.println();
+        }
+    }
+
+    /**
+     * Writes and reads a ring in a compact JSON form:
+     * <pre>
+     * {"nodes":[{"id":"A","ip":"localhost","port":4567}, ...],
+     *  "shards":[{"id":"shard0","left":["A","B","C"],"right":["D"]}, ...],
+     *  "currShardId":2}
+     * </pre>
+     * Each shard sits at several virtual ring positions, so writing the ring
+     * itself would repeat every shard, and every node address in it, once per
+     * position. Positions are recomputed from the shard ids instead, the same
+     * way {@link #addShard} and {@link #removeShard} compute them.
+     */
+    static class Json implements JsonSerializer<ConsistentHashMap>, JsonDeserializer<ConsistentHashMap> {
+
+        @Override
+        public JsonElement serialize(ConsistentHashMap map, Type type, JsonSerializationContext ctx) {
+            Map<String, Node> nodes = new LinkedHashMap<>();
+            JsonArray shards = new JsonArray();
+            for (Shard shard : distinctShards(map)) {
+                JsonObject s = new JsonObject();
+                s.addProperty("id", shard.id);
+                s.add("left", ids(shard.getLeft(), nodes));
+                s.add("right", ids(shard.getRight(), nodes));
+                shards.add(s);
+            }
+
+            JsonObject out = new JsonObject();
+            out.add("nodes", ctx.serialize(new ArrayList<>(nodes.values())));
+            out.add("shards", shards);
+            out.addProperty("currShardId", map.currShardId);
+            return out;
+        }
+
+        @Override
+        public ConsistentHashMap deserialize(JsonElement json, Type type, JsonDeserializationContext ctx)
+                throws JsonParseException {
+            JsonObject in = json.getAsJsonObject();
+            Map<String, Node> nodes = new HashMap<>();
+            for (JsonElement e : in.getAsJsonArray("nodes")) {
+                Node n = ctx.deserialize(e, Node.class);
+                nodes.put(n.id, n);
+            }
+
+            ConsistentHashMap map = new ConsistentHashMap(in.get("currShardId").getAsInt());
+            try {
+                for (JsonElement e : in.getAsJsonArray("shards")) {
+                    JsonObject s = e.getAsJsonObject();
+                    Shard shard = new Shard(s.get("id").getAsString(), minShardSize,
+                        lookup(s.getAsJsonArray("left"), nodes), lookup(s.getAsJsonArray("right"), nodes));
+                    for (int i = 0; i < virtualShards; i++)
+                        map.ring.put(map.Hash(shard.id + i), shard);
+                    map.numShards++;
+                }
+            } catch (JsonParseException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new JsonParseException("cannot rebuild ring: " + e.getMessage(), e);
+            }
+            return map;
+        }
+
+        /** Each shard once, in ring order of its first position. */
+        private static List<Shard> distinctShards(ConsistentHashMap map) {
+            Map<String, Shard> shards = new LinkedHashMap<>();
+            for (Shard shard : map.ring.values())
+                shards.putIfAbsent(shard.id, shard);
+            return new ArrayList<>(shards.values());
+        }
+
+        /** The ids of a node list, recording each node in the shared node table. */
+        private static JsonArray ids(List<Node> list, Map<String, Node> table) {
+            JsonArray ids = new JsonArray();
+            for (Node n : list) {
+                ids.add(n.id);
+                table.putIfAbsent(n.id, n);
+            }
+            return ids;
+        }
+
+        /** The nodes named by a list of ids. */
+        private static List<Node> lookup(JsonArray ids, Map<String, Node> table) {
+            List<Node> list = new ArrayList<>();
+            for (JsonElement id : ids) {
+                Node n = table.get(id.getAsString());
+                if (n == null)
+                    throw new JsonParseException("ring refers to unknown node " + id.getAsString());
+                list.add(n);
+            }
+            return list;
         }
     }
 }
