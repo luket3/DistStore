@@ -7,16 +7,45 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import cluster.ClusterState;
 import cluster.Node;
 import communication.Pipe;
 import message.DictMsg;
 import message.Message;
+import message.NodeMsg;
 import message.Snapshot;
 
 class SnapshotTest {
 
     private static final String LEVEL = "Shard";
     private final String[] ids = {"snapTestA", "snapTestB"};
+
+    /** Minimal key-value state machine that records what Raft did to it. */
+    static class FakeKv implements ReplicatedStateMachine {
+        final Map<String, String> store = new HashMap<>();
+        int applied = 0;
+        Snapshot restoredFrom = null;
+
+        @Override
+        public void apply(Message msg) {
+            DictMsg d = (DictMsg) msg;
+            if (d.action.equals("Put")) store.put(d.key, d.value);
+            else if (d.action.equals("Delete")) store.remove(d.key);
+            applied++;
+        }
+
+        @Override
+        public void fillSnapshot(Snapshot snapshot) {
+            snapshot.kvStore = new HashMap<>(store);
+        }
+
+        @Override
+        public void restore(Snapshot snapshot) {
+            store.clear();
+            store.putAll(snapshot.kvStore);
+            restoredFrom = snapshot;
+        }
+    }
 
     private Map<String, Node> config() {
         Map<String, Node> nodes = new HashMap<>();
@@ -25,21 +54,14 @@ class SnapshotTest {
         return nodes;
     }
 
-    private RaftState newState(String id, Pipe out) {
-        return new RaftState(id, out, LEVEL, config(), new Pipe(), false);
-    }
-
-    private static Message drainLast(Pipe pipe) throws Exception {
-        Message last = null;
-        while (pipe.size() > 0)
-            last = pipe.take();
-        return last;
+    private RaftState newState(String id, ReplicatedStateMachine sm) {
+        return new RaftState(id, sm, LEVEL, config(), new Pipe(), false);
     }
 
     @AfterEach
     void cleanup() throws Exception {
         for (String id : ids) {
-            RaftState s = newState(id, new Pipe());
+            RaftState s = newState(id, new FakeKv());
             Files.deleteIfExists(s.log.getSnapshotPath());
         }
     }
@@ -47,14 +69,15 @@ class SnapshotTest {
     @Test
     void compactsCommittedLogAndRestoresOnStartup() throws Exception {
         int n = RaftLog.SNAPSHOT_THRESHOLD + 5;
-        Pipe out = new Pipe();
-        RaftState state = newState("snapTestA", out);
+        FakeKv kv = new FakeKv();
+        RaftState state = newState("snapTestA", kv);
         state.term = 3;
         for (int i = 0; i < n; i++)
             state.log.appendEntry(new DictMsg("Put", "k" + (i % 10), "v" + i, 0), 3);
         state.log.appendEntry(new DictMsg("Delete", "k0", null, 0), 3);
         state.log.commitEntries(n - 1); // leave the Delete uncommitted
 
+        assertEquals(n, kv.applied);
         assertEquals(n - 1, state.log.getSnapshotLastIndex());
         assertEquals(n - 1, state.log.getCommitIdx());
         assertEquals(n, state.log.getLastIdx());
@@ -63,19 +86,14 @@ class SnapshotTest {
         assertTrue(Files.exists(state.log.getSnapshotPath()));
 
         // a fresh node with the same identity restores from disk
-        Pipe restoredOut = new Pipe();
-        RaftState restored = newState("snapTestA", restoredOut);
+        FakeKv restoredKv = new FakeKv();
+        RaftState restored = newState("snapTestA", restoredKv);
         assertEquals(n - 1, restored.log.getCommitIdx());
         assertEquals(n - 1, restored.log.getLastIdx());
         assertEquals(3, restored.log.getLastTerm());
         assertEquals(3, restored.term);
-
-        Message pushed = restoredOut.take(100);
-        assertNotNull(pushed);
-        assertEquals("Snapshot", pushed.type);
-        Snapshot snap = (Snapshot) pushed;
-        assertEquals(10, snap.kvStore.size());
-        assertEquals("v" + (n - 1), snap.kvStore.get("k" + ((n - 1) % 10)));
+        assertNotNull(restoredKv.restoredFrom);
+        assertEquals(kv.store, restoredKv.store);
 
         // new entries continue from the snapshot index
         restored.log.appendEntry(new DictMsg("Put", "x", "y", 0), 4);
@@ -86,25 +104,56 @@ class SnapshotTest {
     @Test
     void followerInstallsLeaderSnapshot() throws Exception {
         int n = RaftLog.SNAPSHOT_THRESHOLD;
-        RaftState leader = newState("snapTestA", new Pipe());
+        FakeKv leaderKv = new FakeKv();
+        RaftState leader = newState("snapTestA", leaderKv);
         for (int i = 0; i < n; i++)
             leader.log.appendEntry(new DictMsg("Put", "k" + i, "v" + i, 0), 1);
         leader.log.commitEntries(n - 1);
         Snapshot snap = leader.log.getLatestSnapshot();
         assertNotNull(snap);
 
-        Pipe followerOut = new Pipe();
-        RaftState follower = newState("snapTestB", followerOut);
+        FakeKv followerKv = new FakeKv();
+        RaftState follower = newState("snapTestB", followerKv);
         follower.log.appendEntry(new DictMsg("Put", "stale", "x", 0), 1);
         assertTrue(follower.log.installSnapshot(snap));
         assertEquals(n - 1, follower.log.getCommitIdx());
         assertEquals(n - 1, follower.log.getLastIdx());
-
-        Snapshot pushed = (Snapshot) drainLast(followerOut);
-        assertEquals(n, pushed.kvStore.size());
+        assertEquals(leaderKv.store, followerKv.store);
         assertTrue(Files.exists(follower.log.getSnapshotPath()));
 
         // installing the same snapshot again is a no-op
         assertFalse(follower.log.installSnapshot(snap));
+    }
+
+    @Test
+    void clusterStateRoundTripsThroughSnapshot() throws Exception {
+        Map<String, Node> seeds = config();
+        ClusterState original = new ClusterState(new Pipe(), seeds, "snapTestA",
+            new Pipe(), new Pipe(), new Pipe(), new Pipe());
+        for (int i = 0; i < 6; i++)
+            original.apply(new NodeMsg("Add", new Node("extra" + i, "localhost", 100 + i), 0));
+        original.apply(new NodeMsg("Remove", "extra2", 0));
+
+        Snapshot snap = new Snapshot(0, 0, 0, null, null, null, 0);
+        original.fillSnapshot(snap);
+        assertEquals(7, snap.membershipOps.size());
+
+        ClusterState restored = new ClusterState(new Pipe(), seeds, "snapTestA",
+            new Pipe(), new Pipe(), new Pipe(), new Pipe());
+        restored.restore(snap);
+
+        Snapshot again = new Snapshot(0, 0, 0, null, null, null, 0);
+        restored.fillSnapshot(again);
+        assertEquals(snap.membershipOps.size(), again.membershipOps.size());
+        assertEquals(configJson(original), configJson(restored));
+    }
+
+    /** Serializes the cluster view the same way Config replies do. */
+    private static String configJson(ClusterState cs) throws Exception {
+        java.lang.reflect.Field cluster = ClusterState.class.getDeclaredField("cluster");
+        java.lang.reflect.Field version = ClusterState.class.getDeclaredField("version");
+        cluster.setAccessible(true);
+        version.setAccessible(true);
+        return new com.google.gson.Gson().toJson(cluster.get(cs)) + "|" + version.get(cs);
     }
 }

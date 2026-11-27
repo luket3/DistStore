@@ -86,8 +86,6 @@ public class RaftState {
     /** Whether the current group governs shard or cluster traffic. */
     public String level;
 
-    /** Outgoing message pipe used by the log to forward committed operations. */
-    public Pipe outPipe;
 
     /** Pipe used to acknowledge configuration changes back to the caller. */
     public Pipe callbackPipe;
@@ -106,7 +104,7 @@ public class RaftState {
      * identifier, output pipe, Raft level, and initial membership map.
      *
      * @param nodeId local node identifier
-     * @param outPipe pipe used to publish committed client operations
+     * @param stateMachine state machine committed client operations are applied to
      * @param level Raft pipeline level for this node
      * @param configData bootstrap node membership map
      * @param ackPipe acknowledgement pipe for configuration changes
@@ -114,7 +112,7 @@ public class RaftState {
      */
     public RaftState(
             String nodeId,
-            Pipe outPipe,
+            ReplicatedStateMachine stateMachine,
             String level,
             Map<String, Node> configData,
             Pipe ackPipe,
@@ -132,14 +130,13 @@ public class RaftState {
         this.jointConfig = false;
         this.splitConfig = "false";
         this.configChangePending = false;
-        this.log = new RaftLog(outPipe,this);
+        this.log = new RaftLog(stateMachine, this);
         this.leader = null;
         this.votedFor = null;
         this.gson = new Gson();
         this.version = 0;
         this.nextVersion = -1;
         this.level = level;
-        this.outPipe = outPipe;
         this.callbackPipe = ackPipe;
         this.pendingLog = false;
         this.newLearners = new HashMap<>();

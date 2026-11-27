@@ -6,14 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
-import cluster.Node;
 import communication.HandOff;
-import communication.Pipe;
 import message.Ack;
-import message.DictMsg;
 import message.Message;
-import message.NodeMsg;
 import message.RaftConfig;
 import message.Reply;
 import message.Snapshot;
@@ -46,8 +41,8 @@ public class RaftLog {
     /** Log entries accepted by the leader but not yet committed. */
     private ArrayList<LogEntry> uncommittedLog;
 
-    /** Output pipe used to publish committed client or membership messages. */
-    private Pipe outPipe;
+    /** State machine that committed client and membership messages are applied to. */
+    private ReplicatedStateMachine stateMachine;
 
     /** Shared Raft state associated with this log instance. */
     private RaftState raftState;
@@ -61,31 +56,23 @@ public class RaftLog {
     /** Term of the last entry covered by the current snapshot, or 0 if none. */
     private int snapshotLastTerm;
 
-    /** Key-value state produced by every committed DictMsg, used to build snapshots. */
-    private HashMap<String, String> kvState;
-
-    /** Committed cluster membership changes in order, used to build snapshots. */
-    private ArrayList<Snapshot.MembershipOp> membershipOps;
-
     /** Most recent snapshot taken or installed, sent to lagging followers. */
     private Snapshot latestSnapshot;
 
     /**
      * Creates an empty Raft log attached to the supplied state and output pipe.
      *
-     * @param outPipe pipe used to publish committed reply messages
+     * @param stateMachine state machine committed entries are applied to
      * @param raftState shared Raft runtime state for the local node
      */
-    public RaftLog(Pipe outPipe, RaftState raftState) {
+    public RaftLog(ReplicatedStateMachine stateMachine, RaftState raftState) {
         this.committedLog = new ArrayList<>();
         this.uncommittedLog = new ArrayList<>();
-        this.outPipe = outPipe;
+        this.stateMachine = stateMachine;
         this.raftState = raftState;
         this.uncommitedJointConfig = false;
         this.snapshotLastIndex = -1;
         this.snapshotLastTerm = 0;
-        this.kvState = new HashMap<>();
-        this.membershipOps = new ArrayList<>();
         this.latestSnapshot = null;
     }
 
@@ -136,15 +123,14 @@ public class RaftLog {
                 && uncommittedLog.get(0).index <= upToIndex) {
             LogEntry entryToCommit = uncommittedLog.remove(0);
             committedLog.add(entryToCommit);
-            applyToSnapshotState(entryToCommit.msg);
 
-            // Publish committed client or membership messages to the output pipe
+            // Apply committed client or membership messages to the state machine
             if (entryToCommit.msg.type.equals("DictMsg") || entryToCommit.msg.type.equals("NodeMsg")) {
                 Reply msg = (Reply) entryToCommit.msg;
                 if (this.raftState.type != "leader") {
                     msg.client = null;
                 }
-                outPipe.put(msg);
+                stateMachine.apply(msg);
             // If the committed entry is a RaftConfig, let the caller know so it can
             // update its local configuration state.
             } else if (entryToCommit.msg.type.equals("RaftConfig") || entryToCommit.msg.type.equals("SplitRaftConfig")) {
@@ -162,33 +148,6 @@ public class RaftLog {
 
         maybeTakeSnapshot();
         return rtnValue;
-    }
-
-    /**
-     * Folds a committed message into the state that snapshots are built from.
-     *
-     * @param msg committed log payload
-     */
-    private void applyToSnapshotState(Message msg) {
-        if (msg.type.equals("DictMsg")) {
-            DictMsg dictMsg = (DictMsg) msg;
-            if ("Put".equals(dictMsg.action))
-                kvState.put(dictMsg.key, dictMsg.value);
-            else if ("Delete".equals(dictMsg.action))
-                kvState.remove(dictMsg.key);
-        } else if (msg.type.equals("NodeMsg")) {
-            // Mirrors the changes ClusterState accepts so replaying them gives the same ring
-            NodeMsg nodeMsg = (NodeMsg) msg;
-            if (nodeMsg.node == null)
-                return;
-            if ("Add".equals(nodeMsg.action) && nodeMsg.node.ip != null && nodeMsg.node.port != -1) {
-                membershipOps.add(new Snapshot.MembershipOp(
-                    "Add", new Node(nodeMsg.node.id, nodeMsg.node.ip, nodeMsg.node.port)));
-            } else if ("Remove".equals(nodeMsg.action)) {
-                membershipOps.add(new Snapshot.MembershipOp(
-                    "Remove", new Node(nodeMsg.node.id, null, -1)));
-            }
-        }
     }
 
     /**
@@ -212,10 +171,9 @@ public class RaftLog {
             raftState.votedFor,
             raftState.voters,
             raftState.activeNodes,
-            kvState,
-            membershipOps,
             raftState.version
         );
+        stateMachine.fillSnapshot(latestSnapshot);
         persistSnapshot(latestSnapshot);
 
         HandOff.writeToFile(
@@ -231,8 +189,7 @@ public class RaftLog {
      * Entries covered by the snapshot are discarded. If the local log already
      * holds the snapshot's last entry with a matching term, the entries after
      * it are retained; otherwise the whole log is replaced. The installed
-     * snapshot is persisted and pushed to the output pipe so the state machine
-     * can replace its state.
+     * snapshot is persisted and loaded into the state machine.
      *
      * @param snapshot snapshot sent by the leader
      * @return true when the snapshot was installed, false when the local log
@@ -260,7 +217,7 @@ public class RaftLog {
 
         loadSnapshotState(snapshot);
         persistSnapshot(snapshot);
-        outPipe.put(snapshot);
+        stateMachine.restore(snapshot);
 
         HandOff.writeToFile(
             "Node " + raftState.id + " " + raftState.level + ": installed snapshot from leader up to index "
@@ -271,9 +228,8 @@ public class RaftLog {
     }
 
     /**
-     * Restores the log from the snapshot file on disk, if one exists. The
-     * restored snapshot is pushed to the output pipe so the state machine
-     * starts from the saved state.
+     * Restores the log from the snapshot file on disk, if one exists, and
+     * loads it into the state machine so it starts from the saved state.
      *
      * @return the restored snapshot, or null when no snapshot exists
      */
@@ -291,7 +247,7 @@ public class RaftLog {
             committedLog.clear();
             uncommittedLog.clear();
             loadSnapshotState(snapshot);
-            outPipe.put(snapshot);
+            stateMachine.restore(snapshot);
 
             HandOff.writeToFile(
                 "Node " + raftState.id + " " + raftState.level + ": restored snapshot from " + path
@@ -316,8 +272,6 @@ public class RaftLog {
     private void loadSnapshotState(Snapshot snapshot) {
         snapshotLastIndex = snapshot.lastIncludedIndex;
         snapshotLastTerm = snapshot.lastIncludedTerm;
-        kvState = snapshot.kvStore == null ? new HashMap<>() : new HashMap<>(snapshot.kvStore);
-        membershipOps = snapshot.membershipOps == null ? new ArrayList<>() : new ArrayList<>(snapshot.membershipOps);
         latestSnapshot = snapshot;
     }
 
@@ -533,8 +487,6 @@ public class RaftLog {
         uncommittedLog.clear();
         snapshotLastIndex = -1;
         snapshotLastTerm = 0;
-        kvState = new HashMap<>();
-        membershipOps = new ArrayList<>();
         latestSnapshot = null;
         try {
             Files.deleteIfExists(getSnapshotPath());

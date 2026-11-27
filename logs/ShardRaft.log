@@ -7,3 +7,21 @@
 2026-11-27T05:21:35.765202046Z Node snapTestB Shard: installed snapshot from leader up to index 99
 2026-11-27T05:21:35.767302446Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
 2026-11-27T05:21:35.768613381Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:30:08.476969792Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:30:08.481347711Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:30:08.488726091Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:30:08.489891873Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:30:08.492551069Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:30:08.493763994Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:30:08.494986317Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:30:08.496764157Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:30:08.497954267Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99
+2026-11-27T05:33:00.388287943Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:33:00.392592851Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:33:00.399592137Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:33:00.400674178Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:33:00.403157635Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:33:00.404237552Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:33:00.405957492Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:33:00.407868144Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:33:00.409202600Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99

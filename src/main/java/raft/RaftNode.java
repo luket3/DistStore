@@ -42,7 +42,7 @@ public class RaftNode {
      * role handlers used during election and replication.
      *
      * @param id local node identifier
-     * @param stateMachineIn output pipe used for committed client operations
+     * @param stateMachine state machine committed client operations are applied to
      * @param level Raft pipeline level for this node
      * @param configData bootstrap node membership map
      * @param ackPipe acknowledgement pipe for configuration changes
@@ -50,13 +50,13 @@ public class RaftNode {
      */
     public RaftNode(
             String id,
-            Pipe stateMachineIn,
+            ReplicatedStateMachine stateMachine,
             String level,
             Map<String,Node> configData,
             Pipe ackPipe,
             boolean learner
     ) {
-        raftState = new RaftState(id, stateMachineIn, level, configData, ackPipe, learner);
+        raftState = new RaftState(id, stateMachine, level, configData, ackPipe, learner);
         this.candidateRole = new Candidate(raftState);
         this.followerRole = new Follower(raftState);
         this.leaderRole = new Leader(raftState);

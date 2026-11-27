@@ -37,6 +37,7 @@
 /home/croissant/projects/DistStore/src/main/java/raft/RaftLog.java
 /home/croissant/projects/DistStore/src/main/java/raft/RaftNode.java
 /home/croissant/projects/DistStore/src/main/java/raft/RaftState.java
+/home/croissant/projects/DistStore/src/main/java/raft/ReplicatedStateMachine.java
 /home/croissant/projects/DistStore/src/main/java/raft/Role.java
 /home/croissant/projects/DistStore/src/main/java/runnable/Client.java
 /home/croissant/projects/DistStore/src/main/java/runnable/Spawner.java

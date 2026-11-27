@@ -1,2 +1,3 @@
 /home/croissant/projects/DistStore/src/test/java/luket3/AppTest.java
 /home/croissant/projects/DistStore/src/test/java/raft/SnapshotTest.java
+/home/croissant/projects/DistStore/src/test/java/runnable/SpawnerTest.java

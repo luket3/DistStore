@@ -31,7 +31,7 @@ public class Raft implements Runnable {
      * Creates a Raft runtime instance for one node.
      *
      * @param inPipe input pipe that receives Raft protocol traffic
-     * @param outPipe output pipe used by the node for outbound Raft messages
+     * @param stateMachine state machine committed entries are applied to
      * @param nodeId identifier of the local node
      * @param level Raft pipeline classification, such as Shard or Cluster
      * @param configData known peer configuration for this runtime instance
@@ -40,14 +40,14 @@ public class Raft implements Runnable {
      */
     public Raft(
         Pipe inPipe,
-        Pipe outPipe,
+        ReplicatedStateMachine stateMachine,
         String nodeId,
         String level,
         Map<String,Node> configData,
         Pipe ackPipe,
         boolean learner
     ) {
-        node = new RaftNode(nodeId, outPipe, level, configData, ackPipe, learner);
+        node = new RaftNode(nodeId, stateMachine, level, configData, ackPipe, learner);
         this.inPipe = inPipe;
     }
 

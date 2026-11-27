@@ -21,8 +21,8 @@ import cluster.Node;
  * Process entry point for a single node in the distributed store.
  *
  * The server reads its local bootstrap configuration from the network
- * configuration file, starts the shard Raft, cluster Raft, state machine,
- * and cluster state worker threads, and forwards inbound network messages
+ * configuration file, starts the shard Raft, cluster Raft and cluster state
+ * coordinator threads, and forwards inbound network messages
  * into the correct internal pipe for further processing.
  */
 public class Server {
@@ -40,9 +40,6 @@ public class Server {
 
     /** Communication pipe for shard Raft messages */
     public static Pipe shardRaftIn;
-
-    /** Communication pipe for state machine messages */
-    public static Pipe stateMachineIn;
 
     /** Communication pipe for cluster state messages */
     public static Pipe clusterStateIn;
@@ -80,7 +77,6 @@ public class Server {
         configData = new HashMap<String,Node>();
         listener = new Listener();
         shardRaftIn = new Pipe();
-        stateMachineIn = new Pipe();
         shardRaftAck = new Pipe();
         clusterRaftIn = new Pipe();
         clusterStateIn = new Pipe();
@@ -155,8 +151,8 @@ public class Server {
     /**
      * Starts the server process and its supporting worker threads.
      *
-     * The main method initializes the node, launches the shard Raft, cluster
-     * Raft, state machine, and cluster state services, then enters the long-lived
+     * The main method initializes the node, creates the state machines,
+     * launches the shard Raft, cluster Raft and cluster state coordinator, then enters the long-lived
      * socket accept loop that dispatches every incoming message.
      *
      * @param args command-line arguments containing the node identifier, port,
@@ -166,10 +162,24 @@ public class Server {
     public static void main(String[] args) throws Exception {
         Server.init(args);
 
-        // start shard Raft instance in separate thread to handle shard-level consensus
+        // Create the state machines first: each Raft instance restores its
+        // snapshot into its state machine during construction.
+        StateMachine stateMachine = new StateMachine(nodeId);
+        ClusterState clusterState = new ClusterState(
+                clusterStateIn,
+                configData,
+                nodeId,
+                shardRaftIn,
+                clusterRaftIn,
+                shardRaftAck,
+                clusterRaftAck
+        );
+
+        // start shard Raft instance in separate thread; it applies committed
+        // operations to the key-value state machine on its own thread
         Thread shardRaft = new Thread(new Raft(
                 shardRaftIn,
-                stateMachineIn,
+                stateMachine,
                 nodeId,
                 "Shard",
                 configData,
@@ -178,10 +188,11 @@ public class Server {
         ));
         shardRaft.start();
 
-        // start cluster Raft instance in separate thread to handle cluster-level consensus
+        // start cluster Raft instance in separate thread; it applies committed
+        // membership changes to the cluster state on its own thread
         Thread clusterRaft = new Thread(new Raft(
                 clusterRaftIn,
-                clusterStateIn,
+                clusterState,
                 nodeId,
                 "Cluster",
                 configData,
@@ -190,24 +201,10 @@ public class Server {
         ));
         clusterRaft.start();
 
-        // start state machine in separate thread to process committed operations from shard Raft
-        Thread stateMachine = new Thread(
-                new StateMachine(stateMachineIn, nodeId));
-        stateMachine.start();
-
-        // start cluster state worker in separate thread to manage cluster configuration and membership
-        Thread clusterState = new Thread(
-                new ClusterState(
-                        clusterStateIn,
-                        configData,
-                        nodeId,
-                        shardRaftIn,
-                        clusterRaftIn,
-                        shardRaftAck,
-                        clusterRaftAck
-                )
-        );
-        clusterState.start();
+        // start the cluster state coordinator, which waits on Raft
+        // acknowledgements for config changes and answers Config requests
+        Thread clusterStateThread = new Thread(clusterState);
+        clusterStateThread.start();
 
         /* Main server loop: listen for incoming connections and pass to correct pipelines*/
         listener.createSocket(port);

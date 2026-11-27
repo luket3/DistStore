@@ -69,7 +69,8 @@ public class Snapshot extends Message {
     }
 
     /**
-     * Creates a snapshot of the supplied applied state.
+     * Creates a snapshot holding the Raft metadata. The state machine fills
+     * {@link #kvStore} or {@link #membershipOps} afterwards.
      *
      * @param lastIncludedIndex index of the last log entry covered
      * @param lastIncludedTerm term of the last log entry covered
@@ -77,13 +78,10 @@ public class Snapshot extends Message {
      * @param votedFor candidate voted for in the current term
      * @param voters current Raft voter set
      * @param activeNodes every node in the current Raft configuration
-     * @param kvStore applied key-value store contents
-     * @param membershipOps applied cluster membership changes in commit order
      * @param version Raft configuration version at the time of the snapshot
      */
     public Snapshot(int lastIncludedIndex, int lastIncludedTerm, int term, String votedFor,
-                    Map<String, Node> voters, Map<String, Node> activeNodes,
-                    Map<String, String> kvStore, List<MembershipOp> membershipOps, int version) {
+                    Map<String, Node> voters, Map<String, Node> activeNodes, int version) {
         super("Snapshot", version);
         this.lastIncludedIndex = lastIncludedIndex;
         this.lastIncludedTerm = lastIncludedTerm;
@@ -91,7 +89,7 @@ public class Snapshot extends Message {
         this.votedFor = votedFor;
         this.voters = voters == null ? new HashMap<>() : new HashMap<>(voters);
         this.activeNodes = activeNodes == null ? new HashMap<>() : new HashMap<>(activeNodes);
-        this.kvStore = kvStore == null ? new HashMap<>() : new HashMap<>(kvStore);
-        this.membershipOps = membershipOps == null ? new ArrayList<>() : new ArrayList<>(membershipOps);
+        this.kvStore = new HashMap<>();
+        this.membershipOps = new ArrayList<>();
     }
 }

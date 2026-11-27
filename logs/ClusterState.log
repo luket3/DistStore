@@ -1,0 +1,24 @@
+2026-11-27T05:30:08.436324736Z Node snapTestA ClusterState: added node extra0
+2026-11-27T05:30:08.443547174Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:30:08.443794229Z Node snapTestA ClusterState: added node extra1
+2026-11-27T05:30:08.443900030Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:30:08.444035673Z Node snapTestA ClusterState: added node extra2
+2026-11-27T05:30:08.444118092Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:30:08.444612627Z Node snapTestA ClusterState: added node extra3
+2026-11-27T05:30:08.444913472Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T05:30:08.445092586Z Node snapTestA ClusterState: added node extra4
+2026-11-27T05:30:08.445332043Z Node snapTestA ClusterState: added node extra5
+2026-11-27T05:30:08.445623571Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T05:30:08.449463495Z Node snapTestA ClusterState: restored from snapshot, version 7
+2026-11-27T05:32:57.421197528Z Node snapTestA ClusterState: added node extra0
+2026-11-27T05:32:57.428155663Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:32:57.428447235Z Node snapTestA ClusterState: added node extra1
+2026-11-27T05:32:57.428590267Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:32:57.428738496Z Node snapTestA ClusterState: added node extra2
+2026-11-27T05:32:57.428825063Z Node snapTestA queueing Update message for Shard
+2026-11-27T05:32:57.429262332Z Node snapTestA ClusterState: added node extra3
+2026-11-27T05:32:57.429447078Z Node snapTestA queueing SplitShard message for Shard
+2026-11-27T05:32:57.429634401Z Node snapTestA ClusterState: added node extra4
+2026-11-27T05:32:57.429835885Z Node snapTestA ClusterState: added node extra5
+2026-11-27T05:32:57.430090411Z Node snapTestA ClusterState: removed node extra2
+2026-11-27T05:32:57.433830478Z Node snapTestA ClusterState: restored from snapshot, version 7
