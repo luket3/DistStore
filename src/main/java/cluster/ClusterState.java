@@ -3,11 +3,14 @@ package cluster;
 import communication.HandOff;
 import communication.Pipe;
 import message.Message;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import message.NodeMsg;
 import message.Config;
 import message.Response;
+import message.Snapshot;
 import com.google.gson.Gson;
 
 /**
@@ -56,6 +59,9 @@ public class ClusterState implements Runnable {
     /** path to the log file for recording cluster state operations */
     private String logPath;
 
+    /** bootstrap nodes in the order they were first added, used to rebuild the ring from a snapshot */
+    private List<Node> seedNodes;
+
     /**
      * Creates a new cluster state manager for the local node.
      *
@@ -81,8 +87,10 @@ public class ClusterState implements Runnable {
         this.logPath = "logs/ClusterState.log";
 
         // Initialize the cluster with the provided configuration data.
+        this.seedNodes = new ArrayList<>();
         for (Node n : nodes.values()) {
             cluster.addNode(n);
+            seedNodes.add(n);
         }
 
         Shard currShard = cluster.getShardWithNode(nodeID);
@@ -110,6 +118,12 @@ public class ClusterState implements Runnable {
         Message message = inPipe.take();
         if (message == null)
             return;
+
+        // A snapshot from the cluster Raft replaces the current membership view.
+        if (message.type.equals("Snapshot")) {
+            restoreFromSnapshot((Snapshot) message);
+            return;
+        }
 
         // Only Config and NodeMsg messages are recognized.
         if (message.type.equals("Config")) {
@@ -153,6 +167,43 @@ public class ClusterState implements Runnable {
             this.currShardID = currShard.id;
             this.currShardSize = currShard.getAllNodes().size();
         }
+    }
+
+    /**
+     * Rebuilds the consistent-hash ring from a cluster Raft snapshot.
+     *
+     * The ring is reconstructed by adding the bootstrap seed nodes and then
+     * replaying the snapshot's membership changes in commit order, which
+     * reproduces the same shard placement as the original sequence of updates.
+     *
+     * @param snapshot snapshot produced by the cluster Raft log
+     * @throws Exception if the ring cannot be rebuilt
+     */
+    private void restoreFromSnapshot(Snapshot snapshot) throws Exception {
+        ConsistentHashMap rebuilt = new ConsistentHashMap();
+        for (Node n : seedNodes) {
+            rebuilt.addNode(n);
+        }
+
+        int replayed = 0;
+        if (snapshot.membershipOps != null) {
+            for (Snapshot.MembershipOp op : snapshot.membershipOps) {
+                if ("Add".equals(op.action))
+                    rebuilt.addNode(new Node(op.node.id, op.node.ip, op.node.port));
+                else if ("Remove".equals(op.action))
+                    rebuilt.removeNode(op.node.id);
+                replayed++;
+            }
+        }
+
+        this.cluster = rebuilt;
+        this.version = replayed;
+
+        Shard currShard = cluster.getShardWithNode(nodeID);
+        this.currShardID = currShard == null ? null : currShard.id;
+        this.currShardSize = currShard == null ? -1 : currShard.getAllNodes().size();
+
+        HandOff.writeToFile("Node " + this.nodeID + " ClusterState: restored from snapshot, version " + this.version, this.logPath);
     }
 
     /**

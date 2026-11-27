@@ -7,6 +7,7 @@ import communication.Pipe;
 import communication.HandOff;
 import message.RaftConfig;
 import message.SplitRaftConfig;
+import message.Snapshot;
 import com.google.gson.Gson;
 
 /**
@@ -146,6 +147,51 @@ public class RaftState {
             this.type = "learner";
         else
             this.type = "follower";
+
+        // Restore from a previously saved snapshot if one exists on disk
+        Snapshot restored = this.log.restoreFromDisk();
+        if (restored != null) {
+            this.term = restored.term;
+            this.votedFor = restored.votedFor;
+            if (restored.activeNodes != null && !restored.activeNodes.isEmpty())
+                this.activeNodes = new HashMap<>(restored.activeNodes);
+            applySnapshotConfig(restored);
+        }
+    }
+
+    /**
+     * Adopts the Raft membership configuration stored in a snapshot.
+     *
+     * Configuration entries covered by a snapshot are no longer in the log, so
+     * the snapshot is the only record of them. The configuration is applied
+     * only if it is at least as new as the one the node already holds.
+     *
+     * @param snapshot snapshot restored from disk or installed from the leader
+     */
+    public void applySnapshotConfig(Snapshot snapshot) {
+        if (snapshot == null || snapshot.version < this.version)
+            return;
+
+        this.version = snapshot.version;
+        if (snapshot.voters == null || snapshot.voters.isEmpty())
+            return;
+
+        this.voters = new HashMap<>(snapshot.voters);
+        this.oldNodes = new HashMap<>(snapshot.voters);
+        this.nextNodes = new HashMap<>(snapshot.voters);
+        if (snapshot.activeNodes != null)
+            this.activeNodes.putAll(snapshot.activeNodes);
+        this.activeNodes.putAll(this.voters);
+        for (String nodeId : this.voters.keySet())
+            this.learners.remove(nodeId);
+
+        // A node is a voter only if the snapshot's configuration says so
+        if (this.voters.containsKey(this.id)) {
+            if (this.type.equals("learner"))
+                this.type = "follower";
+        } else if (!this.type.equals("learner")) {
+            this.type = "learner";
+        }
     }
 
     /**

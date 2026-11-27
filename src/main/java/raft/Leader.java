@@ -10,6 +10,8 @@ import message.AppendEntriesReply;
 import message.AppendEntries;
 import message.RaftConfig;
 import message.SplitRaftConfig;
+import message.InstallSnapshot;
+import message.Snapshot;
 
 /**
  * Raft role handler responsible for leading the replicated log.
@@ -212,10 +214,15 @@ public class Leader extends Role {
         // Send an empty AppendEntries RPC to all followers to maintain
         // leadership
 
+        // The follower needs entries that were compacted, send the snapshot instead
+        if (raftState.nextIndex.get(node.id) <= raftState.log.getSnapshotLastIndex()) {
+            sendInstallSnapshot(node);
+            return;
+        }
+
         // update prevLogIndex and prevLogTerm
         int prevLogIndex = raftState.nextIndex.get(node.id) - 1;
-        int prevLogTerm = (prevLogIndex >= 0) ?
-                                raftState.log.get(prevLogIndex).term : 0;
+        int prevLogTerm = raftState.log.getTerm(prevLogIndex);
 
         AppendEntries AEmsg = new AppendEntries(
             raftState.level,
@@ -232,5 +239,32 @@ public class Leader extends Role {
         sendToNode(node,
             raftState.gson.toJson(AEmsg)
         );
+    }
+
+    /**
+     * Sends the leader's latest snapshot to a follower whose next required log
+     * entry has already been compacted.
+     *
+     * @param node follower receiving the InstallSnapshot RPC
+     */
+    public void sendInstallSnapshot(Node node) {
+        Snapshot snapshot = raftState.log.getLatestSnapshot();
+        if (snapshot == null)
+            return;
+
+        HandOff.writeToFile(
+            raftState.level + ": leader node: " + raftState.id + " sending snapshot up to index "
+                + snapshot.lastIncludedIndex + " to " + node.id,
+            raftState.getLogFilePath()
+        );
+
+        InstallSnapshot ISmsg = new InstallSnapshot(
+            raftState.level,
+            raftState.term,
+            raftState.id,
+            snapshot,
+            raftState.version
+        );
+        sendToNode(node, raftState.gson.toJson(ISmsg));
     }
 }

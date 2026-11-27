@@ -15,6 +15,7 @@
 /home/croissant/projects/DistStore/src/main/java/message/AppendEntriesReply.java
 /home/croissant/projects/DistStore/src/main/java/message/Config.java
 /home/croissant/projects/DistStore/src/main/java/message/DictMsg.java
+/home/croissant/projects/DistStore/src/main/java/message/InstallSnapshot.java
 /home/croissant/projects/DistStore/src/main/java/message/Message.java
 /home/croissant/projects/DistStore/src/main/java/message/MessageDeserializer.java
 /home/croissant/projects/DistStore/src/main/java/message/NodeMsg.java
@@ -24,6 +25,7 @@
 /home/croissant/projects/DistStore/src/main/java/message/RequestVote.java
 /home/croissant/projects/DistStore/src/main/java/message/RequestVoteReply.java
 /home/croissant/projects/DistStore/src/main/java/message/Response.java
+/home/croissant/projects/DistStore/src/main/java/message/Snapshot.java
 /home/croissant/projects/DistStore/src/main/java/message/SplitRaftConfig.java
 /home/croissant/projects/DistStore/src/main/java/message/SplitShard.java
 /home/croissant/projects/DistStore/src/main/java/message/Update.java

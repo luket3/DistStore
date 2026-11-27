@@ -140,7 +140,8 @@ public class Server {
         } else if (msg.type.equals("AppendEntries") || 
                    msg.type.equals("RequestVote") || 
                    msg.type.equals("AppendEntriesReply") || 
-                   msg.type.equals("RequestVoteReply")) {
+                   msg.type.equals("RequestVoteReply") ||
+                   msg.type.equals("InstallSnapshot")) {
             // handle Raft control messages by dispatching based on their level
             RaftMsg raftMsg = (RaftMsg) msg;
             if (raftMsg.level.equals("Shard")) {

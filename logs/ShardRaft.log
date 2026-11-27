@@ -1,0 +1,9 @@
+2026-11-27T05:21:35.716243287Z Node snapTestA Shard: commiting upto index 104
+2026-11-27T05:21:35.737102841Z Node snapTestA Shard: took snapshot up to index 104 (term 3)
+2026-11-27T05:21:35.746507452Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:21:35.749705559Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 104
+2026-11-27T05:21:35.757581589Z Node snapTestA Shard: commiting upto index 99
+2026-11-27T05:21:35.763108581Z Node snapTestA Shard: took snapshot up to index 99 (term 1)
+2026-11-27T05:21:35.765202046Z Node snapTestB Shard: installed snapshot from leader up to index 99
+2026-11-27T05:21:35.767302446Z Node snapTestA Shard: restored snapshot from snapshots/snapTestA-Shard.json up to index 99
+2026-11-27T05:21:35.768613381Z Node snapTestB Shard: restored snapshot from snapshots/snapTestB-Shard.json up to index 99

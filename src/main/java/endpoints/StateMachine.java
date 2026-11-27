@@ -6,6 +6,7 @@ import communication.Pipe;
 import message.Message;
 import message.DictMsg;
 import message.Response;
+import message.Snapshot;
 import com.google.gson.Gson;
 
 /**
@@ -114,6 +115,18 @@ public class StateMachine implements Runnable {
                 // Wait for the next committed message from the shard Raft pipeline,
                 // only execute "DictMsg" messages
                 Message query = inPipe.take();
+
+                // A snapshot replaces the whole store (restore on startup or install from leader)
+                if (query.type.equals("Snapshot")) {
+                    Snapshot snapshot = (Snapshot) query;
+                    store.clear();
+                    if (snapshot.kvStore != null)
+                        store.putAll(snapshot.kvStore);
+                    HandOff.writeToFile("Node:" + nodeId + " StateMachine: loaded snapshot up to index "
+                        + snapshot.lastIncludedIndex + " with " + store.size() + " keys", this.logPath);
+                    continue;
+                }
+
                 if (!query.type.equals("DictMsg")) {
                     HandOff.writeToFile("store operation failed: unsupported message type " + query.type, this.logPath);
                     continue;

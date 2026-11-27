@@ -6,6 +6,7 @@ import communication.HandOff;
 import message.AppendEntries;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
+import message.InstallSnapshot;
 
 /**
  * Raft role handler for a non-leader node that receives election requests,
@@ -109,7 +110,9 @@ public class Follower extends Role {
         if (AEmsg.prevLogIndex >= 0) {
             if (AEmsg.prevLogIndex >= raftState.log.getSize()) {
                 logMatch = false;
-            } else if (raftState.log.get(AEmsg.prevLogIndex).term != AEmsg.prevLogTerm) {
+            } else if (AEmsg.prevLogIndex >= raftState.log.getSnapshotLastIndex()
+                    && raftState.log.getTerm(AEmsg.prevLogIndex) != AEmsg.prevLogTerm) {
+                // entries before the snapshot are committed, so they always match
                 logMatch = false;
             }
         }
@@ -122,6 +125,9 @@ public class Follower extends Role {
                 int nextIndex = AEmsg.prevLogIndex + 1;
                 for (int i = 0; i < AEmsg.entries.size(); i++) {
                     int targetIndex = nextIndex + i;
+                    // already covered by the local snapshot
+                    if (targetIndex <= raftState.log.getSnapshotLastIndex())
+                        continue;
                     LogEntry incoming = AEmsg.entries.get(i);
                     LogEntry existing = raftState.log.get(targetIndex);
                     if (existing != null) {
@@ -150,6 +156,54 @@ public class Follower extends Role {
             raftState.leader,
             raftState.gson.toJson(AEReply)
         );
+        return true;
+    }
+
+    /**
+     * Processes an InstallSnapshot RPC received from the current leader.
+     *
+     * The follower accepts the leader's term when it is current, replaces its
+     * log and state with the snapshot unless it has already committed past it,
+     * adopts the snapshot's membership configuration, and acknowledges with an
+     * AppendEntriesReply so the leader can advance this follower's indexes.
+     *
+     * @param ISmsg InstallSnapshot RPC to evaluate
+     * @return true when the request was accepted and acknowledged
+     */
+    public boolean installSnapshot(InstallSnapshot ISmsg) {
+
+        // Update term and revert to follower if we see a higher term
+        if (ISmsg.term > raftState.term) {
+            raftState.term = ISmsg.term;
+            if (raftState.type != "learner")
+                raftState.type = "follower";
+            raftState.votedFor = null;
+        } else if (ISmsg.term < raftState.term) {
+            // Reject if leader's term is less than current term
+            return false;
+        }
+
+        // Install the snapshot and adopt its configuration
+        boolean installed = raftState.log.installSnapshot(ISmsg.snapshot);
+        if (installed)
+            raftState.applySnapshotConfig(ISmsg.snapshot);
+
+        // Update leader information if this is a new leader
+        if (raftState.leader == null || !raftState.leader.id.equals(ISmsg.senderId)) {
+            raftState.leader = raftState.activeNodes.get(ISmsg.senderId);
+        }
+        if (raftState.leader == null) {
+            HandOff.writeToFile(
+                "Level: " + raftState.level + " Node: " + raftState.id + " cannot reply to InstallSnapshot, leader unknown",
+                raftState.getLogFilePath()
+            );
+            return false;
+        }
+
+        // Only the snapshot prefix is known to match the leader's log
+        int matchIndex = installed ? ISmsg.snapshot.lastIncludedIndex : raftState.log.getCommitIdx();
+        AppendEntriesReply reply = new AppendEntriesReply(raftState.level, raftState.term, raftState.id, true, matchIndex, raftState.version);
+        sendToNode(raftState.leader, raftState.gson.toJson(reply));
         return true;
     }
 

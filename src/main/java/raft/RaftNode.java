@@ -12,6 +12,7 @@ import message.RequestVote;
 import message.RequestVoteReply;
 import message.AppendEntriesReply;
 import message.SplitShard;
+import message.InstallSnapshot;
 import java.util.HashMap;
 import java.util.Map;
 import cluster.Node;
@@ -125,6 +126,8 @@ public class RaftNode {
         // handle request vote, append entries, DictMsg and NodeMsg messages
         if (message.type.equals("AppendEntries"))
             followerRole.appendEntries((AppendEntries) message);
+        else if (message.type.equals("InstallSnapshot"))
+            followerRole.installSnapshot((InstallSnapshot) message);
         else if (message.type.equals("RequestVote") && !raftState.type.equals("learner"))
             followerRole.requestVote((RequestVote) message);
         else if ((message.type.equals("DictMsg") || message.type.equals("NodeMsg"))) {
@@ -204,7 +207,8 @@ public class RaftNode {
      */
     public boolean checkvalidMessage(Message message) {
         if ((message.type.equals("AppendEntries") || message.type.equals("RequestVote") 
-            || message.type.equals("AppendEntriesReply") || message.type.equals("RequestVoteReply")) && !raftState.type.equals("learner")) {
+            || message.type.equals("AppendEntriesReply") || message.type.equals("RequestVoteReply")
+            || message.type.equals("InstallSnapshot")) && !raftState.type.equals("learner")) {
             RaftMsg castMsg = (RaftMsg) message;
             if (!raftState.activeNodes.containsKey(castMsg.senderId)) {
                 HandOff.writeToFile(

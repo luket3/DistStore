@@ -36,6 +36,8 @@ public class MessageDeserializer implements JsonDeserializer<Message> {
             case "SplitShard" -> ctx.deserialize(json, SplitShard.class);
             case "Ack" -> ctx.deserialize(json, Ack.class);
             case "Response" -> ctx.deserialize(json, Response.class);
+            case "InstallSnapshot" -> ctx.deserialize(json, InstallSnapshot.class);
+            case "Snapshot" -> ctx.deserialize(json, Snapshot.class);
             default -> throw new JsonParseException("Unknown message type: " + type);
         };
     }
