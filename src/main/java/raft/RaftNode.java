@@ -117,6 +117,11 @@ public class RaftNode {
             return;
         }
 
+        // step down as leader if message belongs to a higher version
+        if (message.version > raftState.version) {
+            raftState.stepDown();
+        }
+
         // handle request vote, append entries, DictMsg and NodeMsg messages
         if (message.type.equals("AppendEntries"))
             followerRole.appendEntries((AppendEntries) message);

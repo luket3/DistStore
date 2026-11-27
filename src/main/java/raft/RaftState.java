@@ -218,7 +218,6 @@ public class RaftState {
             return false;
         }
 
-        HandOff.writeToFile("nodes.size() = " + nodes.keySet() + "this.activeNodes.size() = " + this.activeNodes.keySet(), this.getLogFilePath());
         // If the incoming configuration is larger, add new nodes to the tracked membership and learner lists
         if (nodes.size() > this.activeNodes.size()) {
             Map<String, Node> addedNodes = new HashMap<>(nodes);
@@ -283,6 +282,8 @@ public class RaftState {
      * @param nodes the new set of nodes that will be active after the shard removaling config
      */
     public void shardRemoval(Map<String, Node> nodes) {
+        distributeData();
+        this.version = 0;
         this.term = 0;
         this.activeNodes = new HashMap<>(nodes);
         this.voters = new HashMap<>(nodes);
@@ -291,7 +292,6 @@ public class RaftState {
         this.configChangePending = true;
         this.log.wipe();
         this.type = "learner";
-        distributeData();
     }
 
     /**
