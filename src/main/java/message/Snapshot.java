@@ -115,7 +115,6 @@ public class Snapshot extends Message {
      *
      * @return a new map of the voters keyed by id (empty if none)
      */
-    @SuppressWarnings("deprecation")
     public Map<String, Node> voters() {
         if (voterIds == null)
             return voters == null ? new HashMap<>() : new HashMap<>(voters);
@@ -127,7 +126,6 @@ public class Snapshot extends Message {
      *
      * @return a new map of the nodes keyed by id (empty if none)
      */
-    @SuppressWarnings("deprecation")
     public Map<String, Node> activeNodes() {
         if (activeNodeIds == null)
             return activeNodes == null ? new HashMap<>() : new HashMap<>(activeNodes);
